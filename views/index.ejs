@@ -11,7 +11,7 @@
     <h1>Start your journey with <strong>Charma</strong></h1>
     <div id="mainProto">
         <div class="convo-button-container">
-            <button class="new-conversation" type="button" onclick="window.location.href='/'">New conversation</button>
+            <button class="new-conversation" type="button" onclick="window.location.href='/'">+ New conversation</button>
             <% conversations.forEach(function (conversation) { %>
                     <button class="convoNavigator" type="button" data-conversation-id="<%= conversation.id %>"><%= conversation.title %></button>
             <% }); %>

@@ -51,7 +51,7 @@ textarea:focus {
 /* Submit action button */
 button {
     width: 100%;
-    background-color: #b34df7;
+    background: linear-gradient(90deg, #d946ef, #7c3aed);
     color: white;
     border: none;
     padding: 12px;
@@ -59,11 +59,11 @@ button {
     font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.3s;
 }
 
 button:hover {
-    background-color: #6e3097;
+    background: linear-gradient(90deg, #9f35af, #5a2baa);
 }
 
 /* Loading UI hint */
