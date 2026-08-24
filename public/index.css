@@ -45,7 +45,7 @@ textarea {
 textarea:focus {
     outline: none;
     border-color: #b34df7;
-    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
+    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
 }
 
 /* Submit action button */
@@ -77,8 +77,8 @@ button:hover {
 
 /* Styling for the AI output window */
 .response-box {
-    background: #e7f5ff;
-    border-left: 5px solid #228be6;
+    background: #ffe7fe;
+    border-left: 5px solid #b822e6;
     padding: 20px;
     border-radius: 0 8px 8px 0;
     margin-top: 30px;
@@ -86,7 +86,7 @@ button:hover {
 
 .response-box h3 {
     margin-top: 0;
-    color: #1c7ed6;
+    color: #ab20ce;
 }
 
 .response-box p {
