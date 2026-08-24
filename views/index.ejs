@@ -8,26 +8,42 @@
 </head>
 <body>
 
-    <h1>Campaign AI Assistant</h1>
-    
+    <h1>Start your journey with <strong>Charma</strong></h1>
+    <div id="mainProto">
+        <div class="convo-button-container">
+            <button class="new-conversation" type="button" onclick="window.location.href='/'">New conversation</button>
+            <% conversations.forEach(function (conversation) { %>
+                    <button class="convoNavigator" type="button" data-conversation-id="<%= conversation.id %>"><%= conversation.title %></button>
+            <% }); %>
+        </div>
+    </div>
     <div class="chat-form">
         <!-- Form links directly to the /ask route in app.js -->
         <form action="/ask" method="POST" onsubmit="showLoading()">
+            <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
             <textarea name="prompt" placeholder="Ask your local AI a question..." required><%= prompt || '' %></textarea>
             <button type="submit" id="submit-btn">Send Question</button>
         </form>
         <div class="loading" id="loader">Thinking... (local LLMs can take a few seconds to begin)</div>
     </div>
+    
 
     <!-- This box only becomes visible when a response exists -->
     <% if (response) { %>
         <div class="response-box">
-            <h3>AI Response</h3>
+            <h3>Charma:</h3>
             <p><%= response %></p>
         </div>
     <% } %>
 
     <script>
+        document.querySelectorAll('.convoNavigator').forEach(function (button) {
+            button.addEventListener('click', function () {
+                document.getElementById('conversation-id').value = button.dataset.conversationId;
+                document.querySelector('textarea[name="prompt"]').focus();
+            });
+        });
+
         // Simple client-side script to show loading text when submitted
         function showLoading() {
             document.getElementById('loader').style.display = 'block';

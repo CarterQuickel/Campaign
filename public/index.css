@@ -1,16 +1,20 @@
 /* Base styles */
+html {
+    min-height: 100%;
+    background: linear-gradient(rgb(80, 25, 80), rgb(20, 20, 20));
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #f8f9fa;
     color: #212529;
     max-width: 700px;
     margin: 60px auto;
-    padding: 0 20px;
+    background: transparent;
 }
 
 h1 {
     text-align: center;
-    color: #343a40;
+    color: #f7f7f7;
     margin-bottom: 30px;
 }
 
@@ -40,14 +44,14 @@ textarea {
 
 textarea:focus {
     outline: none;
-    border-color: #4dabf7;
+    border-color: #b34df7;
     box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.2);
 }
 
 /* Submit action button */
 button {
     width: 100%;
-    background-color: #228be6;
+    background-color: #b34df7;
     color: white;
     border: none;
     padding: 12px;
@@ -59,7 +63,7 @@ button {
 }
 
 button:hover {
-    background-color: #1c7ed6;
+    background-color: #6e3097;
 }
 
 /* Loading UI hint */
@@ -89,4 +93,35 @@ button:hover {
     line-height: 1.6;
     margin-bottom: 0;
     white-space: pre-wrap; /* Keeps paragraph spacing intact */
+}
+
+#mainProto {
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.convoNavigator {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+}
+
+.convo-button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    overflow-y: auto;
+}
+
+strong {
+    background: linear-gradient(90deg, #d946ef, #7c3aed);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
 }
