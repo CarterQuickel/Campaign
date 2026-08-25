@@ -125,3 +125,13 @@ strong {
     -webkit-background-clip: text;
     color: transparent;
 }
+
+.reward-button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.reward-button:disabled {
+    background: linear-gradient(90deg, #d846ef4d, #7c3aed4b);
+    cursor: not-allowed;
+}

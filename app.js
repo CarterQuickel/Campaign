@@ -26,6 +26,13 @@ database.run(`
     )
 `);
 
+database.run(`
+    CREATE TABLE IF NOT EXISTS claimed_rewards (
+        reward_id TEXT PRIMARY KEY,
+        claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+
 // Function to get recent messages from the database
 function getRecentMessages(conversationId, limit = 20) {
     return new Promise((resolve, reject) => {
@@ -104,11 +111,33 @@ app.get('/', async (req, res) => {
     res.render('index', { response: null, prompt: null, conversations: await getConversations(), conversationId: null });
 });
 
+app.post('/api/rewards/claim', (req, res) => {
+    const rewardId = typeof req.body.rewardId === 'string' ? req.body.rewardId.trim() : '';
+    if (!rewardId) {
+        return res.status(400).json({ success: false, error: 'A reward ID is required.' });
+    }
+
+    database.run(
+        'INSERT OR IGNORE INTO claimed_rewards (reward_id) VALUES (?)',
+        [rewardId],
+        error => {
+            if (error) {
+                console.error('Reward claim failed:', error);
+                return res.status(500).json({ success: false, error: 'The reward could not be claimed.' });
+            }
+            res.json({ success: true });
+        }
+    );
+});
+
 // Handle the form submission and call Ollama
 app.post('/ask', async (req, res) => {
     const userPrompt = req.body.prompt;
     try {
         const system = require('./system.js').system;
+        const rewards = require('./rewards.js').rewards;
+        const storySpecRewards = require('./storySpecRewards').storySpecRewards;
+        const landmarks
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
@@ -125,7 +154,8 @@ app.post('/ask', async (req, res) => {
                     'You are a helpful assistant. Use the conversation history when it is relevant.',
                     ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
                     `User: ${userPrompt}`,
-                    'Assistant:'
+                    'Assistant:', 
+
                 ].join('\n\n'),
                 system: system,
                 stream: false

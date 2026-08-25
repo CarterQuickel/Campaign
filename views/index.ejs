@@ -30,12 +30,11 @@
 
     <!-- This box only becomes visible when a response exists -->
     <% if (response) { %>
-        <div class="response-box">
-            <h3>Charma:</h3>
-            <p><%= response %></p>
-        </div>
+        <div class="response-box" id="ai-response"><%= response %></div>
+        <div class="response-box response-rendered" id="chat" hidden></div>
     <% } %>
 
+    <script src="/chat.js"></script>
     <script>
         document.querySelectorAll('.convoNavigator').forEach(function (button) {
             button.addEventListener('click', function () {
