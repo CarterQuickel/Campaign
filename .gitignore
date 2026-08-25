@@ -12,3 +12,7 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vscode/
+
+.db
+*.db
+chat-history.db
