@@ -137,7 +137,7 @@ app.post('/ask', async (req, res) => {
         const system = require('./system.js').system;
         const rewards = require('./rewards.js').rewards;
         const storySpecRewards = require('./storySpecRewards').storySpecRewards;
-        const landmarks
+        const landmarks = require('./landmarks').landmarks;
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
