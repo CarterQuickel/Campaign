@@ -21,8 +21,8 @@
         <!-- Form links directly to the /ask route in app.js -->
         <form action="/ask" method="POST" onsubmit="showLoading()">
             <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-            <textarea name="prompt" placeholder="Ask your local AI a question..." required><%= prompt || '' %></textarea>
-            <button type="submit" id="submit-btn">Send Question</button>
+            <textarea name="prompt" placeholder="Continue your adventure..." required><%= prompt || '' %></textarea>
+            <button type="submit" id="submit-btn">Push On</button>
         </form>
         <div class="loading" id="loader">Thinking... (local LLMs can take a few seconds to begin)</div>
     </div>
