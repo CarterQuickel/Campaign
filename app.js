@@ -135,9 +135,11 @@ app.post('/ask', async (req, res) => {
     const userPrompt = req.body.prompt;
     try {
         const system = require('./system.js').system;
-        const rewards = require('./rewards.js').rewards;
-        const storySpecRewards = require('./storySpecRewards').storySpecRewards;
-        const landmarks = require('./landmarks').landmarks;
+        const rewards = require('./StoryAPI/rewards.js').rewards;
+        const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
+        const landmarks = require('./StoryAPI/landmarks').landmarks;
+        const stories = require('./StoryAPI/stories').stories;
+        console.log(storySpecRewards, landmarks, stories, rewards);
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
@@ -151,11 +153,12 @@ app.post('/ask', async (req, res) => {
             body: JSON.stringify({
                 model: 'llama3.2',
                 prompt: [
-                    'You are a helpful assistant. Use the conversation history when it is relevant.',
+                    `You are a helpful assistant. Use the conversation history when it is relevant. 
+                    You must use this story: ${stories} with these random landmarks: ${landmarks}
+                    and these story rewards: ${storySpecRewards} but also use these general rewards: ${rewards}.`,
                     ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
                     `User: ${userPrompt}`,
-                    'Assistant:', 
-
+                    'Assistant:',
                 ].join('\n\n'),
                 system: system,
                 stream: false
