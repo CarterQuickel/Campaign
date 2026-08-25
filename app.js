@@ -68,15 +68,15 @@ function createConversation(title) {
 }
 
 async function getConversationTitle(prompt) {
-    const system = require('./system.js').system;
     const convoNamer = require('./convoNamer.js').convoNamer;
     const ollamaTitle = await fetch('http://localhost:11434/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama3.2',
-                prompt: convoNamer,
-                system: system,
+                prompt: `Create a title for this quest or conversation:\n${prompt}`,
+                system: convoNamer,
+                options: { temperature: 0.2, num_predict: 12 },
                 stream: false
             })
         });
@@ -84,7 +84,14 @@ async function getConversationTitle(prompt) {
     if (!ollamaTitle.ok) {
         throw new Error(titleData.error || `AI server returned HTTP ${ollamaTitle.status}`);
     }
-    return titleData.response.trim();
+    return titleData.response
+        .trim()
+        .split(/\r?\n/)[0]
+        .replace(/^[*#\"']+|[*#\"']+$/g, '')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 5)
+        .join(' ');
 }
 
 app.set('view engine', 'ejs');
