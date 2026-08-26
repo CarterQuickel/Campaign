@@ -5,10 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Campaign Assistant</title>
     <link rel="stylesheet" href="/index.css">
+    <style>
+        .star {
+            position: absolute;
+            opacity: 0.6;
+            width: 7px;
+            height: 7px;
+            background-color: white;
+            border-radius: 30px;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            animation: glowing 2s infinite alternate ease-in-out;
+            z-index: -500;
+        }
+
+        @keyframes glowing {
+            0% {
+                opacity: 0.2;
+                transform: scale(0.8);
+                box-shadow: 0 0 5px rgba(255, 254, 254, 0.6);
+            }
+            100% {
+                opacity: 0.6;
+                transform: scale(1.5);
+                box-shadow: 0 0 5px rgba(255, 255, 255, 1);
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <h1>Start your journey with <strong>Charma</strong></h1>
+    <h1 id="title">Start your journey with <strong>Charma</strong></h1>
     <div id="mainProto">
         <div class="convo-button-container">
             <button class="new-conversation" type="button" onclick="window.location.href='/'">+ New conversation</button>
@@ -17,22 +43,33 @@
             <% }); %>
         </div>
     </div>
-    <div class="chat-form">
-        <!-- Form links directly to the /ask route in app.js -->
-        <form action="/ask" method="POST" onsubmit="showLoading()">
-            <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-            <textarea name="prompt" placeholder="Continue your adventure..." required><%= prompt || '' %></textarea>
-            <button type="submit" id="submit-btn">Push On</button>
-        </form>
-        <div class="loading" id="loader">Thinking... (local LLMs can take a few seconds to begin)</div>
+    <div class="centerCont">
+        <div>
+            <!-- This box only becomes visible when a response exists -->
+            <% if (response) { %>
+                <div class="response-box" id="ai-response" hidden><%= response %></div>
+                <div class="response-box response-rendered" id="chat" hidden></div>
+            <% } %>
+        </div>
+        <div class="chat-form">
+            <!-- Form links directly to the /ask route in app.js -->
+            <form action="/ask" method="POST" onsubmit="showLoading()">
+                <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
+                <textarea name="prompt" placeholder="Continue your adventure..." required><%= prompt || '' %></textarea>
+                <button type="submit" id="submit-btn">Push On</button>
+            </form>
+            <div class="loading" id="loader">Thinking... (she can take up to 45 seconds to respond)</div>
+        </div>
+        <div>
+            <!-- This box only becomes visible when a response exists -->
+            <% if (response) { %>
+                <div class="response-box" id="ai-response" hidden><%= response %></div>
+                <div class="response-box response-rendered" id="chat" hidden>
+                    <div id="text-scroll"></div>
+                </div>
+            <% } %>
+        </div>
     </div>
-    
-
-    <!-- This box only becomes visible when a response exists -->
-    <% if (response) { %>
-        <div class="response-box" id="ai-response"><%= response %></div>
-        <div class="response-box response-rendered" id="chat" hidden></div>
-    <% } %>
 
     <script src="/chat.js"></script>
     <script>
@@ -50,6 +87,20 @@
             document.getElementById('submit-btn').innerText = 'Processing...';
         }
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const numStars = 100;
+            const container = document.body;
 
+            for (let i = 0; i < numStars; i++) {
+                let star = document.createElement("div");
+                star.classList.add("star");
+                star.style.top = Math.random() * window.innerHeight + "px";
+                star.style.left = Math.random() * window.innerWidth + "px";
+                star.style.animationDuration = (Math.random() * 2 + 1) + "s";
+                container.appendChild(star);
+            }
+        });
+    </script>
 </body>
 </html>
