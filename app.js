@@ -139,7 +139,6 @@ app.post('/ask', async (req, res) => {
         const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
         const landmarks = require('./StoryAPI/landmarks').landmarks;
         const stories = require('./StoryAPI/stories').stories;
-        console.log(storySpecRewards, landmarks, stories, rewards);
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
