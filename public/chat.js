@@ -8,9 +8,17 @@ async function renderAIResponse(text) {
     let lastIndex = 0;
     let match;
     container.hidden = false;
-    container.innerHTML = '<h3>Charma:</h3>';
+    const chatContainer = document.getElementById('text-scroll');
+    // create assistant message bubble
+    const msgWrap = document.createElement('div');
+    msgWrap.className = 'message assistant';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    msgWrap.appendChild(bubble);
+    if (chatContainer) chatContainer.appendChild(msgWrap);
+
     while ((match = rewardRegex.exec(text)) !== null) {
-        await typeAIResponse(text.slice(lastIndex, match.index), container);
+        await typeAIResponseIntoElement(text.slice(lastIndex, match.index), bubble);
         const rewardId = match[2].trim();
         const button = document.createElement('button');
         button.type = 'button';
@@ -34,11 +42,13 @@ async function renderAIResponse(text) {
                 button.textContent = `Claim failed: ${error.message}`;
             }
         });
-        container.appendChild(button);
+        msgWrap.appendChild(button);
         lastIndex = rewardRegex.lastIndex;
     }
-    await typeAIResponse(text.slice(lastIndex), container);
+    await typeAIResponseIntoElement(text.slice(lastIndex), bubble);
     source.hidden = true;
+    // scroll to bottom
+    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 const responseElement = document.getElementById('ai-response');
@@ -46,9 +56,7 @@ if (responseElement) {
     renderAIResponse(responseElement.textContent);
 }
 
-function typeAIResponse(text, container, speed = 15) {
-    const element = document.createTextNode('');
-    container.appendChild(element);
+function typeAIResponseIntoElement(text, element, speed = 15) {
     let index = 0;
     return new Promise((resolve) => {
         function nextCharacter() {
@@ -62,15 +70,4 @@ function typeAIResponse(text, container, speed = 15) {
         }
         nextCharacter();
     });
-}
-
-setTimeout(viewTitle, 100);
-
-function viewTitle() {
-    const h1 = document.getElementById("title");
-    const chat = document.getElementById("chat");
-    if (!h1) {
-        return;
-    }
-    h1.style.display = !chat || chat.hidden ? "block" : "none";
 }

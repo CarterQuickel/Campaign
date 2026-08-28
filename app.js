@@ -108,7 +108,7 @@ app.use(express.json());
 
 // Render the initial blank page
 app.get('/', async (req, res) => {
-    res.render('index', { response: null, prompt: null, conversations: await getConversations(), conversationId: null });
+    res.render('index', { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [] });
 });
 
 app.post('/api/rewards/claim', (req, res) => {
@@ -168,19 +168,24 @@ app.post('/ask', async (req, res) => {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
         await saveMessage(conversationId, 'assistant', data.response);
+        const messages = await getRecentMessages(conversationId);
         res.render('index', { 
             response: data.response, 
             prompt: userPrompt, 
             conversations: await getConversations(),
-            conversationId
+            conversationId,
+            messages
         });
     } catch (error) {
         console.error("Ollama Error:", error);
+        const conversationId = Number(req.body.conversationId) || null;
+        const messages = conversationId ? await getRecentMessages(conversationId) : [];
         res.render('index', { 
             response: `AI request failed: ${error.message}`,
             prompt: userPrompt,
             conversations: await getConversations(),
-            conversationId: Number(req.body.conversationId) || null
+            conversationId,
+            messages
         });
     }
 });
