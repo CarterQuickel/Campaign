@@ -58,7 +58,7 @@ if (responseElement) {
 
 function typeAIResponseIntoElement(text, element, speed = 15) {
     let index = 0;
-    document.getElementById("chatbox");
+    document.getElementById("chatbox").value = "";
     return new Promise((resolve) => {
         function nextCharacter() {
             if (index >= text.length) {
@@ -72,3 +72,13 @@ function typeAIResponseIntoElement(text, element, speed = 15) {
         nextCharacter();
     });
 }
+
+//form submitting
+document.addEventListener("keydown", function(event) {
+    const form = document.getElementById("txtform");
+    const box = document.getElementById("chatbox");
+    if (event.target === box && event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        form.requestSubmit();
+    }
+});
