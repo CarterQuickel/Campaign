@@ -39,7 +39,7 @@
             <!-- Form links directly to the /ask route in app.js -->
             <form action="/ask" method="POST" onsubmit="showLoading()">
                 <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-                <textarea name="prompt" placeholder="Continue your adventure..." required><%= prompt || '' %></textarea>
+                <textarea name="prompt" placeholder="Continue your adventure..." required id="chatbox"><%= prompt || '' %></textarea>
                 <button type="submit" id="submit-btn">
                     <img src="/icons/send.png" width="30" height="30">
                 </button>

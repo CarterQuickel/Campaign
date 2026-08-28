@@ -58,6 +58,7 @@ if (responseElement) {
 
 function typeAIResponseIntoElement(text, element, speed = 15) {
     let index = 0;
+    document.getElementById("chatbox");
     return new Promise((resolve) => {
         function nextCharacter() {
             if (index >= text.length) {
