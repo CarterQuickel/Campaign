@@ -112,6 +112,14 @@ body {
     font-size: 12px;
 }
 
+.new-conversation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    scale: 0.85;
+}
+
 #SuperCont {
     display: flex;
     flex-direction: row;

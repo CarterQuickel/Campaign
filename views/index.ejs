@@ -14,6 +14,8 @@
             </div>
         </div>
         <div id="rightBan">
+            <button class="new-conversation" type="button" onclick="window.location.href='/'">Restart</button>
+            <div class="horiz"></div>
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
@@ -56,10 +58,7 @@
     <div id="SuperCont">
         <div id="mainProto">
             <div class="convo-button-container">
-                <button class="new-conversation" type="button" onclick="window.location.href='/'">+ New conversation</button>
-                <% conversations.forEach(function (conversation) { %>
-                        <button class="convoNavigator" type="button" data-conversation-id="<%= conversation.id %>"><%= conversation.title %></button>
-                <% }); %>
+
             </div>
         </div>
         <div class="centerCont">
@@ -127,13 +126,6 @@
                 }
             }
         }
-
-        document.querySelectorAll('.convoNavigator').forEach(function (button) {
-            button.addEventListener('click', function () {
-                document.getElementById('conversation-id').value = button.dataset.conversationId;
-                document.querySelector('textarea[name="prompt"]').focus();
-            });
-        });
 
         refreshAiStatus();
 

@@ -5,7 +5,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const database = new sqlite3.Database('./chat-history.db');
 let stats = [
-    10, 18, 10, 15, 7, 14
+    10, 3, 10, 15, 7, 14
 ]
 
 // Run the database
