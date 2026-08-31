@@ -4,6 +4,9 @@ const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 3000;
 const database = new sqlite3.Database('./chat-history.db');
+let stats = [
+    10, 18, 10, 15, 7, 14
+]
 
 // Run the database
 database.run(`
@@ -106,9 +109,37 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 
+let online = false;
+
+async function checkAiStatus() {
+    try {
+        const response = await fetch('http://localhost:11434/api/tags');
+        if (!response.ok) {
+            online = false;
+            return false;
+        }
+        const data = await response.json();
+        online = Array.isArray(data.models) && data.models.length > 0;
+        return online;
+    } catch (error) {
+        online = false;
+        return false;
+    }
+}
+
+app.get('/api/ai-status', async (req, res) => {
+    const isReady = await checkAiStatus();
+    if (!isReady) {
+        return res.status(503).json({ ready: false, message: 'AI server not ready' });
+    }
+    return res.json({ ready: true, message: 'AI online' });
+});
+
 // Render the initial blank page
 app.get('/', async (req, res) => {
-    res.render('index', { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [] });
+    const aiReady = await checkAiStatus();
+    res.render('index', 
+        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats });
 });
 
 app.post('/api/rewards/claim', (req, res) => {
@@ -169,23 +200,29 @@ app.post('/ask', async (req, res) => {
         }
         await saveMessage(conversationId, 'assistant', data.response);
         const messages = await getRecentMessages(conversationId);
+        const aiReady = await checkAiStatus();
         res.render('index', { 
             response: data.response, 
             prompt: userPrompt, 
             conversations: await getConversations(),
             conversationId,
-            messages
+            messages, 
+            online: aiReady,
+            stats: stats
         });
     } catch (error) {
         console.error("Ollama Error:", error);
         const conversationId = Number(req.body.conversationId) || null;
         const messages = conversationId ? await getRecentMessages(conversationId) : [];
+        const aiReady = await checkAiStatus();
         res.render('index', { 
             response: `AI request failed: ${error.message}`,
             prompt: userPrompt,
             conversations: await getConversations(),
             conversationId,
-            messages
+            messages,
+            online: aiReady,
+            stats: stats
         });
     }
 });

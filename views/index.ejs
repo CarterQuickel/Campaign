@@ -7,50 +7,127 @@
     <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-    <h1 id="title">Start your journey with <strong>Charma</strong></h1>
-    <div id="mainProto">
-        <div class="convo-button-container">
-            <button class="new-conversation" type="button" onclick="window.location.href='/'">+ New conversation</button>
-            <% conversations.forEach(function (conversation) { %>
-                    <button class="convoNavigator" type="button" data-conversation-id="<%= conversation.id %>"><%= conversation.title %></button>
-            <% }); %>
+    <div id="banner">
+        <div id="leftBan">
+            <div id="title">
+                <img src="/icons/CharmaLogo.png" width="200" height="200">
+            </div>
+        </div>
+        <div id="rightBan">
+            <div class="statCont">
+                <div class="stat">
+                    <div class="statType">LVL</div>
+                    <div class="statNum">3</div>
+                </div>
+                <div class="stat">
+                    <div class="statType">PROF</div>
+                    <div class="statNum">+2</div>
+                </div>
+                <div class="stat">
+                    <div class="statType">AC</div>
+                    <div class="statNum"><%= Math.floor((stats[1] - 10) / 2) + 10 %></div>
+                </div>
+            </div>
+            <div class="horiz"></div>
+            <% const statLabels = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']; %>
+            <div class="statCont">
+                <% statLabels.forEach((label, index) => { %>
+                    <div class="stat">
+                        <div class="statType"><%= label %></div>
+                        <div class="statNum"><%= stats[index] %></div>
+                        <div class="statMod">
+                            <% const mod = Math.floor((stats[index] - 10) / 2); %>
+                            <%= mod >= 0 ? '+' : '' %><%= mod %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            <div class="horiz"></div>
+            <div class="status">
+                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
+                <% if (online) { %>
+                    <h5 class="on">AI Online</h5>
+                <% } else { %>
+                    <h5 class="off">AI Offline</h5>
+                <% } %>
+            </div>
         </div>
     </div>
-    <div class="centerCont">
-        <div class="response-area">
-            <div class="response-box" id="chat">
-                <div id="text-scroll" class="chat-container">
-                    <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
-                        <% let omitLastAssistant = false; %>
-                        <% if (response && messages[messages.length - 1] && messages[messages.length - 1].role === 'assistant' && messages[messages.length - 1].content === response) { omitLastAssistant = true; } %>
-                        <% for (let i = 0; i < messages.length; i++) { %>
-                            <% if (omitLastAssistant && i === messages.length - 1) { continue; } %>
-                            <% const msg = messages[i]; %>
-                            <div class="message <%= msg.role === 'user' ? 'user' : 'assistant' %>"><div class="bubble"><%= msg.content %></div></div>
+    <div id="SuperCont">
+        <div id="mainProto">
+            <div class="convo-button-container">
+                <button class="new-conversation" type="button" onclick="window.location.href='/'">+ New conversation</button>
+                <% conversations.forEach(function (conversation) { %>
+                        <button class="convoNavigator" type="button" data-conversation-id="<%= conversation.id %>"><%= conversation.title %></button>
+                <% }); %>
+            </div>
+        </div>
+        <div class="centerCont">
+            <div class="response-area">
+                <div class="response-box" id="chat">
+                    <div id="text-scroll" class="chat-container">
+                        <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
+                            <% let omitLastAssistant = false; %>
+                            <% if (response && messages[messages.length - 1] && messages[messages.length - 1].role === 'assistant' && messages[messages.length - 1].content === response) { omitLastAssistant = true; } %>
+                            <% for (let i = 0; i < messages.length; i++) { %>
+                                <% if (omitLastAssistant && i === messages.length - 1) { continue; } %>
+                                <% const msg = messages[i]; %>
+                                <div class="message <%= msg.role === 'user' ? 'user' : 'assistant' %>"><div class="bubble"><%= msg.content %></div></div>
+                            <% } %>
                         <% } %>
+                    </div>
+                    <% if (response) { %>
+                        <div id="ai-response" hidden><%= response %></div>
                     <% } %>
-                </div>
-                <% if (response) { %>
-                    <div id="ai-response" hidden><%= response %></div>
-                <% } %>
-                <div class="chat-form">
-                    <!-- Form links directly to the /ask route in app.js -->
-                    <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
-                        <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-                        <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
-                        <button type="submit" id="submit-btn">
-                            <img src="/icons/send.png" width="30" height="30">
-                        </button>
-                    </form>
-                    <div class="loading" id="loader">Thinking... (she can take up to 45 seconds to respond)</div>
+                    <div class="chat-form">
+                        <!-- Form links directly to the /ask route in app.js -->
+                        <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
+                            <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
+                            <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
+                            <button type="submit" id="submit-btn">
+                                <img src="/icons/send.png" width="30" height="30">
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-        
+        <div id="combatCont">
+
+        </div>
     </div>
 
     <script src="/chat.js"></script>
     <script>
+        async function refreshAiStatus() {
+            try {
+                const response = await fetch('/api/ai-status');
+                const data = await response.json();
+                const dot = document.querySelector('.dot');
+                const label = document.querySelector('.status h5');
+                if (!dot || !label) return;
+
+                const isOnline = response.ok && data.ready;
+                dot.classList.toggle('online', isOnline);
+                dot.classList.toggle('offline', !isOnline);
+                label.textContent = isOnline ? 'AI Online' : 'AI Offline';
+                label.classList.toggle('on', isOnline);
+                label.classList.toggle('off', !isOnline);
+            } catch (error) {
+                const dot = document.querySelector('.dot');
+                const label = document.querySelector('.status h5');
+                if (dot) {
+                    dot.classList.remove('online');
+                    dot.classList.add('offline');
+                }
+                if (label) {
+                    label.textContent = 'AI Offline';
+                    label.classList.remove('on');
+                    label.classList.add('off');
+                }
+            }
+        }
+
         document.querySelectorAll('.convoNavigator').forEach(function (button) {
             button.addEventListener('click', function () {
                 document.getElementById('conversation-id').value = button.dataset.conversationId;
@@ -58,9 +135,10 @@
             });
         });
 
+        refreshAiStatus();
+
         // Simple client-side script to show loading text when submitted
         function showLoading() {
-            document.getElementById('loader').style.display = 'block';
             document.getElementById('submit-btn').disabled = true;
             document.getElementById('submit-btn').innerHTML = '<span class="bounce">.</span><span class="bounce">.</span><span class="bounce">.</span>';
         }
