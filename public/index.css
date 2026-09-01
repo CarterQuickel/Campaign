@@ -1,4 +1,9 @@
 /* Base styles */
+
+* {
+    margin: 0;
+}
+
 html {
     min-height: 100%;
     background: #09080F;
@@ -7,9 +12,9 @@ html {
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: white;
-    margin: auto;
     background: transparent;
     overflow: hidden;
+    height: 100%;
 }
 
 #banner {
@@ -35,12 +40,14 @@ body {
     justify-content: flex-end;
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 
 .horiz {
     border-left: 1px solid #2e1b53;
     width: 10px;
     margin: 10px;
+    height: 50px;
 }
 
 .status {
@@ -114,20 +121,32 @@ body {
 
 .new-conversation {
     display: flex;
+    height: 30px;
     align-items: center;
     justify-content: center;
-    scale: 0.8;
-    border-radius: 100px;
+    color: #8370A1;
+    font-size: 12px;
+    font-family: 'Arial Narrow', sans-serif;
+    transition: all 0.1s ease;
+    background: #110E1F;
+    resize: none;
+    border: 1px solid #795292;
 }
 
-.new-conversation img {
-    filter: invert(1);
+.new-conversation:hover {
+    background: none;
+    cursor: pointer;
+    color: white;
+    outline: none;
+    border-color: #e218f5;
+    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
 }
 
 #SuperCont {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    height: calc(100vh - 81px);
 }
 
 h1 {
@@ -250,14 +269,18 @@ button:hover {
     }
 }
 
+.response-area {
+    height: 100%;
+    width: 100%;
+}
+
 /* Styling for the AI output window */
 .response-box {
-    background: #09080F;
     border: 1px solid #1A1030;
     border-top: none;
+    border-bottom: none;
     padding: 20px;
-    height: 700px;
-    width: 900px;
+    height: 95%;
     display: flex;
     flex-direction: column;
 }
@@ -272,13 +295,71 @@ button:hover {
     white-space: pre-wrap;
 }
 
-#mainProto {
+#inventoryCont {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    gap: 20px;
+}
+
+.label {
+    color: #8370A1;
+    font-weight: 700;
+    font-size: 12px;
+    font-family: 'Arial Narrow', sans-serif
+}
+
+.encumCont {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.encumBar {
+    width: 100%;
+    height: 8px;
+    background-color: #1A1530;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.encumBar::-webkit-progress-bar {
+    background-color: #1A1530;
+}
+
+.encumBar::-webkit-progress-value {
+    background-color: #AD46FF;
+}
+
+.contBan {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    width: 20%;
+    width: 100%;
+}
+
+.header {
+    color: #9F54DA;
+    font-size: 20px;
+    letter-spacing: 1px;
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+}
+
+.gold {
+    color: #FDC700;
+    letter-spacing: 1px;
+    font-family: 'Arial Narrow', sans-serif;
+    font-weight: 600;
+}
+
+.weight {
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-family: 'Arial Narrow', sans-serif;
+    font-weight: 600;
 }
 
 .convoNavigator {
@@ -300,7 +381,10 @@ button:hover {
 }
 
 #combatCont {
-    width: 20%;
+    display: flex;
+    justify-content: flex-start;
+    flex: 1;
+    padding: 10px;
 }
 
 strong {
@@ -325,8 +409,8 @@ strong {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    flex: 2;
     gap: 20px;
-    width: 60%;
 }
 
 /* Chat bubbles */

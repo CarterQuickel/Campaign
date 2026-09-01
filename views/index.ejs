@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Campaign Assistant</title>
     <link rel="stylesheet" href="/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="banner">
@@ -15,7 +18,7 @@
         </div>
         <div id="rightBan">
             <button class="new-conversation" type="button" onclick="window.location.href='/'">
-                <img src="/icons/Restart.svg" width="50" height="50">
+                RESTART
             </button>
             <div class="horiz"></div>
             <div class="statCont">
@@ -58,9 +61,17 @@
         </div>
     </div>
     <div id="SuperCont">
-        <div id="mainProto">
-            <div class="convo-button-container">
-
+        <div id="inventoryCont">
+            <div class="contBan">
+                <div class="header">INVENTORY</div>
+                <div class="gold">◈ 284gp</div>
+            </div>
+            <div class="encumCont">
+                <div class="contBan">
+                    <div class="label">Encumbrance</div>
+                    <div class="weight">50/100 lb</div>
+                </div>
+                <progress class="encumBar" value="50" max="100"></progress>
             </div>
         </div>
         <div class="centerCont">
@@ -94,7 +105,7 @@
             </div>
         </div>
         <div id="combatCont">
-
+            <div class="header">COMBAT</div>
         </div>
     </div>
 
