@@ -82,3 +82,62 @@ document.addEventListener("keydown", function(event) {
         form.requestSubmit();
     }
 });
+
+let filter = 'all';
+setTimeout(() => {
+    const filterButtons = document.querySelectorAll('.cate');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filter = button.getAttribute('data-category');
+            button.classList.add('active');
+            filterButtons.forEach(btn => {
+                if (btn !== button) {
+                    btn.classList.remove('active');
+                }
+            });
+            filterTools(filter);
+        });
+    });
+}, 100);
+
+function filterTools(filter) {
+    const tools = document.querySelectorAll('.tool');
+    tools.forEach(tool => {
+        const toolClass = tool.getAttribute('data-class');
+        const isUnlocked = tool.getAttribute('data-unlocked') === 'true';
+        if ((filter === 'all' || toolClass === filter) && isUnlocked) {
+            tool.style.display = 'flex';
+        } else {
+            tool.style.display = 'none';
+        }
+    });
+}
+
+const maxWeight = 100;
+const encumCont = document.getElementById('encumCont');
+let currentWeight = parseInt(encumCont?.getAttribute('data-current-weight'));
+function updateWeightDisplay() {
+    const weightTxt = document.getElementById('weightTxt');
+    const encumbar = document.getElementById('encumbar');
+    
+    if (weightTxt) weightTxt.textContent = `${currentWeight}/${maxWeight} lb`;
+    if (encumbar) encumbar.value = currentWeight;
+    if (encumCont) encumCont.setAttribute('data-current-weight', currentWeight);
+}
+updateWeightDisplay();
+const tools = document.querySelectorAll('.tool');
+tools.forEach(tool => {
+    const btn = tool.querySelector('.tool-equip-btn');
+    btn.addEventListener('click', () => {
+        const toolWeight = parseInt(tool.getAttribute('data-weight')) || 0;
+        tool.classList.toggle('equipped');
+        if (tool.classList.contains('equipped')) {
+            currentWeight += toolWeight;
+            btn.textContent = 'Equipped';
+        } else {
+            currentWeight -= toolWeight;
+            btn.textContent = 'Equip';
+        }
+        updateWeightDisplay();
+    });
+});

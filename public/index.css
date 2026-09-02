@@ -119,29 +119,6 @@ body {
     font-size: 12px;
 }
 
-.new-conversation {
-    display: flex;
-    height: 30px;
-    align-items: center;
-    justify-content: center;
-    color: #8370A1;
-    font-size: 12px;
-    font-family: 'Arial Narrow', sans-serif;
-    transition: all 0.1s ease;
-    background: #110E1F;
-    resize: none;
-    border: 1px solid #795292;
-}
-
-.new-conversation:hover {
-    background: none;
-    cursor: pointer;
-    color: white;
-    outline: none;
-    border-color: #e218f5;
-    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
-}
-
 #SuperCont {
     display: flex;
     flex-direction: row;
@@ -221,19 +198,30 @@ textarea:focus {
 
 /* Submit action button */
 button {
-    background: linear-gradient(90deg, #d946ef, #7c3aed);
-    color: white;
-    border: none;
     padding: 12px;
-    font-size: 16px;
-    font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
+    display: flex;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    color: #8370A1;
+    font-size: 12px;
+    font-family: 'Arial Narrow', sans-serif;
+    transition: all 0.1s ease;
+    background: #110E1F;
+    resize: none;
+    border: 1px solid #795292;
 }
 
 button:hover {
-    background: linear-gradient(90deg, #9f35af, #5a2baa);
+    background: none;
+    cursor: pointer;
+    color: white;
+    outline: none;
+    border-color: #e218f5;
+    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
 }
 
 /* Loading UI hint */
@@ -362,6 +350,112 @@ button:hover {
     font-weight: 600;
 }
 
+.categoryCont {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.cate.active {
+    background: #963ddfaf;
+    color: white;
+    border: 1px solid #AD46FF;
+}
+
+.toolsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    height: 700px;
+    overflow-y: auto;
+}
+
+.toolsContainer::-webkit-scrollbar {
+    width: 8px;
+}
+
+.toolsContainer::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.toolsContainer::-webkit-scrollbar-thumb {
+    background: #AD46FF;
+    border-radius: 8px;
+}
+
+.tool {
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    color: #8370A1;
+    font-size: 12px;
+    font-family: 'Arial Narrow', sans-serif;
+    transition: all 0.1s ease;
+    background: #110E1F;
+    resize: none;
+    border: 1px solid #795292;
+    margin-right: 10px;
+}
+
+.tool:hover {
+    color: #8370A1;
+}
+
+.tool.locked {
+    display: none;
+}
+
+.left-tool {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.tool-icon {
+    background-image: linear-gradient(#FDC700);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+}
+
+.tool-icon.weapon {
+    background-image: linear-gradient(#FF5C53);
+}
+
+.tool-icon.armor {
+    background-image: linear-gradient(#2C6CC5);
+}
+
+.tool-icon.potion {
+    background-image: linear-gradient(#05DF72);
+}
+
+.tool-icon.spell {
+    background-image: linear-gradient(#C27AFF);
+}
+
+.tool-cont {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.tool .tool-name {
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+}
+
 .convoNavigator {
     display: flex;
     flex-direction: column;
@@ -387,12 +481,7 @@ button:hover {
     padding: 10px;
 }
 
-strong {
-    background: linear-gradient(90deg, #d946ef, #7c3aed);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-}
+
 
 .reward-button {
     margin-top: 10px;

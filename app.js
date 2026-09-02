@@ -7,6 +7,7 @@ const database = new sqlite3.Database('./chat-history.db');
 let stats = [
     10, 3, 10, 15, 7, 14
 ]
+const tools = require('./StoryAPI/tools.js').Tools;
 
 // Run the database
 database.run(`
@@ -139,7 +140,7 @@ app.get('/api/ai-status', async (req, res) => {
 app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index', 
-        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats });
+        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools });
 });
 
 app.post('/api/rewards/claim', (req, res) => {
@@ -208,7 +209,8 @@ app.post('/ask', async (req, res) => {
             conversationId,
             messages, 
             online: aiReady,
-            stats: stats
+            stats: stats,
+            tools: tools
         });
     } catch (error) {
         console.error("Ollama Error:", error);
@@ -222,7 +224,8 @@ app.post('/ask', async (req, res) => {
             conversationId,
             messages,
             online: aiReady,
-            stats: stats
+            stats: stats,
+            tools: tools
         });
     }
 });
