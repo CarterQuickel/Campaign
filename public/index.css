@@ -1,5 +1,37 @@
 /* Base styles */
 
+:root {
+    /* Used for main text that isn't the color white */
+    --primary-color: #8370A1;
+    /* Used for header and scrollbar colors */
+    --accent-color: #9F54DA;
+    /* Used for most div box borders */
+    --border-color: #795292;
+    /* Used for input boxes focus outline */
+    --focus-color: #e218f5;
+    /* Used for input backgrounds when no text is in place */
+    --placeholder-color: #7a529271;
+    /* Used for button background colors, usually goes with the --border-color */
+    --background-color: #110E1F;
+    /* Used for input hovers and their glow effect */
+    --focus-shadow: #cf4df733;
+    /* The 4 containers have this color border */
+    --site-border: #1A1030;
+    /* Used for buttons on tabs that are currently selected/applied */
+    --active-color: #963ddfaf;
+    /* Used for progress bar background and horizontal dividers */
+    --misc-color: #1A1530;
+    /* User style is lighter than AI style */
+    /* User bubble */
+    --user-border: #6505A9;
+    --user-background: #3B0D5F;
+    /* AI bubble */
+    --ai-background: #2D1F4A;
+    --ai-border: #2D1F4A;
+    /* Default website font */
+    --thin-font: 'Arial Narrow', sans-serif;
+}
+
 * {
     margin: 0;
 }
@@ -10,7 +42,7 @@ html {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--thin-font);
     color: white;
     background: transparent;
     overflow: hidden;
@@ -22,7 +54,7 @@ body {
     left: 0;
     width: 100%;
     height: 40px;
-    border-bottom: 1px solid #1A1030;
+    border-bottom: 1px solid var(--site-border);
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -44,7 +76,7 @@ body {
 }
 
 .horiz {
-    border-left: 1px solid #2e1b53;
+    border-left: 1px solid var(--misc-color);
     width: 10px;
     margin: 10px;
     height: 50px;
@@ -57,7 +89,7 @@ body {
     justify-content: flex-end;
     margin-right: 40px;
     gap: 4px;
-    color: #8370A1;
+    color: var(--primary-color);
 }
 
 .dot {
@@ -102,10 +134,9 @@ body {
 }
 
 .statType {
-    color: #8370A1;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 12px;
-    font-family: 'Arial Narrow', sans-serif
 }
 
 .statNum {
@@ -114,7 +145,7 @@ body {
 }
 
 .statMod {
-    color: #9F54DA;
+    color: var(--accent-color);
     font-weight: 500;
     font-size: 12px;
 }
@@ -124,10 +155,6 @@ body {
     flex-direction: row;
     justify-content: center;
     height: calc(100vh - 81px);
-}
-
-h1 {
-    color: #f7f7f7;
 }
 
 /* Container for the form elements */
@@ -150,52 +177,52 @@ textarea {
     height: 55px;
     padding: 15px;
     box-sizing: border-box;
-    background-color: #110E1F;
+    background-color: var(--background-color);
     resize: none;
-    border: 1px solid #795292;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;
     font-family: inherit;
     transition: border-color 0.2s;
-    color: #ffffff;
+    color: white;
     font-weight: 400;
 }
 
 textarea::placeholder {
-    color: #7a529271;
+    color: var(--placeholder-color);
     font-weight: 400;
 }
 
 textarea:focus {
     outline: none;
-    border-color: #e218f5;
-    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
 }
 
 input {
     height: 20px;
     padding: 15px;
     box-sizing: border-box;
-    background-color: #110E1F;
+    background-color: var(--background-color);
     resize: none;
-    border: 1px solid #795292;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;
     font-family: inherit;
     transition: border-color 0.2s;
-    color: #ffffff;
+    color: white;
     font-weight: 400;
 }
 
 input::placeholder {
-    color: #7a529271;
+    color: var(--placeholder-color);
     font-weight: 400;
 }
 
 input:focus {
     outline: none;
-    border-color: #e218f5;
-    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
 }
 
 #submit-btn {
@@ -231,13 +258,12 @@ button {
     height: 30px;
     align-items: center;
     justify-content: center;
-    color: #8370A1;
+    color: var(--primary-color);
     font-size: 12px;
-    font-family: 'Arial Narrow', sans-serif;
     transition: all 0.1s ease;
-    background: #110E1F;
+    background: var(--background-color);
     resize: none;
-    border: 1px solid #795292;
+    border: 1px solid var(--border-color);
 }
 
 button:hover {
@@ -245,8 +271,8 @@ button:hover {
     cursor: pointer;
     color: white;
     outline: none;
-    border-color: #e218f5;
-    box-shadow: 0 0 0 3px rgba(207, 77, 247, 0.2);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
 }
 
 /* Loading UI hint */
@@ -289,17 +315,13 @@ button:hover {
 
 /* Styling for the AI output window */
 .response-box {
-    border: 1px solid #1A1030;
+    border: 1px solid var(--site-border);
     border-top: none;
     border-bottom: none;
     padding: 20px;
     height: 95%;
     display: flex;
     flex-direction: column;
-}
-
-.response-box h3 {
-    color: #ab20ce;
 }
 
 .response-box p {
@@ -317,10 +339,9 @@ button:hover {
 }
 
 .label {
-    color: #8370A1;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 12px;
-    font-family: 'Arial Narrow', sans-serif
 }
 
 .encumCont {
@@ -332,17 +353,17 @@ button:hover {
 .encumBar {
     width: 100%;
     height: 8px;
-    background-color: #1A1530;
+    background-color: var(--misc-color);
     border-radius: 5px;
     overflow: hidden;
 }
 
 .encumBar::-webkit-progress-bar {
-    background-color: #1A1530;
+    background-color: var(--misc-color);
 }
 
 .encumBar::-webkit-progress-value {
-    background-color: #AD46FF;
+    background-color: var(--accent-color);
 }
 
 .contBan {
@@ -354,7 +375,7 @@ button:hover {
 }
 
 .header {
-    color: #9F54DA;
+    color: var(--accent-color);
     font-size: 20px;
     letter-spacing: 1px;
     font-family: "Cinzel", serif;
@@ -364,14 +385,12 @@ button:hover {
 .gold {
     color: #FDC700;
     letter-spacing: 1px;
-    font-family: 'Arial Narrow', sans-serif;
     font-weight: 600;
 }
 
 .weight {
     font-size: 12px;
     letter-spacing: 1px;
-    font-family: 'Arial Narrow', sans-serif;
     font-weight: 600;
 }
 
@@ -382,9 +401,9 @@ button:hover {
 }
 
 .cate.active {
-    background: #963ddfaf;
+    background: var(--active-color);
     color: white;
-    border: 1px solid #AD46FF;
+    border: 1px solid var(--accent-color);
 }
 
 .toolsContainer {
@@ -405,7 +424,7 @@ button:hover {
 }
 
 .toolsContainer::-webkit-scrollbar-thumb {
-    background: #AD46FF;
+    background: var(--accent-color);
     border-radius: 8px;
 }
 
@@ -416,18 +435,13 @@ button:hover {
     border-radius: 8px;
     cursor: pointer;
     display: flex;
-    color: #8370A1;
+    color: var(--primary-color);
     font-size: 12px;
-    font-family: 'Arial Narrow', sans-serif;
     transition: all 0.1s ease;
-    background: #110E1F;
+    background: var(--background-color);
     resize: none;
-    border: 1px solid #795292;
+    border: 1px solid var(--border-color);
     margin-right: 10px;
-}
-
-.tool:hover {
-    color: #8370A1;
 }
 
 .tool.locked {
@@ -550,31 +564,27 @@ button:hover {
 }
 
 .mod {
-    color: #8370A1;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 20px;
-    font-family: 'Arial Narrow', sans-serif
 }
 
 .rolled {
-    color: #8370A1;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 16px;
-    font-family: 'Arial Narrow', sans-serif;
 }
 
 .nat {
     color: #c91414;
     font-weight: 700;
     font-size: 16px;
-    font-family: 'Arial Narrow', sans-serif;
 }
 
 .plusRes {
     color: #05DF72;
     font-weight: 700;
     font-size: 16px;
-    font-family: 'Arial Narrow', sans-serif;
 }
 
 .diceResultCont {
@@ -586,23 +596,12 @@ button:hover {
     color: white;
     font-size: 40px;
     font-weight: bold;
-    font-family: 'Arial Narrow', sans-serif;
     transition: all 0.1s ease;
-    background: #110E1F;
+    background: var(--background-color);
     width: 100%;
     height: 45px;
-    border: 1px solid #795292;
+    border: 1px solid var(--border-color);
     margin: 10px;
-}
-
-.reward-button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.reward-button:disabled {
-    background: linear-gradient(90deg, #d846ef4d, #7c3aed4b);
-    cursor: not-allowed;
 }
 
 .centerCont {
@@ -623,7 +622,7 @@ button:hover {
     height: 90%;
     overflow-y: auto;
     padding-bottom: 8px;
-    scrollbar-color: #AD46FF transparent;
+    scrollbar-color: var(--accent-color) transparent;
     scrollbar-width: thin;
 }
 
@@ -636,7 +635,7 @@ button:hover {
 }
 
 .chat-container::-webkit-scrollbar-thumb {
-    background: #AD46FF;
+    background: var(--accent-color);
     border-radius: 8px;
 }
 
@@ -655,6 +654,7 @@ button:hover {
 
 .bubble {
     max-width: 75%;
+    margin: 10px;
     padding: 12px 16px;
     border-radius: 16px;
     line-height: 1.5;
@@ -662,16 +662,16 @@ button:hover {
 }
 
 .message.assistant .bubble {
-    background: #1A1530;
-    border: 1px solid #2D1F4A;
+    background: var(--ai-background);
+    border: 1px solid var(--ai-border);
     color: white;
     border-bottom-left-radius: 4px;
 }
 
 .message.user .bubble {
-    background: #3B0D5F;
+    background: var(--user-background);
     color: white;
-    border: 1px solid #6505A9;
+    border: 1px solid var(--user-background);
     border-bottom-right-radius: 4px;
 }
 
