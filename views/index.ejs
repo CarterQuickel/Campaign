@@ -145,25 +145,35 @@
             </div>
         </div>
         <div id="combatCont">
-            <div class="header">COMBAT</div>
+            <div class="header">COURSE</div>
             <div class="attackCont">
                 <div class="topCont"></div>
                 <div class="bottomCont">
                     <div class="spellSlotsCont">
                     </div>
-                    <div class="diceRoller">
-                        <div class="header">DICE ROLLER</div>
-                        <div class="diceCont">
-                            <button class="diceBtn" data-dice="d4">d4</button>
-                            <button class="diceBtn" data-dice="d6">d6</button>
-                            <button class="diceBtn" data-dice="d8">d8</button>
-                            <button class="diceBtn" data-dice="d10">d10</button>
-                            <button class="diceBtn" data-dice="d12">d12</button>
-                            <button class="diceBtn" data-dice="d20">d20</button>
+                    <div class="rollCont">
+                        <div class="diceRoller">
+                            <div class="header">DICE ROLLER</div>
+                            <div class="diceCont">
+                                <button class="diceBtn" data-dice="4">d4</button>
+                                <button class="diceBtn" data-dice="6">d6</button>
+                                <button class="diceBtn" data-dice="8">d8</button>
+                                <button class="diceBtn" data-dice="10">d10</button>
+                                <button class="diceBtn" data-dice="12">d12</button>
+                                <button class="diceBtn" data-dice="20">d20</button>
+                            </div>
+                            <div class="modCont">
+                                <div class="mod">MOD</div>
+                                <input type="number" class="modInput" id="modInput" value="0">
+                            </div>
                         </div>
-                        <div class="modCont">
-                            <div class="mod">MOD</div>
-                            <input type="number" class="modInput" id="modInput" value="0">
+                        <div class="diceResultCont">
+                            <div class="total" id="diceResult">5</div>
+                            <div class="resultInfoCont">
+                                <div class="rolled" id="rolled">d3</div>
+                                <div class="plusRes" id="modResult" style="opacity: 0;">+2</div>
+                            </div>
+                            <div class="nat" id="nat" style="opacity: 0;">NAT 1</div>
                         </div>
                     </div>
                 </div>

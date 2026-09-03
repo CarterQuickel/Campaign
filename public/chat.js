@@ -83,6 +83,7 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
+//filter
 let filter = 'all';
 setTimeout(() => {
     const filterButtons = document.querySelectorAll('.cate');
@@ -100,6 +101,7 @@ setTimeout(() => {
     });
 }, 100);
 
+//filter
 function filterTools(filter) {
     const tools = document.querySelectorAll('.tool');
     tools.forEach(tool => {
@@ -113,6 +115,7 @@ function filterTools(filter) {
     });
 }
 
+//add weight
 const maxWeight = 100;
 const encumCont = document.getElementById('encumCont');
 let currentWeight = parseInt(encumCont?.getAttribute('data-current-weight'));
@@ -139,5 +142,41 @@ tools.forEach(tool => {
             btn.textContent = 'Equip';
         }
         updateWeightDisplay();
+    });
+});
+
+//dice roll
+const dice = document.querySelectorAll('.diceBtn');
+dice.forEach(die => {
+    die.addEventListener('click', () => {
+        const sides = parseInt(die.getAttribute('data-dice'));
+        const mod = parseInt(document.getElementById('modInput').value) || 0;
+        const unmoddedRoll = Math.floor(Math.random() * sides) + 1
+        const roll = unmoddedRoll + mod;
+        const resultElement = document.getElementById('diceResult');
+        const rolledElement = document.getElementById('rolled');
+        const natElement = document.getElementById('nat');
+        const modElement = document.getElementById('modResult');
+        // NAT 1
+        if (unmoddedRoll === 1) {
+            natElement.style.opacity = 1;
+        } else {
+            natElement.style.opacity = 0;
+        }
+        // mod
+        if (mod !== 0 && modElement) {
+            modElement.textContent = `${mod > 0 ? `+` : ``}${mod}`
+            modElement.style.opacity = 1;
+        } else {
+            modElement.style.opacity = 0;
+        }
+        // dice
+        if (rolledElement) {
+            rolledElement.textContent = `d${sides} ⟶ ${unmoddedRoll}`;
+        }
+        // result
+        if (resultElement) {
+            resultElement.textContent = `${roll}`;
+        }
     });
 });
