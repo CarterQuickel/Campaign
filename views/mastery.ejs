@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Charma Mastery</title>
+    <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/mastery.css">
+</head>
+<body>
+    <div id="banner">
+        <div id="leftBan">
+            <div id="title">
+                <img src="/icons/CharmaLogo.png" width="200" height="200">
+            </div>
+        </div>
+        <div id="rightBan">
+            <button class="new-conversation" type="button" onclick="window.location.href='/'">
+                BACK
+            </button>
+            <div class="horiz"></div>
+            <div class="statCont">
+                <div class="stat">
+                    <div class="statType">LVL</div>
+                    <div class="statNum">3</div>
+                </div>
+                <div class="stat">
+                    <div class="statType">PROF</div>
+                    <div class="statNum">+2</div>
+                </div>
+                <div class="stat">
+                    <div class="statType">AC</div>
+                    <div class="statNum"><%= Math.floor((stats[1] - 10) / 2) + 10 %></div>
+                </div>
+            </div>
+            <div class="horiz"></div>
+            <% const statLabels = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']; %>
+            <div class="statCont">
+                <% statLabels.forEach((label, index) => { %>
+                    <div class="stat">
+                        <div class="statType"><%= label %></div>
+                        <div class="statNum"><%= stats[index] %></div>
+                        <div class="statMod">
+                            <% const mod = Math.floor((stats[index] - 10) / 2); %>
+                            <%= mod >= 0 ? '+' : '' %><%= mod %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            <div class="horiz"></div>
+            <div class="status">
+                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
+                <% if (online) { %>
+                    <h5 class="on">AI Online</h5>
+                <% } else { %>
+                    <h5 class="off">AI Offline</h5>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <div id="SuperCont">
+        <div class="masteryCont">
+            <div class="pieParent">
+                <div class="slice" style="--color: #1B365B; --start: 16%; --end: 33%;  --radius: 51%;"></div>
+                <div class="slice" style="--color: #8A9A86; --start: 33%; --end: 50%;  --radius: 23%;"></div>
+                <div class="slice" style="--color: #F5F5DC; --start: 50%; --end: 67%; --radius: 96%;"></div>
+                <div class="slice" style="--color: #DCAEAE; --start: 67%; --end: 84%; --radius: 66%;"></div>
+                <div class="slice" style="--color: #D4AF37; --start: 84%; --end: 100%; --radius: 12%;"></div>
+                <div class="slice" style="--color: #36454F; --start: 0%; --end: 16%; --radius: 32%;"></div>
+            </div>
+            <div class="header">MASTERY</div>
+            <div class="sectionsKey">
+                <div class="section">
+                    <div class="secColor" style="--color: #1B365B;"></div>
+                    <div class="secName">Computing Fundamentals</div>
+                </div>
+                <div class="section">
+                    <div class="secColor" style="--color: #8A9A86;"></div>
+                    <div class="secName">Data Types and Representation</div>
+                </div>
+                <div class="section">
+                    <div class="secColor" style="--color: #F5F5DC;"></div>
+                    <div class="secName">Programming Paradigms</div>
+                </div>
+                <div class="section">
+                    <div class="secColor" style="--color: #DCAEAE;"></div>
+                    <div class="secName">Development Tools</div>
+                </div>
+                <div class="section">
+                    <div class="secColor" style="--color: #D4AF37;"></div>
+                    <div class="secName">Algorithms and Complexity</div>
+                </div>
+                <div class="section">
+                    <div class="secColor" style="--color: #36454F;"></div>
+                    <div class="secName">Computing Fundamentals</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

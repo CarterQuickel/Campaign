@@ -143,6 +143,16 @@ app.get('/', async (req, res) => {
         { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools });
 });
 
+// Other pages
+app.get('/mastery', async (req, res) => {
+    const aiReady = await checkAiStatus();
+    res.render('mastery', {
+        stats: stats,
+        online: aiReady,
+        tools: tools
+    });
+});
+
 app.post('/api/rewards/claim', (req, res) => {
     const rewardId = typeof req.body.rewardId === 'string' ? req.body.rewardId.trim() : '';
     if (!rewardId) {

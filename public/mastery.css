@@ -1,0 +1,106 @@
+:root {
+    /* Used for main text that isn't the color white */
+    --primary-color: #8370A1;
+    /* Used for header and scrollbar colors */
+    --accent-color: #9F54DA;
+    /* Used for most div box borders */
+    --border-color: #795292;
+    /* Used for input boxes focus outline */
+    --focus-color: #e218f5;
+    /* Used for input backgrounds when no text is in place */
+    --placeholder-color: #7a529271;
+    /* Used for button background colors, usually goes with the --border-color */
+    --background-color: #110E1F;
+    /* Used for input hovers and their glow effect */
+    --focus-shadow: #cf4df733;
+    /* The 4 containers have this color border */
+    --site-border: #1A1030;
+    /* Used for buttons on tabs that are currently selected/applied */
+    --active-color: #963ddfaf;
+    /* Used for progress bar background and horizontal dividers */
+    --misc-color: #1A1530;
+    /* User style is lighter than AI style */
+    /* User bubble */
+    --user-border: #6505A9;
+    --user-background: #3B0D5F;
+    /* AI bubble */
+    --ai-background: #2D1F4A;
+    --ai-border: #2D1F4A;
+    /* Default website text color */
+    --text-color: white;
+    /* Default website font */
+    --thin-font: 'Arial Narrow', sans-serif;
+}
+
+.pieParent {
+    position: relative;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slice {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--radius);
+  height: var(--radius);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: if(style(--radius: 100%): linear-gradient(var(--focus-color), var(--ai-background)); else: var(--color));
+  -webkit-mask-image: conic-gradient(
+    transparent 0% var(--start),
+    #000 var(--start) var(--end),
+    transparent var(--end) 100%
+  );
+  mask-image: conic-gradient(
+    transparent 0% var(--start),
+    #000 var(--start) var(--end),
+    transparent var(--end) 100%
+  );
+  transition: all 0.2s ease;
+}
+
+.masteryCont {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.sectionsKey {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 200px 200px;
+    gap: 3px;
+}
+
+.secColor {
+    background-color: var(--color);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.section {
+    justify-content: left;
+    align-items: center;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    color: var(--primary-color);
+    font-size: 12px;
+    transition: all 0.1s ease;
+    background: var(--background-color);
+    resize: none;
+    border: 1px solid var(--border-color);
+    margin-right: 10px;
+}
