@@ -10,32 +10,32 @@ let stats = [
 let mastery = [
     {
         name: 'Computing Fundamentals',
-        completion: 67,
+        completion: 24,
         color: '#1B365B'
     },
     {
         name: 'Data Types and Representation',
-        completion: 23,
+        completion: 87,
         color: '#8A9A86'
     },
     {
         name: 'Programming Paradigms',
-        completion: 34,
+        completion: 54,
         color: '#F5F5DC'
     },
     {
         name: 'Development Tools',
-        completion: 88,
+        completion: 12,
         color: '#DCAEAE'
     },
     {
         name: 'Algorithms and Complexity',
-        completion: 93,
+        completion: 67,
         color: '#D4AF37'
     },
     {
         name: 'Review',
-        completion: 12,
+        completion: 55,
         color: '#36454F'
     }
 ]
@@ -214,22 +214,34 @@ app.post('/ask', async (req, res) => {
         const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
         const landmarks = require('./StoryAPI/landmarks').landmarks;
         const stories = require('./StoryAPI/stories').stories;
+
+        const storyContext = {
+            stories,
+            landmarks,
+            rewards,
+            storySpecRewards
+        };
+
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
             conversationId = await createConversation(title);
         }
+
         const history = await getRecentMessages(conversationId);
         await saveMessage(conversationId, 'user', userPrompt);
+
         const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'llama3.2',
                 prompt: [
-                    `You are a helpful assistant. Use the conversation history when it is relevant. 
-                    You must use this story: ${stories} with these random landmarks: ${landmarks}
-                    and these story rewards: ${storySpecRewards} but also use these general rewards: ${rewards}.`,
+                    `You are a helpful assistant. Use the conversation history when it is relevant.
+                    Use the following StoryAPI data as the source of truth for the adventure:
+                    ${JSON.stringify(storyContext, null, 2)}
+
+                    If a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.`,
                     ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
                     `User: ${userPrompt}`,
                     'Assistant:',
@@ -238,19 +250,22 @@ app.post('/ask', async (req, res) => {
                 stream: false
             })
         });
+
         const data = await ollamaResponse.json();
         if (!ollamaResponse.ok) {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
+
         await saveMessage(conversationId, 'assistant', data.response);
         const messages = await getRecentMessages(conversationId);
         const aiReady = await checkAiStatus();
-        res.render('index', { 
-            response: data.response, 
-            prompt: userPrompt, 
+
+        res.render('index', {
+            response: data.response,
+            prompt: userPrompt,
             conversations: await getConversations(),
             conversationId,
-            messages, 
+            messages,
             online: aiReady,
             stats: stats,
             tools: tools
@@ -260,7 +275,8 @@ app.post('/ask', async (req, res) => {
         const conversationId = Number(req.body.conversationId) || null;
         const messages = conversationId ? await getRecentMessages(conversationId) : [];
         const aiReady = await checkAiStatus();
-        res.render('index', { 
+
+        res.render('index', {
             response: `AI request failed: ${error.message}`,
             prompt: userPrompt,
             conversations: await getConversations(),
