@@ -7,36 +7,47 @@ const database = new sqlite3.Database('./chat-history.db');
 let stats = [
     10, 3, 10, 15, 7, 14
 ]
+let level = 3;
 let mastery = [
     {
-        name: 'Computing Fundamentals',
+        name: 'General Information and Concepts',
         completion: 24,
-        color: '#1B365B'
+        color: '#f1ece2'
     },
     {
-        name: 'Data Types and Representation',
+        name: 'Ethics, Legal Compliance, and Security',
         completion: 87,
-        color: '#8A9A86'
+        color: '#6b625e'
     },
     {
-        name: 'Programming Paradigms',
+        name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions',
         completion: 54,
-        color: '#F5F5DC'
+        color: '#b8cfd0'
     },
     {
-        name: 'Development Tools',
+        name: 'Design Program Solutions',
         completion: 12,
-        color: '#DCAEAE'
+        color: '#5a617a'
     },
     {
-        name: 'Algorithms and Complexity',
+        name: 'Code Programs',
         completion: 67,
-        color: '#D4AF37'
+        color: '#828e6f'
     },
     {
-        name: 'Review',
-        completion: 55,
-        color: '#36454F'
+        name: 'Test Programs',
+        completion: 24,
+        color: '#5d5f37'
+    },
+    {
+        name: 'Maintain Programs and Implement Change Management Procedures',
+        completion: 19,
+        color: '#d3a7a8'
+    },
+    {
+        name: 'Complete User Documentation and Technical Writing',
+        completion: 62,
+        color: '#b1756a'
     }
 ]
 const tools = require('./StoryAPI/tools.js').Tools;
@@ -172,7 +183,7 @@ app.get('/api/ai-status', async (req, res) => {
 app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index', 
-        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools });
+        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools, mastery: mastery, level: level });
 });
 
 // Other pages
@@ -182,7 +193,8 @@ app.get('/mastery', async (req, res) => {
         stats: stats,
         online: aiReady,
         tools: tools, 
-        mastery: mastery
+        mastery: mastery,
+        level: level
     });
 });
 
@@ -268,7 +280,9 @@ app.post('/ask', async (req, res) => {
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools
+            tools: tools,
+            mastery: mastery, 
+            level: level
         });
     } catch (error) {
         console.error("Ollama Error:", error);
@@ -284,7 +298,9 @@ app.post('/ask', async (req, res) => {
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools
+            tools: tools,
+            mastery: mastery, 
+            level: level
         });
     }
 });

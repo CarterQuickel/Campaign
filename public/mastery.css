@@ -37,8 +37,8 @@
     background: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: 50%;
-    width: 300px;
-    height: 300px;
+    width: 400px;
+    height: 400px;
     margin: 20px auto;
     display: flex;
     align-items: center;
@@ -96,7 +96,7 @@
 .sectionsKey {
     margin-top: 10px;
     display: grid;
-    grid-template-columns: 250px 250px;
+    grid-template-columns: 400px 400px;
     gap: 10px;
 }
 
@@ -120,6 +120,15 @@
     background: var(--background-color);
     resize: none;
     border: 1px solid var(--border-color);
+}
+
+.section:hover {
+    background: none;
+    cursor: pointer;
+    color: var(--text-color);
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
 }
 
 .secContLeft {

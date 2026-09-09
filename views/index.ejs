@@ -149,7 +149,31 @@
             <div class="header">COURSE</div>
             <div class="attackCont">
                 <div class="topCont">
+                    <div class="encumCont" id="encumCont" data-current-weight="0">
+                        <div class="contBan">
+                            <div class="label">Level <%= level %></div>
+                            <div class="weight" id="weightTxt">413/1,135 XP</div>
+                        </div>
+                        <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
+                    </div>
                     <a href="/mastery">Mastery Page</a>
+                    <div class="categoryCont">
+                        <button class="courseCate active" data-category='current'>
+                            Current Unit
+                        </button>
+                        <button class="courseCate" data-category='vocab'>
+                            Vocabulary
+                        </button>
+                        <button class="courseCate" data-category='overall'>
+                            Coach
+                        </button>
+                        <button class="courseCate" data-category='Potion'>
+                            Progress
+                        </button>
+                        <button class="courseCate" data-category='Spell'>
+                            All Units
+                        </button>
+                    </div>
                 </div>
                 <div class="bottomCont">
                     <div class="spellSlotsCont">
