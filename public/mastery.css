@@ -77,8 +77,8 @@
 .sectionsKey {
     margin-top: 10px;
     display: grid;
-    grid-template-columns: 200px 200px;
-    gap: 3px;
+    grid-template-columns: 250px 250px;
+    gap: 10px;
 }
 
 .secColor {
@@ -89,10 +89,9 @@
 }
 
 .section {
-    justify-content: left;
+    justify-content: space-between;
     align-items: center;
     padding: 12px;
-    gap: 10px;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -102,5 +101,17 @@
     background: var(--background-color);
     resize: none;
     border: 1px solid var(--border-color);
-    margin-right: 10px;
+}
+
+.secContLeft {
+    display: flex;
+    gap: 10px;
+    justify-content: left;
+    align-items: center;
+}
+
+.secPercent {
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: bold;
 }

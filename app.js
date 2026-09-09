@@ -7,6 +7,38 @@ const database = new sqlite3.Database('./chat-history.db');
 let stats = [
     10, 3, 10, 15, 7, 14
 ]
+let mastery = [
+    {
+        name: 'Computing Fundamentals',
+        completion: 67,
+        color: '#1B365B'
+    },
+    {
+        name: 'Data Types and Representation',
+        completion: 23,
+        color: '#8A9A86'
+    },
+    {
+        name: 'Programming Paradigms',
+        completion: 34,
+        color: '#F5F5DC'
+    },
+    {
+        name: 'Development Tools',
+        completion: 88,
+        color: '#DCAEAE'
+    },
+    {
+        name: 'Algorithms and Complexity',
+        completion: 93,
+        color: '#D4AF37'
+    },
+    {
+        name: 'Review',
+        completion: 12,
+        color: '#36454F'
+    }
+]
 const tools = require('./StoryAPI/tools.js').Tools;
 
 // Run the database
@@ -149,7 +181,8 @@ app.get('/mastery', async (req, res) => {
     res.render('mastery', {
         stats: stats,
         online: aiReady,
-        tools: tools
+        tools: tools, 
+        mastery: mastery
     });
 });
 

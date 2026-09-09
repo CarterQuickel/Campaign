@@ -61,41 +61,49 @@
     <div id="SuperCont">
         <div class="masteryCont">
             <div class="pieParent">
-                <div class="slice" style="--color: #1B365B; --start: 16%; --end: 33%;  --radius: 51%;"></div>
-                <div class="slice" style="--color: #8A9A86; --start: 33%; --end: 50%;  --radius: 23%;"></div>
-                <div class="slice" style="--color: #F5F5DC; --start: 50%; --end: 67%; --radius: 96%;"></div>
-                <div class="slice" style="--color: #DCAEAE; --start: 67%; --end: 84%; --radius: 66%;"></div>
-                <div class="slice" style="--color: #D4AF37; --start: 84%; --end: 100%; --radius: 12%;"></div>
-                <div class="slice" style="--color: #36454F; --start: 0%; --end: 16%; --radius: 32%;"></div>
+                <div class="slice 1" style="--color: <%= mastery[0].color %>; --start: 16%; --end: 33%;  --radius: <%= mastery[0].completion %>%;"></div>
+                <div class="slice 2" style="--color: <%= mastery[1].color %>; --start: 33%; --end: 50%;  --radius: <%= mastery[1].completion %>%;"></div>
+                <div class="slice 3" style="--color: <%= mastery[2].color %>; --start: 50%; --end: 67%; --radius: <%= mastery[2].completion %>%;"></div>
+                <div class="slice 4" style="--color: <%= mastery[3].color %>; --start: 67%; --end: 84%; --radius: <%= mastery[3].completion %>%;"></div>
+                <div class="slice 5" style="--color: <%= mastery[4].color %>; --start: 84%; --end: 100%; --radius: <%= mastery[4].completion %>%;"></div>
+                <div class="slice 6" style="--color: <%= mastery[5].color %>; --start: 0%; --end: 16%; --radius: <%= mastery[5].completion %>%;"></div>
             </div>
             <div class="header">MASTERY</div>
             <div class="sectionsKey">
-                <div class="section">
-                    <div class="secColor" style="--color: #1B365B;"></div>
-                    <div class="secName">Computing Fundamentals</div>
-                </div>
-                <div class="section">
-                    <div class="secColor" style="--color: #8A9A86;"></div>
-                    <div class="secName">Data Types and Representation</div>
-                </div>
-                <div class="section">
-                    <div class="secColor" style="--color: #F5F5DC;"></div>
-                    <div class="secName">Programming Paradigms</div>
-                </div>
-                <div class="section">
-                    <div class="secColor" style="--color: #DCAEAE;"></div>
-                    <div class="secName">Development Tools</div>
-                </div>
-                <div class="section">
-                    <div class="secColor" style="--color: #D4AF37;"></div>
-                    <div class="secName">Algorithms and Complexity</div>
-                </div>
-                <div class="section">
-                    <div class="secColor" style="--color: #36454F;"></div>
-                    <div class="secName">Computing Fundamentals</div>
-                </div>
+                <% mastery.forEach((section, index) => { %>
+                    <div class="section <%= index + 1 %>">
+                        <div class="secContLeft">
+                            <div class="secColor" style="--color: <%= section.color %>;"></div>
+                            <div class="secName"><%= section.name %></div>
+                        </div>
+                        <div class="secPercent"><%= section.completion %>%</div>
+                    </div>
+                <% }); %>
             </div>
         </div>
     </div>
 </body>
+<script>
+    const slice = document.querySelectorAll('.slice');
+    const courses = document.querySelectorAll('.section');
+    slice.forEach(s => {
+        s.dataset.baseColor = s.style.getPropertyValue('--color');
+    });
+    courses.forEach(e => {
+        e.addEventListener('mouseenter', () => {
+            slice.forEach(s => {
+                if (e.classList[1] === s.classList[1]) {
+                    s.style.setProperty('--color', '#9F54DA');
+                }
+            })
+        });
+        e.addEventListener('mouseleave', () => {
+        slice.forEach(s => {
+            if (e.classList[1] === s.classList[1]) {
+                s.style.setProperty('--color', s.dataset.baseColor);
+            }
+        });
+    });
+    });
+</script>
 </html>
