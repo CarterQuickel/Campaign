@@ -82,7 +82,9 @@
                     <div class="section <%= index + 1 %>">
                         <div class="secContLeft">
                             <div class="secColor" style="--color: <%= section.color %>;"></div>
-                            <div class="secName"><%= section.name %></div>
+                            <div class="secName"><%= section.name %>
+                                <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
+                            </div>
                         </div>
                         <div class="secPercent"><%= section.completion %>%</div>
                     </div>

@@ -31,7 +31,7 @@ let mastery = [
         name: 'Design Program Solutions',
         completion: 12,
         color: '#5a617a',
-        current: true
+        current: false
     },
     {
         name: 'Code Programs',
@@ -43,7 +43,7 @@ let mastery = [
         name: 'Test Programs',
         completion: 24,
         color: '#5d5f37',
-        current: false
+        current: true
     },
     {
         name: 'Maintain Programs and Implement Change Management Procedures',
