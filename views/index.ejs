@@ -6,6 +6,7 @@
     <title>Charma</title>
     <link rel="icon" href="/icons/dndLogoPlaceholder.png">
     <link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/mastery.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
@@ -25,7 +26,7 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum">3</div>
+                    <div class="statNum"><%= level %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
@@ -89,6 +90,9 @@
                 </button>
                 <button class="cate" data-category='Spell'>
                     Spell
+                </button>
+                <button class="cate" data-category='Key'>
+                    Key
                 </button>
                 <button class="cate" data-category='Misc'>
                     Misc
@@ -156,23 +160,111 @@
                         </div>
                         <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
                     </div>
-                    <a href="/mastery">Mastery Page</a>
                     <div class="categoryCont">
-                        <button class="courseCate active" data-category='current'>
-                            Current Unit
-                        </button>
                         <button class="courseCate" data-category='vocab'>
                             Vocabulary
                         </button>
-                        <button class="courseCate" data-category='overall'>
+                        <button class="courseCate" data-category='coach'>
                             Coach
                         </button>
-                        <button class="courseCate" data-category='Potion'>
+                        <button class="courseCate" data-category='progress'>
                             Progress
                         </button>
-                        <button class="courseCate" data-category='Spell'>
+                        <button class="courseCate active" data-category='units'>
                             All Units
                         </button>
+                    </div>
+                    <div class="categorySelected">
+                        <div class="currentPanelCate disabled" data-category="vocab">
+                            <% mastery.forEach((section, index) => { %>
+                                <% if (section.current) { %>
+                                    <div class="header"><%= section.name %></div>
+                                <% } %>
+                            <% }); %>
+                        </div>
+                        <div class="currentPanelCate disabled" data-category="coach">
+                            <% mastery.forEach((section, index) => { %>
+                                <% if (section.current) { %>
+                                    <div class="header"><%= section.name %></div>
+                                <% } %>
+                            <% }); %>
+                        </div>
+                        <div class="currentPanelCate disabled" data-category="progress">
+                            <% mastery.forEach((section, index) => { %>
+                                <% if (section.current) { %>
+                                    <div class="header"><%= section.name %></div>
+                                    <div class="completionCont" style="margin-top: -10px;">
+                                        <div class="fillCircle"
+                                            role="progressbar"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                            style="--progress: <%= section.completion %>%; --color: <%= section.color %>"></div>
+                                        <div class="fillTxt"><%= section.completion %>%</div>
+                                    </div>
+                                    <div class="header">Milestones</div>
+                                    <div class="sectionsKey mainPage milestone" style="width: 80%; overflow-y: auto; margin-top: -10px;">
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">5%</div>
+                                                <div class="secName"><%= section.name %> - Beginner</div>
+                                            </div>
+                                            <div class="secPercent">+500 XP</div>
+                                        </div>
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">15%</div>
+                                                <div class="secName"><%= section.name %> - Novice</div>
+                                            </div>
+                                            <div class="secPercent">+800 XP</div>
+                                        </div>
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">30%</div>
+                                                <div class="secName"><%= section.name %> - Apprentice</div>
+                                            </div>
+                                            <div class="secPercent">+1200 XP</div>
+                                        </div>
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">50%</div>
+                                                <div class="secName"><%= section.name %> - Experienced</div>
+                                            </div>
+                                            <div class="secPercent">+1700 XP</div>
+                                        </div>
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">75%</div>
+                                                <div class="secName"><%= section.name %> - Expert</div>
+                                            </div>
+                                            <div class="secPercent">+2300 XP</div>
+                                        </div>
+                                        <div class="section">
+                                            <div class="secContLeft">
+                                                <div class="secPerc">100%</div>
+                                                <div class="secName"><%= section.name %> - Completionist</div>
+                                            </div>
+                                            <div class="secPercent">+3000 XP</div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% }); %>
+                        </div>
+                        <div class="currentPanelCate enabled" data-category="units">
+                            <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL MASTERY</button>
+                            <div class="sectionsKey mainPage">
+                                <% mastery.forEach((section, index) => { %>
+                                    <div class="section <%= index + 1 %>">
+                                        <div class="secContLeft">
+                                            <div class="secColor" style="--color: <%= section.color %>;"></div>
+                                            <div class="secName"><%= section.name%>
+                                                <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
+                                            </div>
+                                        </div>
+                                        <div class="secPercent"><%= section.completion %>%</div>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="bottomCont">

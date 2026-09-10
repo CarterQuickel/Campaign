@@ -115,6 +115,26 @@ function filterTools(filter) {
     });
 }
 
+const courseTabs = document.querySelectorAll('.courseCate');
+const coursePanels = document.querySelectorAll('.currentPanelCate');
+if (courseTabs.length && coursePanels.length) {
+    courseTabs.forEach(button => {
+        button.addEventListener('click', () => {
+            const selectedCategory = button.getAttribute('data-category');
+
+            courseTabs.forEach(tab => {
+                tab.classList.toggle('active', tab === button);
+            });
+
+            coursePanels.forEach(panel => {
+                const isSelected = panel.getAttribute('data-category') === selectedCategory;
+                panel.classList.toggle('enabled', isSelected);
+                panel.classList.toggle('disabled', !isSelected);
+            });
+        });
+    });
+}
+
 //add weight
 const maxWeight = 100;
 const encumCont = document.getElementById('encumCont');

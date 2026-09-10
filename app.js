@@ -12,42 +12,50 @@ let mastery = [
     {
         name: 'General Information and Concepts',
         completion: 24,
-        color: '#f1ece2'
+        color: '#f1ece2',
+        current: false
     },
     {
         name: 'Ethics, Legal Compliance, and Security',
         completion: 87,
-        color: '#6b625e'
+        color: '#6b625e',
+        current: false
     },
     {
         name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions',
         completion: 54,
-        color: '#b8cfd0'
+        color: '#b8cfd0',
+        current: false
     },
     {
         name: 'Design Program Solutions',
         completion: 12,
-        color: '#5a617a'
+        color: '#5a617a',
+        current: true
     },
     {
         name: 'Code Programs',
         completion: 67,
-        color: '#828e6f'
+        color: '#828e6f',
+        current: false
     },
     {
         name: 'Test Programs',
         completion: 24,
-        color: '#5d5f37'
+        color: '#5d5f37',
+        current: false
     },
     {
         name: 'Maintain Programs and Implement Change Management Procedures',
         completion: 19,
-        color: '#d3a7a8'
+        color: '#d3a7a8',
+        current: false
     },
     {
         name: 'Complete User Documentation and Technical Writing',
         completion: 62,
-        color: '#b1756a'
+        color: '#b1756a',
+        current: false
     }
 ]
 const tools = require('./StoryAPI/tools.js').Tools;
@@ -153,6 +161,32 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 
+app.get('/api/course/:id', async (req, res) => {
+    const courseId = req.params.id;
+    try {
+        const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}`);
+        const text = await upstreamResponse.text();
+        if (!upstreamResponse.ok) {
+            return res.status(upstreamResponse.status).send(text || 'Failed to fetch course data');
+        }
+        const data = JSON.parse(text);
+        if (!Array.isArray(data.units)) {
+            return res.status(404).json({
+                error: 'No units found for this course',
+                courseId
+            });
+        }
+        console.log(data.units, data.tasks);
+        return res.json(data.units);
+    } catch (error) {
+        console.error('Course fetch error:', error);
+        return res.status(500).json({
+            error: 'Failed to load course data',
+            details: error.message
+        });
+    }
+});
+
 let online = false;
 
 async function checkAiStatus() {
@@ -203,7 +237,6 @@ app.post('/api/rewards/claim', (req, res) => {
     if (!rewardId) {
         return res.status(400).json({ success: false, error: 'A reward ID is required.' });
     }
-
     database.run(
         'INSERT OR IGNORE INTO claimed_rewards (reward_id) VALUES (?)',
         [rewardId],
@@ -226,23 +259,19 @@ app.post('/ask', async (req, res) => {
         const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
         const landmarks = require('./StoryAPI/landmarks').landmarks;
         const stories = require('./StoryAPI/stories').stories;
-
         const storyContext = {
             stories,
             landmarks,
             rewards,
             storySpecRewards
         };
-
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
             const title = await getConversationTitle(userPrompt);
             conversationId = await createConversation(title);
         }
-
         const history = await getRecentMessages(conversationId);
         await saveMessage(conversationId, 'user', userPrompt);
-
         const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -262,16 +291,13 @@ app.post('/ask', async (req, res) => {
                 stream: false
             })
         });
-
         const data = await ollamaResponse.json();
         if (!ollamaResponse.ok) {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
-
         await saveMessage(conversationId, 'assistant', data.response);
         const messages = await getRecentMessages(conversationId);
         const aiReady = await checkAiStatus();
-
         res.render('index', {
             response: data.response,
             prompt: userPrompt,
@@ -289,7 +315,6 @@ app.post('/ask', async (req, res) => {
         const conversationId = Number(req.body.conversationId) || null;
         const messages = conversationId ? await getRecentMessages(conversationId) : [];
         const aiReady = await checkAiStatus();
-
         res.render('index', {
             response: `AI request failed: ${error.message}`,
             prompt: userPrompt,
