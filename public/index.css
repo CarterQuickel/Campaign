@@ -12,8 +12,6 @@
     --focus-color: #e218f5;
     /* Used for input backgrounds when no text is in place */
     --placeholder-color: #7a529271;
-    /* Used for button background colors, usually goes with the --border-color */
-    --background-color: #110E1F;
     /* Used for input hovers and their glow effect */
     --focus-shadow: #cf4df733;
     /* The 4 containers have this color border */
@@ -30,7 +28,6 @@
     --ai-background: #2D1F4A;
     --ai-border: #2D1F4A;
     /* Default website text color */
-    --text-color: white;
 }
 
 /* ==========================================================================
@@ -42,7 +39,6 @@
     --border-color: #B71C1C;
     --focus-color: #FF1744;
     --placeholder-color: rgba(183,28,28,0.45);
-    --background-color: #150808;
     --focus-shadow: rgba(255,23,68,0.2);
     --site-border: #2A0A0A;
     --active-color: rgba(255,82,82,0.7);
@@ -51,7 +47,6 @@
     --user-background: #5A0A0A;
     --ai-background: #3A1F22;
     --ai-border: #3A1F22;
-    --text-color: white;
 }
 
 /* ==========================================================================
@@ -63,7 +58,6 @@
     --border-color: #1F7A46;
     --focus-color: #34D399;
     --placeholder-color: rgba(31,122,70,0.35);
-    --background-color: #081610;
     --focus-shadow: rgba(52,211,153,0.2);
     --site-border: #102A1C;
     --active-color: rgba(52,211,153,0.7);
@@ -72,7 +66,6 @@
     --user-background: #113B2B;
     --ai-background: #183A29;
     --ai-border: #183A29;
-    --text-color: white;
 }
 
 /* ==========================================================================
@@ -84,7 +77,6 @@
     --border-color: #1F4A7A;
     --focus-color: #3499FF;
     --placeholder-color: rgba(31,74,122,0.35);
-    --background-color: #081015;
     --focus-shadow: rgba(52,153,255,0.2);
     --site-border: #0A1F2A;
     --active-color: rgba(52,153,255,0.7);
@@ -93,12 +85,24 @@
     --user-background: #0A3B5A;
     --ai-background: #1F2A3A;
     --ai-border: #1F2A3A;
-    --text-color: white;
 }
 
 /* default font */
 :root {
     --thin-font: 'Arial Narrow', sans-serif;
+}
+
+/* default background */
+:root, [data-mode='default'] {
+    --site-back: #09080F;
+    --text-color: white;
+    --background-color: #110E1F;
+}
+
+[data-mode='light'] {
+    --site-back: white;
+    --text-color: #09080F;
+    --background-color: #d6d6d6bd;
 }
 
 * {
@@ -107,7 +111,7 @@
 
 html {
     min-height: 100%;
-    background: #09080F;
+    background: var(--site-back);
 }
 
 body {
@@ -822,6 +826,18 @@ button:hover {
     width: 100%;
     display: flex;
     flex-direction: row;
+    position: relative;
+}
+
+.settings .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 10px;
+}
+
+.settingsCont {
+    width: 100%;
 }
 
 .settingsSidePanel {
@@ -849,6 +865,7 @@ button.setting {
 button.setting:hover:not(.active) {
     border: 1px solid transparent;
     box-shadow: none;
+    color: white;
     background-color: var(--user-background);
 }
 
@@ -867,7 +884,6 @@ button.setting:hover:not(.active) {
     height: 100%;
     flex-direction: column;
     gap: 20px;
-    padding: 10px;
 }
 
 .settingCate.enabled {
@@ -884,10 +900,101 @@ button.setting:hover:not(.active) {
     background-image: linear-gradient(var(--text-color));
 }
 
+.settingCate .header {
+    margin: 10px 10px -10px 10px;
+}
+
 /* settings containers */
 .accentCont {
     display: flex;
     flex-direction: row;
     justify-content: start;
     gap: 10px;
+    margin: 10px;
+}
+
+.toggleCont {
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--site-border);
+    padding: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  margin-right: 20px;
+  height: 28px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--ai-background);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--primary-color);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-color);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--accent-color);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(32px);
+  -ms-transform: translateX(32px);
+  transform: translateX(32px);
+  background-color: white;
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.desc {
+    display: flex;
+    flex-direction: column;
+}
+
+.desc .name {
+    font-size: 20px;
+}
+
+.desc .info {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 16px;
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="default">
+<html lang="en" data-theme="default" data-mode="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +21,9 @@
         <div id="rightBan">
             <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
                 RESTART
+            </button>
+            <button class="new-conversation" type="button" onclick="" style="margin-right: 10px;">
+                SETTINGS
             </button>
             <div class="horiz"></div>
             <div class="statCont">
@@ -122,6 +125,7 @@
         <div class="centerCont">
             <div class="response-area">
                 <div class="settings">
+                    <button class="close">Close</button>
                     <div class="settingsSidePanel">
                         <div class="header">SETTINGS</div>
                         <div class="settingsCate">
@@ -148,6 +152,27 @@
                                 <button class="theme" type="button" onclick="changeTheme(`blue`)">
                                     BLUE
                                 </button>
+                            </div>
+                            <div class="header">LAYOUT</div>
+                            <div class="toggleCont">
+                                <div class="desc">
+                                    <div class="name">Hide Side Panels</div>
+                                    <div class="info">Temporarily hide inventory and course</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" onclick = "hidePanels()">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="toggleCont">
+                                <div class="desc">
+                                    <div class="name">Light Mode</div>
+                                    <div class="info">Blind your eyes for a more retro feel</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" onclick="changeMode()">
+                                    <span class="slider round"></span>
+                                </label>
                             </div>
                         </div>
                         <div class="settingCate disabled" data-setting="campaign">
@@ -383,6 +408,29 @@
         // Change theme
         function changeTheme(themeName) {
             document.documentElement.setAttribute('data-theme', themeName);
+        }
+
+        // Change mode
+        function changeMode() {
+            const attribute = document.documentElement.getAttribute('data-mode');
+            if (attribute === 'default') {
+                document.documentElement.setAttribute('data-mode', 'light');
+            } else {
+                document.documentElement.setAttribute('data-mode', 'default');
+            }
+        }
+
+        function hidePanels() {
+            const inventory = document.getElementById("inventoryCont");
+            const course = document.getElementById("combatCont");
+            const currentlyHidden = inventory.style.display === "none" || course.style.display === "none";
+            if (currentlyHidden) {
+                inventory.style.display = "flex";
+                course.style.display = "flex";
+            } else {
+                inventory.style.display = "none";
+                course.style.display = "none";
+            }
         }
     </script>
 </body>
