@@ -115,19 +115,36 @@ function filterTools(filter) {
     });
 }
 
+//course panel select
 const courseTabs = document.querySelectorAll('.courseCate');
 const coursePanels = document.querySelectorAll('.currentPanelCate');
 if (courseTabs.length && coursePanels.length) {
     courseTabs.forEach(button => {
         button.addEventListener('click', () => {
             const selectedCategory = button.getAttribute('data-category');
-
             courseTabs.forEach(tab => {
                 tab.classList.toggle('active', tab === button);
             });
-
             coursePanels.forEach(panel => {
                 const isSelected = panel.getAttribute('data-category') === selectedCategory;
+                panel.classList.toggle('enabled', isSelected);
+                panel.classList.toggle('disabled', !isSelected);
+            });
+        });
+    });
+}
+//course panel select
+const settingsTabs = document.querySelectorAll('.setting');
+const settingsPanels = document.querySelectorAll('.settingCate');
+if (settingsTabs.length && settingsPanels.length) {
+    settingsTabs.forEach(button => {
+        button.addEventListener('click', () => {
+            const selectedCategory = button.getAttribute('data-setting');
+            settingsTabs.forEach(tab => {
+                tab.classList.toggle('active', tab === button);
+            });
+            settingsPanels.forEach(panel => {
+                const isSelected = panel.getAttribute('data-setting') === selectedCategory;
                 panel.classList.toggle('enabled', isSelected);
                 panel.classList.toggle('disabled', !isSelected);
             });

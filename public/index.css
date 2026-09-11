@@ -1,6 +1,7 @@
-/* Base styles */
-
-:root {
+/* ==========================================================================
+   THEME 1: DEFAULT PURPLE
+   ========================================================================== */
+:root, [data-theme="default"] {
     /* Used for main text that isn't the color white */
     --primary-color: #8370A1;
     /* Used for header and scrollbar colors */
@@ -26,11 +27,77 @@
     --user-border: #6505A9;
     --user-background: #3B0D5F;
     /* AI bubble */
-    --ai-background: #1e1531;
+    --ai-background: #2D1F4A;
     --ai-border: #2D1F4A;
     /* Default website text color */
     --text-color: white;
-    /* Default website font */
+}
+
+/* ==========================================================================
+   THEME 2: RED
+   ========================================================================== */
+[data-theme="red"] {
+    --primary-color: #C76B6B;
+    --accent-color: #E53935;
+    --border-color: #B71C1C;
+    --focus-color: #FF1744;
+    --placeholder-color: rgba(183,28,28,0.45);
+    --background-color: #150808;
+    --focus-shadow: rgba(255,23,68,0.2);
+    --site-border: #2A0A0A;
+    --active-color: rgba(255,82,82,0.7);
+    --misc-color: #2A0A0A;
+    --user-border: #9B0B0B;
+    --user-background: #5A0A0A;
+    --ai-background: #3A1F22;
+    --ai-border: #3A1F22;
+    --text-color: white;
+}
+
+/* ==========================================================================
+   THEME 3: GREEN
+   ========================================================================== */
+[data-theme="green"] {
+    --primary-color: #8AC7A3;
+    --accent-color: #2EAA5A;
+    --border-color: #1F7A46;
+    --focus-color: #34D399;
+    --placeholder-color: rgba(31,122,70,0.35);
+    --background-color: #081610;
+    --focus-shadow: rgba(52,211,153,0.2);
+    --site-border: #102A1C;
+    --active-color: rgba(52,211,153,0.7);
+    --misc-color: #102A1C;
+    --user-border: #1E7F47;
+    --user-background: #113B2B;
+    --ai-background: #183A29;
+    --ai-border: #183A29;
+    --text-color: white;
+}
+
+/* ==========================================================================
+   THEME 4: BLUE
+   ========================================================================== */
+[data-theme="blue"] {
+    --primary-color: #7BA3C7;
+    --accent-color: #2E7AAA;
+    --border-color: #1F4A7A;
+    --focus-color: #3499FF;
+    --placeholder-color: rgba(31,74,122,0.35);
+    --background-color: #081015;
+    --focus-shadow: rgba(52,153,255,0.2);
+    --site-border: #0A1F2A;
+    --active-color: rgba(52,153,255,0.7);
+    --misc-color: #0A1F2A;
+    --user-border: #0B4F9B;
+    --user-background: #0A3B5A;
+    --ai-background: #1F2A3A;
+    --ai-border: #1F2A3A;
+    --text-color: white;
+}
+
+/* default font */
+:root {
     --thin-font: 'Arial Narrow', sans-serif;
 }
 
@@ -326,13 +393,13 @@ button:hover {
 .response-area {
     height: 100%;
     width: 100%;
+    border: 1px solid var(--site-border);
+    border-top: none;
+    border-bottom: none;
 }
 
 /* Styling for the AI output window */
 .response-box {
-    border: 1px solid var(--site-border);
-    border-top: none;
-    border-bottom: none;
     padding: 20px;
     height: 95%;
     display: flex;
@@ -748,4 +815,79 @@ button:hover {
 
 .message .reward-button {
     margin-left: 8px;
+}
+
+.settings {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.settingsSidePanel {
+    height: 100%;
+    border-right: 1px solid var(--site-border);
+    width: 20%;
+    padding: 10px;
+}
+
+.settingsCate {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+button.setting {
+    border: 1px solid transparent;
+    background-color: #00000000;
+    justify-content: left;
+    align-items: center;
+    gap: 5px;
+}
+
+button.setting:hover:not(.active) {
+    border: 1px solid transparent;
+    box-shadow: none;
+    background-color: var(--user-background);
+}
+
+.setting .emoji {
+    background-image: linear-gradient(var(--primary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+}
+
+.settingCate {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px;
+}
+
+.settingCate.enabled {
+    display: flex;
+}
+
+.setting.active {
+    background: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+}
+
+.setting.active .emoji {
+    background-image: linear-gradient(var(--text-color));
+}
+
+/* settings containers */
+.accentCont {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    gap: 10px;
 }

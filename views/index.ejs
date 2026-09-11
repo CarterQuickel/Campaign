@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,7 +19,7 @@
             </div>
         </div>
         <div id="rightBan">
-            <button class="new-conversation" type="button" onclick="window.location.href='/'">
+            <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
                 RESTART
             </button>
             <div class="horiz"></div>
@@ -121,7 +121,50 @@
         </div>
         <div class="centerCont">
             <div class="response-area">
-                <div class="response-box" id="chat">
+                <div class="settings">
+                    <div class="settingsSidePanel">
+                        <div class="header">SETTINGS</div>
+                        <div class="settingsCate">
+                            <button class="setting active" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
+                            <button class="setting" data-setting="campaign"><div class="emoji">📖</div><div>Campaign</div></button>
+                            <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
+                            <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
+                            <button class="setting" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
+                        </div>
+                    </div>
+                    <div class="settingsCont">
+                        <div class="settingCate enabled" data-setting="appearance">
+                            <div class="header">Color Accent</div>
+                            <div class="accentCont">
+                                <button class="theme" type="button" onclick="changeTheme(`default`)">
+                                    PURPLE
+                                </button>
+                                <button class="theme" type="button" onclick="changeTheme(`red`)">
+                                    RED
+                                </button>
+                                <button class="theme" type="button" onclick="changeTheme(`green`)">
+                                    GREEN
+                                </button>
+                                <button class="theme" type="button" onclick="changeTheme(`blue`)">
+                                    BLUE
+                                </button>
+                            </div>
+                        </div>
+                        <div class="settingCate disabled" data-setting="campaign">
+                            <div class="header">Campaign Info</div>
+                        </div>
+                        <div class="settingCate disabled" data-setting="character">
+                            <div class="header">Origin</div>
+                        </div>
+                        <div class="settingCate disabled" data-setting="ai">
+                            <div class="header">Charma Personality</div>
+                        </div>
+                        <div class="settingCate disabled" data-setting="data">
+                            <div class="header">Danger Zone</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="response-box" id="chat" style="display: none;">
                     <div id="text-scroll" class="chat-container">
                         <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
                             <% let omitLastAssistant = false; %>
@@ -309,7 +352,6 @@
                 const dot = document.querySelector('.dot');
                 const label = document.querySelector('.status h5');
                 if (!dot || !label) return;
-
                 const isOnline = response.ok && data.ready;
                 dot.classList.toggle('online', isOnline);
                 dot.classList.toggle('offline', !isOnline);
@@ -330,13 +372,17 @@
                 }
             }
         }
-
         refreshAiStatus();
 
         // Simple client-side script to show loading text when submitted
         function showLoading() {
             document.getElementById('submit-btn').disabled = true;
             document.getElementById('submit-btn').innerHTML = '<span class="bounce">.</span><span class="bounce">.</span><span class="bounce">.</span>';
+        }
+
+        // Change theme
+        function changeTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
         }
     </script>
 </body>

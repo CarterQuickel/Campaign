@@ -1,4 +1,7 @@
-:root {
+/* ==========================================================================
+   THEME 1: DEFAULT PURPLE
+   ========================================================================== */
+:root, [data-theme="default"] {
     /* Used for main text that isn't the color white */
     --primary-color: #8370A1;
     /* Used for header and scrollbar colors */
@@ -28,7 +31,73 @@
     --ai-border: #2D1F4A;
     /* Default website text color */
     --text-color: white;
-    /* Default website font */
+}
+
+/* ==========================================================================
+   THEME 2: RED
+   ========================================================================== */
+[data-theme="red"] {
+    --primary-color: #C76B6B;
+    --accent-color: #E53935;
+    --border-color: #B71C1C;
+    --focus-color: #FF1744;
+    --placeholder-color: rgba(183,28,28,0.45);
+    --background-color: #150808;
+    --focus-shadow: rgba(255,23,68,0.2);
+    --site-border: #2A0A0A;
+    --active-color: rgba(255,82,82,0.7);
+    --misc-color: #2A0A0A;
+    --user-border: #9B0B0B;
+    --user-background: #5A0A0A;
+    --ai-background: #3A1F22;
+    --ai-border: #3A1F22;
+    --text-color: white;
+}
+
+/* ==========================================================================
+   THEME 3: GREEN
+   ========================================================================== */
+[data-theme="green"] {
+    --primary-color: #8AC7A3;
+    --accent-color: #2EAA5A;
+    --border-color: #1F7A46;
+    --focus-color: #34D399;
+    --placeholder-color: rgba(31,122,70,0.35);
+    --background-color: #081610;
+    --focus-shadow: rgba(52,211,153,0.2);
+    --site-border: #102A1C;
+    --active-color: rgba(52,211,153,0.7);
+    --misc-color: #102A1C;
+    --user-border: #1E7F47;
+    --user-background: #113B2B;
+    --ai-background: #183A29;
+    --ai-border: #183A29;
+    --text-color: white;
+}
+
+/* ==========================================================================
+   THEME 4: BLUE
+   ========================================================================== */
+[data-theme="blue"] {
+    --primary-color: #7BA3C7;
+    --accent-color: #2E7AAA;
+    --border-color: #1F4A7A;
+    --focus-color: #3499FF;
+    --placeholder-color: rgba(31,74,122,0.35);
+    --background-color: #081015;
+    --focus-shadow: rgba(52,153,255,0.2);
+    --site-border: #0A1F2A;
+    --active-color: rgba(52,153,255,0.7);
+    --misc-color: #0A1F2A;
+    --user-border: #0B4F9B;
+    --user-background: #0A3B5A;
+    --ai-background: #1F2A3A;
+    --ai-border: #1F2A3A;
+    --text-color: white;
+}
+
+/* default font */
+:root {
     --thin-font: 'Arial Narrow', sans-serif;
 }
 
