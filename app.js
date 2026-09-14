@@ -6,6 +6,10 @@ const port = process.env.PORT || 3000;
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
+const gameState = {
+    gold: 0,
+    tools: tools.map(tool => ({ ...tool }))
+};
 let stats = [
     10, 3, 10, 15, 7, 14
 ]
@@ -161,6 +165,71 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
+systemAPI(app, gameState);
+function parseGameActionFromText(responseText) {
+    if (typeof responseText !== 'string') {
+        return null;
+    }
+
+    const text = responseText.trim();
+    const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
+    if (tagMatch) {
+        try {
+            const parsed = JSON.parse(tagMatch[1]);
+            if (parsed && parsed.name === 'give_gold') {
+                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
+            }
+        } catch (error) {
+            console.error('Could not parse game action tag:', error.message);
+        }
+    }
+    const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
+    if (directJsonMatch) {
+        return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
+    }
+    const giveGoldFnMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
+    if (giveGoldFnMatch) {
+        return { name: 'give_gold', amount: Number(giveGoldFnMatch[1]) };
+    }
+    const inlineAmountMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
+    if (inlineAmountMatch) {
+        return { name: 'give_gold', amount: Number(inlineAmountMatch[1]) };
+    }
+    return null;
+}
+
+function applyActionFromText(responseText) {
+    if (typeof responseText !== 'string') {
+        return responseText;
+    }
+    const action = parseGameActionFromText(responseText);
+    if (!action) {
+        return responseText;
+    }
+
+    if (action.name === 'give_gold') {
+        const amount = Number(action.amount ?? 0);
+        if (Number.isFinite(amount) && amount !== 0) {
+            gameState.gold = (Number(gameState.gold) || 0) + amount;
+        }
+    }
+
+    const cleanedText = responseText
+        .replace(/<ACTION>[\s\S]*?<\/ACTION>/gi, '')
+        .replace(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi, '')
+        .replace(/give_gold\s*\(\s*\d+\s*\)/gi, '')
+        .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (cleanedText) {
+        return cleanedText;
+    }
+    if (action.name === 'give_gold') {
+        return `You receive ${action.amount} gold.`;
+    }
+    return responseText.trim();
+}
 
 app.get('/api/course/:id', async (req, res) => {
     const courseId = req.params.id;
@@ -218,7 +287,7 @@ app.get('/api/ai-status', async (req, res) => {
 app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index', 
-        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools, mastery: mastery, level: level });
+        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools, mastery: mastery, level: level, gold: gameState.gold });
 });
 
 // Other pages
@@ -229,7 +298,8 @@ app.get('/mastery', async (req, res) => {
         online: aiReady,
         tools: tools, 
         mastery: mastery,
-        level: level
+        level: level,
+        gold: gameState.gold
     });
 });
 
@@ -256,14 +326,12 @@ app.post('/ask', async (req, res) => {
     const userPrompt = req.body.prompt;
     try {
         const system = require('./system.js').system;
-        const rewards = require('./StoryAPI/rewards.js').rewards;
         const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
         const landmarks = require('./StoryAPI/landmarks').landmarks;
         const stories = require('./StoryAPI/stories').stories;
         const storyContext = {
             stories,
             landmarks,
-            rewards,
             storySpecRewards
         };
         let conversationId = Number(req.body.conversationId) || null;
@@ -277,13 +345,14 @@ app.post('/ask', async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'qwen3:0.6b',
+                model: 'llama3.2',
                 prompt: [
                     `You are a helpful assistant. Use the conversation history when it is relevant.
                     Use the following StoryAPI data as the source of truth for the adventure:
                     ${JSON.stringify(storyContext, null, 2)}
 
-                    If a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.`,
+                    If a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.
+                    `,
                     ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
                     `User: ${userPrompt}`,
                     'Assistant:',
@@ -296,11 +365,12 @@ app.post('/ask', async (req, res) => {
         if (!ollamaResponse.ok) {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
-        await saveMessage(conversationId, 'assistant', data.response);
+        const cleanedResponse = applyActionFromText(data.response);
+        await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
         const messages = await getRecentMessages(conversationId);
         const aiReady = await checkAiStatus();
         res.render('index', {
-            response: data.response,
+            response: cleanedResponse || data.response,
             prompt: userPrompt,
             conversations: await getConversations(),
             conversationId,
@@ -309,7 +379,8 @@ app.post('/ask', async (req, res) => {
             stats: stats,
             tools: tools,
             mastery: mastery, 
-            level: level
+            level: level,
+            gold: gameState.gold
         });
     } catch (error) {
         console.error("Ollama Error:", error);
@@ -326,7 +397,8 @@ app.post('/ask', async (req, res) => {
             stats: stats,
             tools: tools,
             mastery: mastery, 
-            level: level
+            level: level,
+            gold: gameState.gold
         });
     }
 });

@@ -66,7 +66,7 @@
         <div id="inventoryCont">
             <div class="contBan">
                 <div class="header">INVENTORY</div>
-                <div class="gold">◈ 284gp</div>
+                <div class="gold" id="goldDisplay" data-gold="<%= gold %>">◈ <%= gold %>gp</div>
             </div>
             <div class="encumCont" id="encumCont" data-current-weight="0">
                 <div class="contBan">
@@ -100,7 +100,7 @@
             </div>
             <div class="toolsContainer">
                 <% tools.forEach(tool => { %>
-                    <div class="tool <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>" data-weight="<%= tool.weight %>">
+                    <div class="tool <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>" data-name="<%= tool.name %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>" data-weight="<%= tool.weight %>">
                         <div class="left-tool">
                             <div class="tool-icon <%= tool.class.toLowerCase() %>">
                                 <%= tool.class === 'Weapon' ? '⚔️' : tool.class === 'Armor' ? '🛡️' : tool.class === 'Potion' ? '🧪' : tool.class === 'Spell' ? '🔮' : '💎' %>
@@ -246,9 +246,6 @@
                         <button class="courseCate" data-category='vocab'>
                             Vocabulary
                         </button>
-                        <button class="courseCate" data-category='coach'>
-                            Coach
-                        </button>
                         <button class="courseCate" data-category='progress'>
                             Progress
                         </button>
@@ -258,13 +255,6 @@
                     </div>
                     <div class="categorySelected">
                         <div class="currentPanelCate disabled" data-category="vocab">
-                            <% mastery.forEach((section, index) => { %>
-                                <% if (section.current) { %>
-                                    <div class="header"><%= section.name %></div>
-                                <% } %>
-                            <% }); %>
-                        </div>
-                        <div class="currentPanelCate disabled" data-category="coach">
                             <% mastery.forEach((section, index) => { %>
                                 <% if (section.current) { %>
                                     <div class="header"><%= section.name %></div>
