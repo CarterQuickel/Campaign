@@ -25,9 +25,8 @@
     --user-border: #6505A9;
     --user-background: #3B0D5F;
     /* AI bubble */
-    --ai-background: #2D1F4A;
+    --ai-background: #1f1633;
     --ai-border: #2D1F4A;
-    /* Default website text color */
 }
 
 /* ==========================================================================
@@ -45,7 +44,7 @@
     --misc-color: #2A0A0A;
     --user-border: #9B0B0B;
     --user-background: #5A0A0A;
-    --ai-background: #3A1F22;
+    --ai-background: #1b0f10;
     --ai-border: #3A1F22;
 }
 
@@ -64,7 +63,7 @@
     --misc-color: #102A1C;
     --user-border: #1E7F47;
     --user-background: #113B2B;
-    --ai-background: #183A29;
+    --ai-background: #0d2017;
     --ai-border: #183A29;
 }
 
@@ -83,7 +82,7 @@
     --misc-color: #0A1F2A;
     --user-border: #0B4F9B;
     --user-background: #0A3B5A;
-    --ai-background: #1F2A3A;
+    --ai-background: #141b25;
     --ai-border: #1F2A3A;
 }
 
@@ -806,13 +805,13 @@ button:hover {
 .message.assistant .bubble {
     background: var(--ai-background);
     border: 1px solid var(--ai-border);
-    color: var(--text-color);
+    color: white;
     border-bottom-left-radius: 4px;
 }
 
 .message.user .bubble {
     background: var(--user-background);
-    color: var(--text-color);
+    color: white;
     border: 1px solid var(--user-border);
     border-bottom-right-radius: 4px;
 }
@@ -997,4 +996,30 @@ input:checked + .slider:before {
     color: var(--primary-color);
     font-weight: 700;
     font-size: 16px;
+}
+
+.settingCate textarea {
+    width: 75%;
+    margin: 10px;
+}
+
+.textTitle {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 16px;
+    margin-left: 10px;
+}
+
+.new-conversation {
+    border: 1px solid rgb(255, 91, 91);
+    background-color: rgba(90, 28, 28, 0.705);
+    color: rgb(255, 91, 91);
+    margin: 10px;
+}
+
+.new-conversation:hover {
+    background-color: rgb(255, 91, 91);
+    color: white;
+    border: 1px solid rgb(255, 91, 91);
+    box-shadow: 0 0 0 1px red;
 }

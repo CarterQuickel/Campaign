@@ -437,33 +437,22 @@ module.exports = {
 
     ## REWARDS
 
-    When the player earns a reward, create a clickable reward button using this exact format:
+    You have access to game API actions.
 
-    [REWARD_BUTTON:text|reward_id]
+    Available actions:
 
-    Example:
+    give_gold(amount)
 
-    [REWARD_BUTTON:+💰100 Gold|gold_100]
+    When an action should occur, return it in this format:
 
-    Using emojis is good for visualizing so use them where you can!
+    <ACTION>
+    {
+        "name": "give_gold",
+        "amount": 50
+    }
+    </ACTION>
 
-    The text before the | is what will be displayed on the button, and the text after the | is the reward ID.
-
-    The name of the button should be + whatever the reward is. The + should be included in the button text. 
-    For example, if the player earns 100 gold, the button should read +💰100 Gold.
-
-    Only create this button when the player has actually earned the reward.
-
-    Do not create HTML.
-    Do not create JavaScript.
-    Do not create a reward button for an unearned reward.
-
-    Use this list of rewards to determine which rewards are available and their IDs:
-
-    - Gold (id: gold)
-    - Gemstone (id: gemstone)
-    - Scholar Points (id: scholar_points)
-    - Scholar Badge (id: scholar_badge)
+    Only use an action when it should actually happen.
     
     `
 };
