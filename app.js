@@ -161,15 +161,42 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 
-app.get('/api/course/:id', async (req, res) => {
-    const courseId = req.params.id;
+app.get('/api/course/:courseId/mastery', async (req, res) => {
+    const courseId = req.params.courseId;
+    const studentId = req.query.studentId || req.query.id;
+    if (!studentId) {
+        return res.status(400).json({ error: 'A studentId query parameter is required' });
+    }
     try {
-        const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}`);
+        const headers = {};
+        if (req.headers.authorization) headers.authorization = req.headers.authorization;
+        if (req.headers.cookie) headers.cookie = req.headers.cookie;
+        const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}/mastery?studentId=${encodeURIComponent(studentId)}`, {
+            headers
+        });
         const text = await upstreamResponse.text();
-        if (!upstreamResponse.ok) {
-            return res.status(upstreamResponse.status).send(text || 'Failed to fetch course data');
+        if (upstreamResponse.redirected || upstreamResponse.url.includes('/oauth')) {
+            return res.status(401).json({
+                error: 'Quizbank authentication is required',
+                loginUrl: upstreamResponse.url
+            });
         }
-        const data = JSON.parse(text);
+        if (!upstreamResponse.ok) {
+            return res.status(upstreamResponse.status).json({
+                error: 'Failed to fetch course data',
+                upstreamStatus: upstreamResponse.status
+            });
+        }
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (parseError) {
+            console.error('Course API returned a non-JSON response:', parseError.message);
+            return res.status(502).json({
+                error: 'Course API returned an invalid response',
+                upstreamStatus: upstreamResponse.status
+            });
+        }
         if (!Array.isArray(data.units)) {
             return res.status(404).json({
                 error: 'No units found for this course',
