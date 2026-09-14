@@ -3,6 +3,8 @@ const sqlite3 = require('sqlite3').verbose();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const systemAPI = require('./APIendpoints.js');
+const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
 let stats = [
     10, 3, 10, 15, 7, 14
@@ -58,7 +60,6 @@ let mastery = [
         current: false
     }
 ]
-const tools = require('./StoryAPI/tools.js').Tools;
 
 // Run the database
 database.run(`
@@ -303,7 +304,7 @@ app.post('/ask', async (req, res) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'llama3.2',
+                model: 'qwen3:0.6b',
                 prompt: [
                     `You are a helpful assistant. Use the conversation history when it is relevant.
                     Use the following StoryAPI data as the source of truth for the adventure:

@@ -19,10 +19,7 @@
             </div>
         </div>
         <div id="rightBan">
-            <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
-                RESTART
-            </button>
-            <button class="new-conversation" type="button" onclick="" style="margin-right: 10px;">
+            <button class="settingsBtn" type="button" onclick="viewSettings(false)" style="margin-right: 10px;">
                 SETTINGS
             </button>
             <div class="horiz"></div>
@@ -124,20 +121,20 @@
         </div>
         <div class="centerCont">
             <div class="response-area">
-                <div class="settings">
-                    <button class="close">Close</button>
+                <div class="settings" id="settings" style="display: none;">
+                    <button class="close" onclick="viewSettings(true)">Close</button>
                     <div class="settingsSidePanel">
                         <div class="header">SETTINGS</div>
                         <div class="settingsCate">
-                            <button class="setting active" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
+                            <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
                             <button class="setting" data-setting="campaign"><div class="emoji">📖</div><div>Campaign</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
                             <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
-                            <button class="setting" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
+                            <button class="setting active" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
                         </div>
                     </div>
                     <div class="settingsCont">
-                        <div class="settingCate enabled" data-setting="appearance">
+                        <div class="settingCate disabled" data-setting="appearance">
                             <div class="header">Color Accent</div>
                             <div class="accentCont">
                                 <button class="theme" type="button" onclick="changeTheme(`default`)">
@@ -180,16 +177,33 @@
                         </div>
                         <div class="settingCate disabled" data-setting="character">
                             <div class="header">Origin</div>
+                            <textarea class="origin"></textarea>
+                            <div class="header" style="margin-bottom: 10px;">Character</div>
+                            <div class="textareaCont">
+                                <div class="textTitle">Character Name</div>
+                                <textarea class="cName"></textarea>
+                            </div>
+                            <div class="textareaCont">
+                                <div class="textTitle">Class</div>
+                                <textarea class="class"></textarea>
+                            </div>
+                            <div class="textareaCont">
+                                <div class="textTitle">Race</div>
+                                <textarea class="race"></textarea>
+                            </div>
                         </div>
                         <div class="settingCate disabled" data-setting="ai">
                             <div class="header">Charma Personality</div>
                         </div>
-                        <div class="settingCate disabled" data-setting="data">
+                        <div class="settingCate enabled" data-setting="data">
                             <div class="header">Danger Zone</div>
+                            <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
+                                RESTART CAMPAIGN
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="response-box" id="chat" style="display: none;">
+                <div class="response-box" id="chat">
                     <div id="text-scroll" class="chat-container">
                         <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
                             <% let omitLastAssistant = false; %>
@@ -430,6 +444,19 @@
             } else {
                 inventory.style.display = "none";
                 course.style.display = "none";
+            }
+        }
+
+        function viewSettings(hideorshow) {
+            const settings = document.getElementById("settings");
+            const chat = document.getElementById("chat");
+            if (!settings) return;
+            if (hideorshow) {
+                settings.style.display = "none"; 
+                chat.style.display = "flex";
+            } else {
+                settings.style.display = "flex"; 
+                chat.style.display = "none";
             }
         }
     </script>
