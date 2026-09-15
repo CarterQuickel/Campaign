@@ -4,9 +4,6 @@ async function renderAIResponse(text) {
     if (!source || !container) {
         return;
     }
-    const rewardRegex = /\[REWARD_BUTTON:(.*?)\|(.*?)\]/g;
-    let lastIndex = 0;
-    let match;
     container.hidden = false;
     const chatContainer = document.getElementById('text-scroll');
     // create assistant message bubble
@@ -16,36 +13,19 @@ async function renderAIResponse(text) {
     bubble.className = 'bubble';
     msgWrap.appendChild(bubble);
     if (chatContainer) chatContainer.appendChild(msgWrap);
-
-    while ((match = rewardRegex.exec(text)) !== null) {
-        await typeAIResponseIntoElement(text.slice(lastIndex, match.index), bubble);
-        const rewardId = match[2].trim();
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = match[1].trim();
-        button.className = 'reward-button';
-        button.addEventListener('click', async () => {
-            button.disabled = true;
-            try {
-                const response = await fetch('/api/rewards/claim', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ rewardId })
-                });
-                const result = await response.json();
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || 'The reward could not be claimed.');
-                }
-                button.textContent = 'Reward Claimed';
-            } catch (error) {
-                button.disabled = false;
-                button.textContent = `Claim failed: ${error.message}`;
-            }
-        });
-        msgWrap.appendChild(button);
-        lastIndex = rewardRegex.lastIndex;
-    }
-    await typeAIResponseIntoElement(text.slice(lastIndex), bubble);
+    const action = parseGameActionFromText(text);
+    const actionAmount = action && action.name === 'give_gold' ? Number(action.amount ?? 0) : 0;
+    const cleanedText = text
+        .replace(/<ACTION>\s*[\s\S]*?\s*<\/ACTION>/gi, '')
+        .replace(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi, '')
+        .replace(/give_gold\s*\(\s*\d+\s*\)/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    const fallbackText = actionAmount > 0 ? `You receive ${actionAmount} gold.` : '';
+    const displayText = cleanedText || fallbackText || 'The DM responds.';
+    console.log(displayText);
+    await applyGameActionFromText(text);
+    await typeAIResponseIntoElement(displayText, bubble);
     source.hidden = true;
     // scroll to bottom
     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -54,6 +34,66 @@ async function renderAIResponse(text) {
 const responseElement = document.getElementById('ai-response');
 if (responseElement) {
     renderAIResponse(responseElement.textContent);
+}
+
+// update gold
+function updateGoldDisplay(amount) {
+    const goldDisplay = document.getElementById('goldDisplay');
+    if (!goldDisplay) return;
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount)) return;
+    goldDisplay.dataset.gold = parsedAmount;
+    goldDisplay.textContent = `◈ ${parsedAmount}gp`;
+}
+
+// action
+function parseGameActionFromText(text) {
+    if (typeof text !== 'string') return null;
+    const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
+    if (tagMatch) {
+        try {
+            const parsed = JSON.parse(tagMatch[1]);
+            if (parsed && parsed.name === 'give_gold') {
+                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
+            }
+        } catch (error) {
+            console.error('Unable to parse action tag:', error);
+        }
+    }
+    const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
+    if (directJsonMatch) {
+        return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
+    }
+    const functionMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
+    if (functionMatch) {
+        return { name: 'give_gold', amount: Number(functionMatch[1]) };
+    }
+    const goldTextMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
+    if (goldTextMatch) {
+        return { name: 'give_gold', amount: Number(goldTextMatch[1]) };
+    }
+    return null;
+}
+
+async function applyGameActionFromText(text) {
+    const action = parseGameActionFromText(text);
+    if (!action || action.name !== 'give_gold') return false;
+    const amount = Number(action.amount ?? 0);
+    if (!Number.isFinite(amount) || amount === 0) return false;
+    try {
+        const response = await fetch('/api/game/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action.name, amount })
+        });
+        const result = await response.json();
+        if (response.ok && result && Number.isFinite(Number(result.gold))) {
+            updateGoldDisplay(result.gold);
+        }
+    } catch (error) {
+        console.error('Unable to apply the AI action:', error);
+    }
+    return true;
 }
 
 function typeAIResponseIntoElement(text, element, speed = 15) {

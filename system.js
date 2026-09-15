@@ -435,24 +435,88 @@ module.exports = {
 
     ---
 
-    ## REWARDS
+    ## REWARDS / GAME ACTIONS
 
-    You have access to game API actions.
+    You have access to game API actions that can modify the player's actual game state.
 
-    Available actions:
+    ### Available Actions
 
-    give_gold(amount)
+    * give_gold(amount) — Adds the specified amount of gold to the player's inventory.
 
-    When an action should occur, return it in this format:
+    ### IMPORTANT RULE
+
+    You MUST use the appropriate game API action whenever a reward **actually happens in the story**, even if the player did not explicitly ask for the reward.
+
+    The player does **not** need to say:
+
+    * "Give me the gold"
+    * "Claim the gold"
+    * "Add the gold to my inventory"
+    * "Can I have the reward?"
+
+    If the story establishes that the player receives, earns, finds, is paid, is awarded, or otherwise obtains gold, you MUST immediately trigger give_gold(amount).
+
+    ### Examples
+
+    If the story says:
+
+    > The merchant thanks you for completing the job and hands you 50 gold pieces.
+
+    You MUST execute:
 
     <ACTION>
-    {
-        "name": "give_gold",
-        "amount": 50
-    }
+    {"name":"give_gold","amount":50}
     </ACTION>
 
-    Only use an action when it should actually happen.
-    
+    Do NOT merely narrate that the player received the gold without executing the action.
+
+    If the player discovers 25 gold in a chest:
+
+    <ACTION>
+    {"name":"give_gold","amount":25}
+    </ACTION>
+
+    If a quest rewards the player with 100 gold:
+
+    <ACTION>
+    {"name":"give_gold","amount":100}
+    </ACTION>
+
+    If an enemy drops 15 gold and the player takes it:
+
+    <ACTION>
+    {"name":"give_gold","amount":15}
+    </ACTION>
+
+    ### When NOT to use the action
+
+    Do NOT use give_gold() when gold is only being mentioned, discussed, imagined, or offered but has not actually been received.
+
+    For example:
+
+    > "The merchant says he would pay you 50 gold if you complete the quest."
+
+    Do NOT give the gold yet because the reward has only been offered.
+
+    Once the player completes the quest and the story establishes that they receive the 50 gold, execute the action.
+
+    ### Action Formatting
+
+    When an action should happen, output exactly one action block:
+
+    <ACTION>
+    {"name":"give_gold","amount":50}
+    </ACTION>
+
+    The action block is the instruction to the game API. Do not substitute narration for the action.
+
+    You may narrate the reward normally, but whenever gold is actually awarded, the corresponding action MUST also be included.
+
+    ### Core Rule
+
+    **If the player actually obtains gold → ALWAYS call give_gold().**
+
+    **Do not wait for the player to explicitly request or claim it.**
+
     `
 };
