@@ -221,8 +221,15 @@
                     <div class="chat-form">
                         <!-- Form links directly to the /ask route in app.js -->
                         <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
-                            <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-                            <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
+                            <div class="userTypeCont">
+                                <div class="preCont">
+                                    <button class="preResponse">Where am I?</button>
+                                    <button class="preResponse">Give me a summary of my progression.</button>
+                                    <button class="preResponse">What important events have happened so far?</button>
+                                </div>
+                                <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
+                                <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
+                            </div>
                             <button type="submit" id="submit-btn">
                                 <img src="/icons/send.png" width="30" height="30">
                             </button>
@@ -424,6 +431,7 @@
             }
         }
 
+        // Hide inventory and Courses
         function hidePanels() {
             const inventory = document.getElementById("inventoryCont");
             const course = document.getElementById("combatCont");
@@ -437,6 +445,7 @@
             }
         }
 
+        // Hide or show settings
         function viewSettings(hideorshow) {
             const settings = document.getElementById("settings");
             const chat = document.getElementById("chat");
@@ -449,6 +458,16 @@
                 chat.style.display = "none";
             }
         }
+
+        // Use pre-responses
+        const preResponses = document.querySelectorAll('.preResponse');
+        const chatbox = document.getElementById('chatbox');
+        preResponses.forEach(button => {
+            button.addEventListener('click', () => {
+                chatbox.value = button.textContent.trim();
+                chatbox.form.submit();
+            });
+        });
     </script>
 </body>
 </html>

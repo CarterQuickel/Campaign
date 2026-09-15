@@ -1,0 +1,156 @@
+#combatCont {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    padding: 10px;
+    gap: 20px;
+}
+.attackCont {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+}
+.attackCont .topCont {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+}
+.courseCate {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+.categorySelected {
+    margin-top: -21px;
+    margin-left: -10px;
+    padding: 10px;
+    width: 100%;
+    height: 50vh;
+    border-top: 1px solid var(--border-color);
+}
+.completionCont {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.fillCircle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--background-color) 80%, transparent 0), conic-gradient(var(--color) var(--progress), var(--background-color) 0);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+.fillTxt {
+    position: absolute;
+    margin: 20px auto;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 30px;
+}
+.sectionsKey.mainPage {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+.sectionsKey.mainPage.milestone .section {
+    margin-right: 10px;
+}
+.currentPanelCate {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+.currentPanelCate.enabled {
+    display: flex;
+}
+.courseCate.active {
+    background: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+}
+.attackCont .bottomCont {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.rollCont {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 10px;
+    align-items: flex-end;
+}
+.diceCont {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+.diceRoller {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.modCont {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    align-items: center;
+}
+.mod {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 20px;
+}
+.rolled {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 16px;
+}
+.nat {
+    color: #c91414;
+    font-weight: 700;
+    font-size: 16px;
+}
+.plusRes {
+    color: #05DF72;
+    font-weight: 700;
+    font-size: 16px;
+}
+.diceResultCont {
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    color: var(--text-color);
+    font-size: 40px;
+    font-weight: bold;
+    transition: all 0.1s ease;
+    background: var(--background-color);
+    width: 100%;
+    height: 45px;
+    border: 1px solid var(--border-color);
+    margin: 10px;
+}
+.centerCont {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 2;
+    gap: 20px;
+}

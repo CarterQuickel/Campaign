@@ -10,7 +10,6 @@
     align-items: center;
     justify-content: center;
 }
-
 .overallCont {
     background-color: var(--background-color);
     width: 50px;
@@ -24,55 +23,50 @@
     justify-content: center;
     align-items: center;
 }
-
 .overallScore {
     font-weight: 700;
     font-size: 15px;
 }
-
 .slice {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: var(--radius);
-  height: var(--radius);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: if(style(--radius: 100%): linear-gradient(var(--focus-color), var(--ai-background)); else: var(--color));
-  -webkit-mask-image: conic-gradient(
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--radius);
+    height: var(--radius);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: if(style(--radius: 100%): linear-gradient(var(--focus-color), var(--ai-background));
+    else: var(--color));
+    -webkit-mask-image: conic-gradient(
     transparent 0% var(--start),
     #000 var(--start) var(--end),
     transparent var(--end) 100%
-  );
-  mask-image: conic-gradient(
+    );
+    mask-image: conic-gradient(
     transparent 0% var(--start),
     #000 var(--start) var(--end),
     transparent var(--end) 100%
-  );
-  transition: all 0.2s ease;
+    );
+    transition: all 0.2s ease;
 }
-
 .masteryCont {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-
 .sectionsKey {
     margin-top: 10px;
     display: grid;
     grid-template-columns: 400px 400px;
     gap: 10px;
 }
-
 .secColor {
     background-color: var(--color);
     width: 10px;
     height: 10px;
     border-radius: 50%;
 }
-
 .section {
     justify-content: space-between;
     align-items: center;
@@ -87,7 +81,6 @@
     resize: none;
     border: 1px solid var(--border-color);
 }
-
 .section:hover {
     background: none;
     cursor: pointer;
@@ -96,14 +89,12 @@
     border-color: var(--focus-color);
     box-shadow: 0 0 0 3px var(--focus-shadow);
 }
-
 .secContLeft {
     display: flex;
     gap: 10px;
     justify-content: left;
     align-items: center;
 }
-
 .secPercent {
     color: var(--text-color);
     font-size: 15px;

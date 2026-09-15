@@ -1,6 +1,5 @@
 const express= require('express');
 const sqlite3 = require('sqlite3').verbose();
-
 const app = express();
 const port = process.env.PORT || 3000;
 const systemAPI = require('./APIendpoints.js');
@@ -8,7 +7,8 @@ const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
 const gameState = {
     gold: 0,
-    tools: tools.map(tool => ({ ...tool }))
+    tools: tools.map(tool => ({ ...tool })),
+    charName: "Carter"
 };
 let stats = [
     10, 3, 10, 15, 7, 14
@@ -75,9 +75,7 @@ database.run(`
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 `);
-
 database.run('ALTER TABLE messages ADD COLUMN conversation_id INTEGER', () => {});
-
 database.run(`
     CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +83,6 @@ database.run(`
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 `);
-
 database.run(`
     CREATE TABLE IF NOT EXISTS claimed_rewards (
         reward_id TEXT PRIMARY KEY,
@@ -104,6 +101,15 @@ function getRecentMessages(conversationId, limit = 20) {
     });
 }
 
+// Default message
+const defaultAiMessage = { 
+        role: 'assistant', 
+        content: `Welcome, adventurer ${gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
+    };
+function addDefaultAiMessage(messages) {
+    return [defaultAiMessage, ...messages];
+}
+
 // Function to save a message to the database
 function saveMessage(conversationId, role, content) {
     return new Promise((resolve, reject) => {
@@ -114,7 +120,6 @@ function saveMessage(conversationId, role, content) {
         );
     });
 }
-
 function getConversations() {
     return new Promise((resolve, reject) => {
         database.all(
@@ -123,7 +128,6 @@ function getConversations() {
         );
     });
 }
-
 function createConversation(title) {
     return new Promise((resolve, reject) => {
         database.run(
@@ -133,7 +137,6 @@ function createConversation(title) {
         );
     });
 }
-
 async function getConversationTitle(prompt) {
     const convoNamer = require('./convoNamer.js').convoNamer;
     const ollamaTitle = await fetch('http://localhost:11434/api/generate', {
@@ -161,16 +164,19 @@ async function getConversationTitle(prompt) {
         .join(' ');
 }
 
+//======================================================================================================================//
+
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 systemAPI(app, gameState);
+
+// Game action parsing
 function parseGameActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return null;
     }
-
     const text = responseText.trim();
     const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
     if (tagMatch) {
@@ -198,6 +204,7 @@ function parseGameActionFromText(responseText) {
     return null;
 }
 
+// Game action applying
 function applyActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return responseText;
@@ -206,14 +213,12 @@ function applyActionFromText(responseText) {
     if (!action) {
         return responseText;
     }
-
     if (action.name === 'give_gold') {
         const amount = Number(action.amount ?? 0);
         if (Number.isFinite(amount) && amount !== 0) {
             gameState.gold = (Number(gameState.gold) || 0) + amount;
         }
     }
-
     const cleanedText = responseText
         .replace(/<ACTION>[\s\S]*?<\/ACTION>/gi, '')
         .replace(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi, '')
@@ -231,6 +236,7 @@ function applyActionFromText(responseText) {
     return responseText.trim();
 }
 
+// Get Quizbank API
 app.get('/api/course/:id', async (req, res) => {
     const courseId = req.params.id;
     try {
@@ -257,8 +263,8 @@ app.get('/api/course/:id', async (req, res) => {
     }
 });
 
+// Get AI online or offline
 let online = false;
-
 async function checkAiStatus() {
     try {
         const response = await fetch('http://localhost:11434/api/tags');
@@ -274,7 +280,6 @@ async function checkAiStatus() {
         return false;
     }
 }
-
 app.get('/api/ai-status', async (req, res) => {
     const isReady = await checkAiStatus();
     if (!isReady) {
@@ -283,11 +288,22 @@ app.get('/api/ai-status', async (req, res) => {
     return res.json({ ready: true, message: 'AI online' });
 });
 
-// Render the initial blank page
+// Render the initial page with a welcome message
 app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index', 
-        { response: null, prompt: null, conversations: await getConversations(), conversationId: null, messages: [], online: aiReady, stats: stats, tools: tools, mastery: mastery, level: level, gold: gameState.gold });
+    { 
+        response: null, 
+        prompt: null, 
+        conversations: await getConversations(), 
+        conversationId: null, 
+        messages: addDefaultAiMessage([]), 
+        online: aiReady, 
+        stats: stats, 
+        tools: tools, 
+        mastery: mastery, 
+        level: level, 
+        gold: gameState.gold });
 });
 
 // Other pages
@@ -301,24 +317,6 @@ app.get('/mastery', async (req, res) => {
         level: level,
         gold: gameState.gold
     });
-});
-
-app.post('/api/rewards/claim', (req, res) => {
-    const rewardId = typeof req.body.rewardId === 'string' ? req.body.rewardId.trim() : '';
-    if (!rewardId) {
-        return res.status(400).json({ success: false, error: 'A reward ID is required.' });
-    }
-    database.run(
-        'INSERT OR IGNORE INTO claimed_rewards (reward_id) VALUES (?)',
-        [rewardId],
-        error => {
-            if (error) {
-                console.error('Reward claim failed:', error);
-                return res.status(500).json({ success: false, error: 'The reward could not be claimed.' });
-            }
-            res.json({ success: true });
-        }
-    );
 });
 
 // Handle the form submission and call Ollama
@@ -367,7 +365,7 @@ app.post('/ask', async (req, res) => {
         }
         const cleanedResponse = applyActionFromText(data.response);
         await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = await getRecentMessages(conversationId);
+        const messages = addDefaultAiMessage(await getRecentMessages(conversationId));
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: cleanedResponse || data.response,
@@ -385,7 +383,7 @@ app.post('/ask', async (req, res) => {
     } catch (error) {
         console.error("Ollama Error:", error);
         const conversationId = Number(req.body.conversationId) || null;
-        const messages = conversationId ? await getRecentMessages(conversationId) : [];
+        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : []);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: `AI request failed: ${error.message}`,
@@ -403,4 +401,5 @@ app.post('/ask', async (req, res) => {
     }
 });
 
+// Get localhost
 app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
