@@ -15,7 +15,7 @@
     <div id="banner">
         <div id="leftBan">
             <div id="title">
-                <img src="/icons/CharmaLogo.png" width="200" height="200">
+                <img src="/icons/CharmaLogo.png" width="200" height="200" class="logo">
             </div>
         </div>
         <div id="rightBan">
@@ -127,7 +127,7 @@
                         <div class="header">SETTINGS</div>
                         <div class="settingsCate">
                             <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
-                            <button class="setting" data-setting="campaign"><div class="emoji">📖</div><div>Campaign</div></button>
+                            <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
                             <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
                             <button class="setting active" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
@@ -173,25 +173,26 @@
                             </div>
                         </div>
                         <div class="settingCate disabled" data-setting="campaign">
-                            <div class="header">Campaign Info</div>
+                            <div class="header">Notifications</div>
                         </div>
-                        <div class="settingCate disabled" data-setting="character">
+                        <form class="settingCate disabled" action="/updateSheet" data-setting="character" method="POST" autocomplete="off">
                             <div class="header">Origin</div>
-                            <textarea class="origin"></textarea>
+                            <textarea name="origin" class="origin" id="origin"><%= charData.origin %></textarea>
                             <div class="header" style="margin-bottom: 10px;">Character</div>
                             <div class="textareaCont">
                                 <div class="textTitle">Character Name</div>
-                                <textarea class="cName"></textarea>
+                                <textarea name="name" class="cName"><%= charData.name %></textarea>
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Class</div>
-                                <textarea class="class"></textarea>
+                                <textarea name="class" class="class"><%= charData.class %></textarea>
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Race</div>
-                                <textarea class="race"></textarea>
+                                <textarea name="race" class="race"><%= charData.race %></textarea>
                             </div>
-                        </div>
+                            <button class="saveBtn">Save</button>
+                        </form>
                         <div class="settingCate disabled" data-setting="ai">
                             <div class="header">Charma Personality</div>
                         </div>
@@ -224,7 +225,6 @@
                             <div class="userTypeCont">
                                 <div class="preCont">
                                     <button class="preResponse">Where am I?</button>
-                                    <button class="preResponse">Give me a summary of my progression.</button>
                                     <button class="preResponse">What important events have happened so far?</button>
                                 </div>
                                 <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
@@ -378,6 +378,20 @@
             </div>
         </div>
     </div>
+    <div class="footer">
+        <div class="nav">
+            <div class="navIMG">📚</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG">🗣️</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG">🎓</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG" onclick="viewSettings(false)">⚙️</div>
+        </div>
+    </div>
 
     <script src="/chat.js"></script>
     <script>
@@ -467,6 +481,13 @@
                 chatbox.value = button.textContent.trim();
                 chatbox.form.submit();
             });
+        });
+
+        // Update textbox
+        const textarea = document.getElementById("origin");
+        textarea.addEventListener("input", () => {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
         });
     </script>
 </body>

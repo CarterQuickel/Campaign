@@ -3,7 +3,7 @@
     flex-direction: column;
     gap: 12px;
     margin: 10px;
-    height: 90%;
+    height: 100%;
     overflow-y: auto;
     padding-bottom: 8px;
     scrollbar-color: var(--accent-color) transparent;

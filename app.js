@@ -8,7 +8,10 @@ const database = new sqlite3.Database('./chat-history.db');
 const gameState = {
     gold: 0,
     tools: tools.map(tool => ({ ...tool })),
-    charName: "Carter"
+    charName: "Carter",
+    charClass: "Druid",
+    charRace: "Elvish",
+    charOrigin: ""
 };
 let stats = [
     10, 3, 10, 15, 7, 14
@@ -102,11 +105,11 @@ function getRecentMessages(conversationId, limit = 20) {
 }
 
 // Default message
-const defaultAiMessage = { 
-        role: 'assistant', 
+function addDefaultAiMessage(messages) {
+    const defaultAiMessage = {
+        role: 'assistant',
         content: `Welcome, adventurer ${gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
     };
-function addDefaultAiMessage(messages) {
     return [defaultAiMessage, ...messages];
 }
 
@@ -303,7 +306,14 @@ app.get('/', async (req, res) => {
         tools: tools, 
         mastery: mastery, 
         level: level, 
-        gold: gameState.gold });
+        gold: gameState.gold,
+        charData: { 
+            name: gameState.charName, 
+            class: gameState.charClass, 
+            race: gameState.charRace, 
+            origin: gameState.charOrigin 
+        } 
+    });
 });
 
 // Other pages
@@ -315,8 +325,31 @@ app.get('/mastery', async (req, res) => {
         tools: tools, 
         mastery: mastery,
         level: level,
-        gold: gameState.gold
+        gold: gameState.gold,
+        charData: { 
+            name: gameState.charName, 
+            class: gameState.charClass, 
+            race: gameState.charRace, 
+            origin: gameState.charOrigin 
+        } 
     });
+});
+
+app.post('/updateSheet', async (req, res) => {
+    const cName = req.body.name;
+    const cOrigin = req.body.origin;
+    const cRace = req.body.race;
+    const cClass = req.body.class;
+    try {
+        gameState.charName = cName;
+        gameState.charClass = cClass;
+        gameState.charRace = cRace;
+        gameState.charOrigin = cOrigin;
+        console.log(gameState);
+        res.redirect('/');
+    } catch (err) {
+        console.log("Character Sheet Saving Error: ", err);
+    }
 });
 
 // Handle the form submission and call Ollama
@@ -378,7 +411,13 @@ app.post('/ask', async (req, res) => {
             tools: tools,
             mastery: mastery, 
             level: level,
-            gold: gameState.gold
+            gold: gameState.gold,
+            charData: { 
+                name: gameState.charName, 
+                class: gameState.charClass, 
+                race: gameState.charRace, 
+                origin: gameState.charOrigin 
+            } 
         });
     } catch (error) {
         console.error("Ollama Error:", error);
@@ -396,7 +435,13 @@ app.post('/ask', async (req, res) => {
             tools: tools,
             mastery: mastery, 
             level: level,
-            gold: gameState.gold
+            gold: gameState.gold,
+            charData: { 
+                name: gameState.charName, 
+                class: gameState.charClass, 
+                race: gameState.charRace, 
+                origin: gameState.charOrigin 
+            } 
         });
     }
 });

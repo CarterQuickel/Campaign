@@ -53,6 +53,10 @@ button.setting:hover:not(.active) {
     height: 100%;
     flex-direction: column;
     gap: 20px;
+    overflow-y: auto;
+}
+.settingCate::-webkit-scrollbar {
+    display: none;
 }
 .settingCate.enabled {
     display: flex;
@@ -166,4 +170,22 @@ input:checked + .slider:before {
     color: white;
     border: 1px solid rgb(255, 91, 91);
     box-shadow: 0 0 0 1px red;
+}
+.saveBtn {
+    width: 10%;
+    margin: 10px;
+    border: 1px solid rgb(165, 255, 91);
+    background-color: rgba(58, 90, 28, 0.705);
+    color: rgb(157, 255, 91);
+    margin: 10px;
+}
+.saveBtn:hover {
+    background-color: rgb(165, 255, 91);
+    color: black;
+     border: 1px solid rgb(165, 255, 91);
+    box-shadow: 0 0 0 1px greenyellow;
+}
+#origin {
+    resize: none;
+    min-height: 300px;
 }
