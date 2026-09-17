@@ -99,9 +99,6 @@
                 <button class="cate" data-category='Spell'>
                     Spell
                 </button>
-                <button class="cate" data-category='Key'>
-                    Key
-                </button>
                 <button class="cate" data-category='Misc'>
                     Misc
                 </button>
@@ -233,7 +230,7 @@
                             <div class="userTypeCont">
                                 <div class="preCont">
                                     <button class="preResponse">Where am I?</button>
-                                    <button class="preResponse">What important events have happened so far?</button>
+                                    <button class="preResponse">What's happened so far?</button>
                                 </div>
                                 <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
                                 <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
@@ -388,16 +385,16 @@
     </div>
     <div class="footer">
         <div class="nav">
-            <div class="navIMG">📚</div>
+            <div class="navIMG" onclick="viewMobilePage('inventory')">📚</div>
         </div>
         <div class="nav">
-            <div class="navIMG">🗣️</div>
+            <div class="navIMG" onclick="viewMobilePage('chat')">🗣️</div>
         </div>
         <div class="nav">
-            <div class="navIMG">🎓</div>
+            <div class="navIMG" onclick="viewMobilePage('course')">🎓</div>
         </div>
         <div class="nav">
-            <div class="navIMG" onclick="viewSettings(false)">⚙️</div>
+            <div class="navIMG" onclick="viewMobilePage('settings')">⚙️</div>
         </div>
     </div>
 
@@ -497,6 +494,38 @@
             textarea.style.height = "auto";
             textarea.style.height = textarea.scrollHeight + "px";
         });
+
+        // FOR MOBILE: View the current page
+        function hideAll() {
+            const elements = [
+                document.getElementById("inventoryCont"),
+                document.getElementById("combatCont"),
+                document.querySelector(".centerCont"),
+                document.getElementById("settings"),
+                document.getElementById("chat")
+            ];
+
+            elements.filter(Boolean).forEach(el => {
+                el.style.display = "none";
+            });
+        }
+        function viewMobilePage(page) {
+            const key = page.toLowerCase();
+            const sections = {
+                inventory: document.getElementById("inventoryCont"),
+                course: document.getElementById("combatCont"),
+                settings: document.getElementById("settings"),
+                chat: document.getElementById("chat")
+            };
+            const center = document.querySelector(".centerCont");
+            hideAll();
+            if (key === "settings" || key === "chat") {
+                center.style.display = "flex";
+            }
+            if (sections[key]) {
+                sections[key].style.display = "flex";
+            }
+        }
     </script>
 </body>
 </html>

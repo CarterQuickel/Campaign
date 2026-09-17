@@ -23,7 +23,6 @@ async function renderAIResponse(text) {
         .trim();
     const fallbackText = actionAmount > 0 ? `You receive ${actionAmount} gold.` : '';
     const displayText = cleanedText || fallbackText || 'The DM responds.';
-    console.log(displayText);
     await applyGameActionFromText(text);
     await typeAIResponseIntoElement(displayText, bubble);
     source.hidden = true;

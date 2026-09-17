@@ -1,7 +1,9 @@
 const express= require('express');
+const env = require('dotenv').config();
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
+const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
@@ -142,7 +144,7 @@ function createConversation(title) {
 }
 async function getConversationTitle(prompt) {
     const convoNamer = require('./convoNamer.js').convoNamer;
-    const ollamaTitle = await fetch('http://localhost:11434/api/generate', {
+    const ollamaTitle = await fetch(`http://localhost:11434/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -270,7 +272,7 @@ app.get('/api/course/:id', async (req, res) => {
 let online = false;
 async function checkAiStatus() {
     try {
-        const response = await fetch('http://localhost:11434/api/tags');
+        const response = await fetch(`http://localhost:11434/api/tags`);
         if (!response.ok) {
             online = false;
             return false;
@@ -372,7 +374,7 @@ app.post('/ask', async (req, res) => {
         }
         const history = await getRecentMessages(conversationId);
         await saveMessage(conversationId, 'user', userPrompt);
-        const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
+        const ollamaResponse = await fetch(`http://localhost:11434/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -447,4 +449,4 @@ app.post('/ask', async (req, res) => {
 });
 
 // Get localhost
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
