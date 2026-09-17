@@ -15,14 +15,14 @@
     <div id="banner">
         <div id="leftBan">
             <div id="title">
-                <img src="/icons/CharmaLogo.png" width="200" height="200">
+                <img src="/icons/CharmaLogo.png" width="200" height="200" class="logo">
             </div>
         </div>
         <div id="rightBan">
             <button class="settingsBtn" type="button" onclick="viewSettings(false)" style="margin-right: 10px;">
                 SETTINGS
             </button>
-            <div class="horiz"></div>
+            <div class="horiz mobileHidden"></div>
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
@@ -52,12 +52,20 @@
                 <% }); %>
             </div>
             <div class="horiz"></div>
-            <div class="status">
+            <div class="status desktop">
                 <div class="dot <%= online ? 'online' : 'offline' %>"></div>
                 <% if (online) { %>
                     <h5 class="on">AI Online</h5>
                 <% } else { %>
                     <h5 class="off">AI Offline</h5>
+                <% } %>
+            </div>
+            <div class="status mobile">
+                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
+                <% if (online) { %>
+                    <h5 class="on">Online</h5>
+                <% } else { %>
+                    <h5 class="off">Offline</h5>
                 <% } %>
             </div>
         </div>
@@ -125,9 +133,9 @@
                     <button class="close" onclick="viewSettings(true)">Close</button>
                     <div class="settingsSidePanel">
                         <div class="header">SETTINGS</div>
-                        <div class="settingsCate">
+                        <div class="settingsList">
                             <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
-                            <button class="setting" data-setting="campaign"><div class="emoji">📖</div><div>Campaign</div></button>
+                            <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
                             <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
                             <button class="setting active" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
@@ -151,7 +159,7 @@
                                 </button>
                             </div>
                             <div class="header">LAYOUT</div>
-                            <div class="toggleCont">
+                            <div class="toggleCont panels">
                                 <div class="desc">
                                     <div class="name">Hide Side Panels</div>
                                     <div class="info">Temporarily hide inventory and course</div>
@@ -173,25 +181,26 @@
                             </div>
                         </div>
                         <div class="settingCate disabled" data-setting="campaign">
-                            <div class="header">Campaign Info</div>
+                            <div class="header">Notifications</div>
                         </div>
-                        <div class="settingCate disabled" data-setting="character">
+                        <form class="settingCate disabled" action="/updateSheet" data-setting="character" method="POST" autocomplete="off">
                             <div class="header">Origin</div>
-                            <textarea class="origin"></textarea>
+                            <textarea name="origin" class="origin" id="origin"><%= charData.origin %></textarea>
                             <div class="header" style="margin-bottom: 10px;">Character</div>
                             <div class="textareaCont">
                                 <div class="textTitle">Character Name</div>
-                                <textarea class="cName"></textarea>
+                                <textarea name="name" class="cName"><%= charData.name %></textarea>
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Class</div>
-                                <textarea class="class"></textarea>
+                                <textarea name="class" class="class"><%= charData.class %></textarea>
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Race</div>
-                                <textarea class="race"></textarea>
+                                <textarea name="race" class="race"><%= charData.race %></textarea>
                             </div>
-                        </div>
+                            <button class="saveBtn">Save</button>
+                        </form>
                         <div class="settingCate disabled" data-setting="ai">
                             <div class="header">Charma Personality</div>
                         </div>
@@ -221,8 +230,14 @@
                     <div class="chat-form">
                         <!-- Form links directly to the /ask route in app.js -->
                         <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
-                            <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
-                            <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
+                            <div class="userTypeCont">
+                                <div class="preCont">
+                                    <button class="preResponse">Where am I?</button>
+                                    <button class="preResponse">What important events have happened so far?</button>
+                                </div>
+                                <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
+                                <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
+                            </div>
                             <button type="submit" id="submit-btn">
                                 <img src="/icons/send.png" width="30" height="30">
                             </button>
@@ -246,10 +261,10 @@
                         <button class="courseCate" data-category='vocab'>
                             Vocabulary
                         </button>
-                        <button class="courseCate" data-category='progress'>
+                        <button class="courseCate active" data-category='progress'>
                             Progress
                         </button>
-                        <button class="courseCate active" data-category='units'>
+                        <button class="courseCate" data-category='units'>
                             All Units
                         </button>
                     </div>
@@ -261,7 +276,7 @@
                                 <% } %>
                             <% }); %>
                         </div>
-                        <div class="currentPanelCate disabled" data-category="progress">
+                        <div class="currentPanelCate enabled" data-category="progress">
                             <% mastery.forEach((section, index) => { %>
                                 <% if (section.current) { %>
                                     <div class="header"><%= section.name %></div>
@@ -274,46 +289,46 @@
                                         <div class="fillTxt"><%= section.completion %>%</div>
                                     </div>
                                     <div class="header">Milestones</div>
-                                    <div class="sectionsKey mainPage milestone" style="width: 80%; overflow-y: auto; margin-top: -10px;">
+                                    <div class="sectionsKey mainPage milestone" style="width: 100%; margin-top: -10px;">
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">5%</div>
-                                                <div class="secName"><%= section.name %> - Beginner</div>
+                                                <div class="secName">Beginner</div>
                                             </div>
                                             <div class="secPercent">+500 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">15%</div>
-                                                <div class="secName"><%= section.name %> - Novice</div>
+                                                <div class="secName">Novice</div>
                                             </div>
                                             <div class="secPercent">+800 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">30%</div>
-                                                <div class="secName"><%= section.name %> - Apprentice</div>
+                                                <div class="secName">Apprentice</div>
                                             </div>
                                             <div class="secPercent">+1200 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">50%</div>
-                                                <div class="secName"><%= section.name %> - Experienced</div>
+                                                <div class="secName">Experienced</div>
                                             </div>
                                             <div class="secPercent">+1700 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">75%</div>
-                                                <div class="secName"><%= section.name %> - Expert</div>
+                                                <div class="secName">Expert</div>
                                             </div>
                                             <div class="secPercent">+2300 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">100%</div>
-                                                <div class="secName"><%= section.name %> - Completionist</div>
+                                                <div class="secName">Completionist</div>
                                             </div>
                                             <div class="secPercent">+3000 XP</div>
                                         </div>
@@ -321,7 +336,7 @@
                                 <% } %>
                             <% }); %>
                         </div>
-                        <div class="currentPanelCate enabled" data-category="units">
+                        <div class="currentPanelCate disabled" data-category="units">
                             <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL MASTERY</button>
                             <div class="sectionsKey mainPage">
                                 <% mastery.forEach((section, index) => { %>
@@ -369,6 +384,20 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="nav">
+            <div class="navIMG">📚</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG">🗣️</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG">🎓</div>
+        </div>
+        <div class="nav">
+            <div class="navIMG" onclick="viewSettings(false)">⚙️</div>
         </div>
     </div>
 
@@ -424,6 +453,7 @@
             }
         }
 
+        // Hide inventory and Courses
         function hidePanels() {
             const inventory = document.getElementById("inventoryCont");
             const course = document.getElementById("combatCont");
@@ -437,6 +467,7 @@
             }
         }
 
+        // Hide or show settings
         function viewSettings(hideorshow) {
             const settings = document.getElementById("settings");
             const chat = document.getElementById("chat");
@@ -449,6 +480,23 @@
                 chat.style.display = "none";
             }
         }
+
+        // Use pre-responses
+        const preResponses = document.querySelectorAll('.preResponse');
+        const chatbox = document.getElementById('chatbox');
+        preResponses.forEach(button => {
+            button.addEventListener('click', () => {
+                chatbox.value = button.textContent.trim();
+                chatbox.form.submit();
+            });
+        });
+
+        // Update textbox
+        const textarea = document.getElementById("origin");
+        textarea.addEventListener("input", () => {
+            textarea.style.height = "auto";
+            textarea.style.height = textarea.scrollHeight + "px";
+        });
     </script>
 </body>
 </html>

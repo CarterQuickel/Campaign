@@ -1,0 +1,104 @@
+@media only screen and (max-width: 767px) {
+    /* BASICS ================================================================== */
+    .response-area {
+        border: none;
+    }
+    #SuperCont {
+        height: calc(84.5vh);
+    } 
+    .response-box {
+        height: 100%;
+    }
+    .logo {
+        display: none;
+    }
+    .settingsBtn {
+        display: none;
+    }
+    #banner {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+    #rightBan {
+        width: 100vw;
+    }
+    .footer {
+        width: 100%;
+        height: 40px;
+        border-top: 1px solid var(--site-border);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 30px;
+        background-color: var(--background-color);
+    }
+    .navIMG {
+        background-image: linear-gradient(var(--primary-color));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        display: inline-block;
+        font-size: 30px;
+    }
+    .navTxt {
+        color: var(--primary-color);
+        font-weight: 500;
+        font-size: 15px;
+    }
+    .status.mobile {
+        display: flex;
+    }
+    .horiz.mobileHidden {
+        display: none;
+    }
+    .status.desktop {
+        display: none;
+    }
+    #inventoryCont, #combatCont {
+        display: none;
+    }
+
+    /* SETTINGS ================================================================== */
+    .settingsCont {
+        overflow-y: auto;
+        margin-bottom: 55px;
+    }
+    .settings {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    .settingCate textarea {
+        width: 95%;
+    }
+    .toggleCont.panels {
+        display: none;
+    }
+    .settingsSidePanel {
+        width: 100%;
+        height: 100px;
+    }
+    .settingsList {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+    .saveBtn {
+        width: 95%;
+        position: absolute;
+        bottom: 0;
+    }
+    .setting div:not(.emoji) {
+        display: none;
+    }
+    .settingsSidePanel .header {
+        display: none;
+    }
+    .close {
+        display: none;
+    }
+}

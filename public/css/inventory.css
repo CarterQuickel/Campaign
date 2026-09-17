@@ -1,0 +1,145 @@
+#inventoryCont {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    gap: 20px;
+}
+.label {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 12px;
+}
+.encumCont {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.encumBar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--misc-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.encumBar::-webkit-progress-bar {
+    background-color: var(--misc-color);
+}
+.encumBar::-webkit-progress-value {
+    background-color: var(--accent-color);
+}
+.contBan {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+.header {
+    color: var(--accent-color);
+    font-size: 20px;
+    letter-spacing: 1px;
+    font-family: "Cinzel", serif;
+    font-weight: 700;
+}
+.gold {
+    color: #FDC700;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+.weight {
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+.categoryCont {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 6px;
+}
+.cate.active {
+    background: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+}
+.toolsContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    height: 700px;
+    overflow-y: auto;
+}
+.tool {
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    color: var(--primary-color);
+    font-size: 12px;
+    transition: all 0.1s ease;
+    background: var(--background-color);
+    resize: none;
+    border: 1px solid var(--border-color);
+    margin-right: 10px;
+}
+.tool.locked {
+    display: none;
+}
+.left-tool {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+.tool-icon {
+    background-image: linear-gradient(#FDC700);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+}
+.tool-icon.weapon {
+    background-image: linear-gradient(#FF5C53);
+}
+.tool-icon.armor {
+    background-image: linear-gradient(#2C6CC5);
+}
+.tool-icon.potion {
+    background-image: linear-gradient(#05DF72);
+}
+.tool-icon.spell {
+    background-image: linear-gradient(#C27AFF);
+}
+.tool-cont {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+.tool .tool-name {
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: bold;
+}
+.convoNavigator {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    overflow-y: auto;
+}
+.convo-button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    overflow-y: auto;
+}
