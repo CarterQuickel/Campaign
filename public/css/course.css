@@ -25,7 +25,6 @@
 }
 .categorySelected {
     margin-top: -21px;
-    margin-left: -10px;
     padding: 10px;
     width: 100%;
     height: 50vh;
@@ -59,10 +58,14 @@
     font-size: 30px;
 }
 .sectionsKey.mainPage {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.sectionsKey.mainPage.milestone {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    place-items: center;
 }
 .sectionsKey.mainPage.milestone .section {
-    margin-right: 10px;
+    min-width: 220px;
 }
 .currentPanelCate {
     display: none;

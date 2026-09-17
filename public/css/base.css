@@ -26,8 +26,6 @@ body {
     display: none;
 }
 #banner {
-    top: 0;
-    left: 0;
     width: 100%;
     height: 40px;
     border-bottom: 1px solid var(--site-border);
@@ -54,14 +52,16 @@ body {
     margin: 10px;
     height: 50px;
 }
-.status {
+.status.desktop, .status.mobile {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
-    margin-right: 40px;
     gap: 4px;
     color: var(--primary-color);
+}
+.status.mobile {
+    display: none;
 }
 .dot {
     width: 8px;

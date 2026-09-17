@@ -22,7 +22,7 @@
             <button class="settingsBtn" type="button" onclick="viewSettings(false)" style="margin-right: 10px;">
                 SETTINGS
             </button>
-            <div class="horiz"></div>
+            <div class="horiz mobileHidden"></div>
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
@@ -52,12 +52,20 @@
                 <% }); %>
             </div>
             <div class="horiz"></div>
-            <div class="status">
+            <div class="status desktop">
                 <div class="dot <%= online ? 'online' : 'offline' %>"></div>
                 <% if (online) { %>
                     <h5 class="on">AI Online</h5>
                 <% } else { %>
                     <h5 class="off">AI Offline</h5>
+                <% } %>
+            </div>
+            <div class="status mobile">
+                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
+                <% if (online) { %>
+                    <h5 class="on">Online</h5>
+                <% } else { %>
+                    <h5 class="off">Offline</h5>
                 <% } %>
             </div>
         </div>
@@ -125,7 +133,7 @@
                     <button class="close" onclick="viewSettings(true)">Close</button>
                     <div class="settingsSidePanel">
                         <div class="header">SETTINGS</div>
-                        <div class="settingsCate">
+                        <div class="settingsList">
                             <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
                             <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
@@ -151,7 +159,7 @@
                                 </button>
                             </div>
                             <div class="header">LAYOUT</div>
-                            <div class="toggleCont">
+                            <div class="toggleCont panels">
                                 <div class="desc">
                                     <div class="name">Hide Side Panels</div>
                                     <div class="info">Temporarily hide inventory and course</div>
@@ -253,10 +261,10 @@
                         <button class="courseCate" data-category='vocab'>
                             Vocabulary
                         </button>
-                        <button class="courseCate" data-category='progress'>
+                        <button class="courseCate active" data-category='progress'>
                             Progress
                         </button>
-                        <button class="courseCate active" data-category='units'>
+                        <button class="courseCate" data-category='units'>
                             All Units
                         </button>
                     </div>
@@ -268,7 +276,7 @@
                                 <% } %>
                             <% }); %>
                         </div>
-                        <div class="currentPanelCate disabled" data-category="progress">
+                        <div class="currentPanelCate enabled" data-category="progress">
                             <% mastery.forEach((section, index) => { %>
                                 <% if (section.current) { %>
                                     <div class="header"><%= section.name %></div>
@@ -281,46 +289,46 @@
                                         <div class="fillTxt"><%= section.completion %>%</div>
                                     </div>
                                     <div class="header">Milestones</div>
-                                    <div class="sectionsKey mainPage milestone" style="width: 80%; overflow-y: auto; margin-top: -10px;">
+                                    <div class="sectionsKey mainPage milestone" style="width: 100%; margin-top: -10px;">
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">5%</div>
-                                                <div class="secName"><%= section.name %> - Beginner</div>
+                                                <div class="secName">Beginner</div>
                                             </div>
                                             <div class="secPercent">+500 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">15%</div>
-                                                <div class="secName"><%= section.name %> - Novice</div>
+                                                <div class="secName">Novice</div>
                                             </div>
                                             <div class="secPercent">+800 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">30%</div>
-                                                <div class="secName"><%= section.name %> - Apprentice</div>
+                                                <div class="secName">Apprentice</div>
                                             </div>
                                             <div class="secPercent">+1200 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">50%</div>
-                                                <div class="secName"><%= section.name %> - Experienced</div>
+                                                <div class="secName">Experienced</div>
                                             </div>
                                             <div class="secPercent">+1700 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">75%</div>
-                                                <div class="secName"><%= section.name %> - Expert</div>
+                                                <div class="secName">Expert</div>
                                             </div>
                                             <div class="secPercent">+2300 XP</div>
                                         </div>
                                         <div class="section">
                                             <div class="secContLeft">
                                                 <div class="secPerc">100%</div>
-                                                <div class="secName"><%= section.name %> - Completionist</div>
+                                                <div class="secName">Completionist</div>
                                             </div>
                                             <div class="secPercent">+3000 XP</div>
                                         </div>
@@ -328,7 +336,7 @@
                                 <% } %>
                             <% }); %>
                         </div>
-                        <div class="currentPanelCate enabled" data-category="units">
+                        <div class="currentPanelCate disabled" data-category="units">
                             <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL MASTERY</button>
                             <div class="sectionsKey mainPage">
                                 <% mastery.forEach((section, index) => { %>
