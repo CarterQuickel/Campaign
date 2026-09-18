@@ -42,13 +42,29 @@
         background-color: var(--background-color);
     }
     .navIMG {
-        background-image: linear-gradient(var(--primary-color));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-        display: inline-block;
-        font-size: 30px;
+        width: 30px;
+        height: 30px;
+        background-color: var(--primary-color);
+        display: block;
+    }
+    .navIMG img {
+        display: none;
+    }
+    .navIMG.navIcon--inventory {
+        -webkit-mask: url("/icons/inventory.png") center / contain no-repeat;
+        mask: url("/icons/inventory.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--chat {
+        -webkit-mask: url("/icons/chat.png") center / contain no-repeat;
+        mask: url("/icons/chat.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--course {
+        -webkit-mask: url("/icons/course.png") center / contain no-repeat;
+        mask: url("/icons/course.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--settings {
+        -webkit-mask: url("/icons/settings.png") center / contain no-repeat;
+        mask: url("/icons/settings.png") center / contain no-repeat;
     }
     .navTxt {
         color: var(--primary-color);
@@ -77,6 +93,9 @@
         display: flex;
         flex-direction: column;
         position: relative;
+    }
+    .settingCate {
+        height: 55vh;
     }
     .settingCate textarea {
         width: 95%;
@@ -111,10 +130,13 @@
     /* INVENTORY ================================================================== */
     #inventoryCont {
         width: 80%;
-        height: 80vh;
+        height: 75vh;
     }
     .toolsContainer {
         overflow-y: none;
+    }
+    .categoryCont {
+        
     }
 
     /* COURSE ================================================================== */
