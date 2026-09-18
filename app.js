@@ -36,7 +36,7 @@ let mastery = [
         name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions',
         completion: 54,
         color: '#b8cfd0',
-        current: true
+        current: false
     },
     {
         name: 'Design Program Solutions',
@@ -48,7 +48,7 @@ let mastery = [
         name: 'Code Programs',
         completion: 67,
         color: '#828e6f',
-        current: false
+        current: true
     },
     {
         name: 'Test Programs',
