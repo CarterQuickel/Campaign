@@ -77,8 +77,8 @@
         font-weight: 500;
         font-size: 15px;
     }
-    .status.mobile {
-        display: flex;
+    .status {
+        display: none;
     }
     .horiz.mobileHidden {
         display: none;

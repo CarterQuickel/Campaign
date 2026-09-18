@@ -6,19 +6,22 @@ const port = 3000;
 const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
+const classHP = require('./healthCalc.js').classHP;
 const database = new sqlite3.Database('./chat-history.db');
+let stats = [
+    10, 3, 10, 15, 7, 14
+];
+let campaignClass = "Elvish";
 const gameState = {
     gold: 0,
     tools: tools.map(tool => ({ ...tool })),
     charName: "Carter",
     charClass: "Druid",
-    charRace: "Elvish",
-    charOrigin: ""
+    charRace: campaignClass,
+    charOrigin: "",
+    level: 3,
+    HP: stats[2] + classHP.find(c => c.name === campaignClass)?.default
 };
-let stats = [
-    10, 3, 10, 15, 7, 14
-]
-let level = 3;
 let mastery = [
     {
         name: 'General Information and Concepts',
@@ -307,14 +310,15 @@ app.get('/', async (req, res) => {
         stats: stats, 
         tools: tools, 
         mastery: mastery, 
-        level: level, 
         gold: gameState.gold,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
             race: gameState.charRace, 
-            origin: gameState.charOrigin 
-        } 
+            origin: gameState.charOrigin,
+            level: gameState.level,
+            HP: gameState.HP
+        }
     });
 });
 
@@ -326,13 +330,14 @@ app.get('/mastery', async (req, res) => {
         online: aiReady,
         tools: tools, 
         mastery: mastery,
-        level: level,
         gold: gameState.gold,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
             race: gameState.charRace, 
-            origin: gameState.charOrigin 
+            origin: gameState.charOrigin,
+            level: gameState.level,
+            HP: gameState.HP
         } 
     });
 });
@@ -412,13 +417,14 @@ app.post('/ask', async (req, res) => {
             stats: stats,
             tools: tools,
             mastery: mastery, 
-            level: level,
             gold: gameState.gold,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
                 race: gameState.charRace, 
-                origin: gameState.charOrigin 
+                origin: gameState.charOrigin,
+                level: gameState.level,
+                HP: gameState.HP
             } 
         });
     } catch (error) {
@@ -436,13 +442,14 @@ app.post('/ask', async (req, res) => {
             stats: stats,
             tools: tools,
             mastery: mastery, 
-            level: level,
             gold: gameState.gold,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
                 race: gameState.charRace, 
-                origin: gameState.charOrigin 
+                origin: gameState.charOrigin,
+                level: gameState.level,
+                HP: gameState.HP
             } 
         });
     }
