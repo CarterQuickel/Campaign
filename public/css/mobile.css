@@ -60,6 +60,10 @@
         -webkit-mask: url("/icons/chat.png") center / contain no-repeat;
         mask: url("/icons/chat.png") center / contain no-repeat;
     }
+    .navIMG.navIcon--dice {
+        -webkit-mask: url("/icons/dice.png") center / contain no-repeat;
+        mask: url("/icons/dice.png") center / contain no-repeat;
+    }
     .navIMG.navIcon--course {
         -webkit-mask: url("/icons/course.png") center / contain no-repeat;
         mask: url("/icons/course.png") center / contain no-repeat;
@@ -127,9 +131,6 @@
     }
 
     /* INVENTORY ================================================================== */
-    #inventoryCont {
-        width: 80%;
-    }
     .toolsContainer {
         overflow-y: none;
     }
@@ -137,6 +138,17 @@
     /* COURSE ================================================================== */
     #combatCont {
         width: 80%;
+        position: relative;
+    }
+    #combatCont[data-view="course"] .topCont {
+        display: flex;
+    }
+    #combatCont[data-view="course"] .bottomCont,
+    #combatCont[data-view="dice"] .topCont {
+        display: none;
+    }
+    #combatCont[data-view="dice"] .bottomCont {
+        display: flex;
     }
     .currentPanelCate {
         overflow-y: auto;
@@ -147,10 +159,29 @@
     .sectionsKey.mainPage.milestone .section {
         min-width: 300px;
     }
-    .rollCont {
-        display: none;
-    }
     .categorySelected {
         height: 60vh;
+    }
+    #combatCont[data-view="dice"] .header:not(.attackCont .header) {
+        display: none;
+    }
+    .rollCont {
+        flex-direction: column;
+        align-items: center;
+    }
+    .diceResultCont {
+        width: 95%;
+    }
+    .modInput {
+        width: 80%;
+        height: 50px;
+    }
+    .diceCont {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+    .diceBtn {
+        font-size: 20px;
+        padding: 20px;
     }
 }

@@ -243,7 +243,7 @@
                 </div>
             </div>
         </div>
-        <div id="combatCont">
+        <div id="combatCont" data-view="course">
             <div class="header">COURSE</div>
             <div class="attackCont">
                 <div class="topCont">
@@ -354,7 +354,7 @@
                 <div class="bottomCont">
                     <div class="spellSlotsCont">
                     </div>
-                    <div class="rollCont">
+                    <div class="rollCont" id="roll">
                         <div class="diceRoller">
                             <div class="header">DICE ROLLER</div>
                             <div class="diceCont">
@@ -389,6 +389,9 @@
         </div>
         <div class="nav">
             <div class="navIMG navIcon--chat" onclick="viewMobilePage('chat')"><img src="/icons/chat.png" width="30" height="30"></div>
+        </div>
+        <div class="nav">
+            <div class="navIMG navIcon--dice" onclick="viewMobilePage('dice')"><img src="/icons/dice.png" width="30" height="30"></div>
         </div>
         <div class="nav">
             <div class="navIMG navIcon--course" onclick="viewMobilePage('course')"><img src="/icons/course.png" width="30" height="30"></div>
@@ -514,6 +517,7 @@
             const sections = {
                 inventory: document.getElementById("inventoryCont"),
                 course: document.getElementById("combatCont"),
+                dice: document.getElementById("combatCont"),
                 settings: document.getElementById("settings"),
                 chat: document.getElementById("chat")
             };
@@ -524,6 +528,9 @@
             }
             if (sections[key]) {
                 sections[key].style.display = "flex";
+            }
+            if (key === "course" || key === "dice") {
+                sections[key].dataset.view = key;
             }
         }
     </script>
