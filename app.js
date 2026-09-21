@@ -9,19 +9,21 @@ const tools = require('./StoryAPI/tools.js').Tools;
 const classHP = require('./healthCalc.js').classHP;
 const database = new sqlite3.Database('./chat-history.db');
 let stats = [
-    10, 3, 10, 15, 7, 14
+    10, 3, 20, 15, 7, 14
 ];
-let campaignClass = "Elvish";
+let campaignClass = "Barbarian";
+let level = 20;
+const HP_equation = (classHP.find(c => c.name === campaignClass)?.default + ((stats[2] - 10) / 2)) + (((level - 1) * ((stats[2] - 10) / 2)) + ((level - 1) * (classHP.find(c => c.name === campaignClass)?.perLevel)))
 const gameState = {
     gold: 0,
     tools: tools.map(tool => ({ ...tool })),
     charName: "Carter",
-    charClass: "Druid",
-    charRace: campaignClass,
+    charClass: campaignClass,
+    charRace: "Elvish",
     charOrigin: "",
-    level: 3,
-    HP: stats[2] + classHP.find(c => c.name === campaignClass)?.default
+    HP: HP_equation
 };
+console.log(gameState.HP);
 let mastery = [
     {
         name: 'General Information and Concepts',
@@ -311,12 +313,12 @@ app.get('/', async (req, res) => {
         tools: tools, 
         mastery: mastery, 
         gold: gameState.gold,
+        level: level,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
             race: gameState.charRace, 
             origin: gameState.charOrigin,
-            level: gameState.level,
             HP: gameState.HP
         }
     });
@@ -331,12 +333,12 @@ app.get('/mastery', async (req, res) => {
         tools: tools, 
         mastery: mastery,
         gold: gameState.gold,
+        level: level,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
             race: gameState.charRace, 
             origin: gameState.charOrigin,
-            level: gameState.level,
             HP: gameState.HP
         } 
     });
@@ -352,7 +354,7 @@ app.post('/updateSheet', async (req, res) => {
         gameState.charClass = cClass;
         gameState.charRace = cRace;
         gameState.charOrigin = cOrigin;
-        console.log(gameState);
+        gameState.HP = classHP.find(c => c.name === cClass)?.default + ((level - 1) * classHP.find(c => c.name === cClass)?.perLevel)
         res.redirect('/');
     } catch (err) {
         console.log("Character Sheet Saving Error: ", err);
@@ -418,12 +420,12 @@ app.post('/ask', async (req, res) => {
             tools: tools,
             mastery: mastery, 
             gold: gameState.gold,
+            level: level,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
                 race: gameState.charRace, 
                 origin: gameState.charOrigin,
-                level: gameState.level,
                 HP: gameState.HP
             } 
         });
@@ -443,12 +445,12 @@ app.post('/ask', async (req, res) => {
             tools: tools,
             mastery: mastery, 
             gold: gameState.gold,
+            level: level,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
                 race: gameState.charRace, 
                 origin: gameState.charOrigin,
-                level: gameState.level,
                 HP: gameState.HP
             } 
         });
