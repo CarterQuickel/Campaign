@@ -1,10 +1,16 @@
 const express= require('express');
+const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = process.env.PORT || 3000;
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
+
+const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost:3000';
+const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
+const THIS_URL = process.env.THIS_URL || 'http://localhost:3000/login';
+
 const gameState = {
     gold: 0,
     tools: tools.map(tool => ({ ...tool })),
@@ -175,6 +181,45 @@ app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 systemAPI(app, gameState);
 
+//formbar stuff
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'default_secret',
+    resave: false,
+    saveUninitialized: false
+}));
+
+function isAuthenticated(req, res, next) {
+    if (req.session.formbarToken) {
+        return next();
+    }
+
+    const callbackUrl = `${IP_ADDRESS}/login/callback`;
+
+    const loginUrl = new URL('/oauth', AUTH_URL);
+    loginUrl.searchParams.set('redirectURL', callbackUrl);
+
+    res.redirect(loginUrl.toString());
+}
+
+app.get('/login/callback', (req, res) => {
+    if (!req.query.token) {
+        return res.status(400).send('Missing token in callback');
+    }
+
+    // SAVE THE Formbar TOKEN
+    req.session.formbarToken = req.query.token;
+
+    // Save session before redirecting
+    req.session.save((err) => {
+        if (err) {
+            console.error('Failed to save session:', err);
+            return res.status(500).send('Failed to save login session');
+        }
+
+        res.redirect('/');
+    });
+});
+
 // Game action parsing
 function parseGameActionFromText(responseText) {
     if (typeof responseText !== 'string') {
@@ -315,7 +360,7 @@ app.get('/api/ai-status', async (req, res) => {
 });
 
 // Render the initial page with a welcome message
-app.get('/', async (req, res) => {
+app.get('/', isAuthenticated, async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index', 
     { 
