@@ -1,13 +1,13 @@
 const express= require('express');
 const env = require('dotenv').config();
-const sqlite3 = require('sqlite3').verbose();
+const initializeDatabase = require('./scripts/initDatabase');
 const app = express();
 const port = 3000;
 const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const classHP = require('./healthCalc.js').classHP;
-const database = new sqlite3.Database('./chat-history.db');
+let database;
 let stats = [
     10, 3, 20, 15, 7, 14
 ];
@@ -57,31 +57,6 @@ const masteryCourseSets = Object.entries(mastery).map(([name, sections]) => ({
     name,
     sections
 }));
-
-// Run the database
-database.run(`
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        conversation_id INTEGER,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-database.run('ALTER TABLE messages ADD COLUMN conversation_id INTEGER', () => {});
-database.run(`
-    CREATE TABLE IF NOT EXISTS conversations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-database.run(`
-    CREATE TABLE IF NOT EXISTS claimed_rewards (
-        reward_id TEXT PRIMARY KEY,
-        claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
 
 // Function to get recent messages from the database
 function getRecentMessages(conversationId, limit = 20) {
@@ -441,4 +416,12 @@ app.post('/ask', async (req, res) => {
 });
 
 // Get localhost
-app.listen(port, () => console.log(`Server running on ${IP}`));
+initializeDatabase()
+    .then((initializedDatabase) => {
+        database = initializedDatabase;
+        app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
+    })
+    .catch((error) => {
+        console.error('Database initialization failed:', error.message);
+        process.exitCode = 1;
+    });
