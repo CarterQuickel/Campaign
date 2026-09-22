@@ -60,60 +60,85 @@
         </div>
     </div>
     <div id="SuperCont">
-        <div class="masteryCont">
-            <div class="pieParent">
-                <div class="slice 1" style="--color: <%= mastery[0].color %>; --start: 0%; --end: 12.5%;  --radius: <%= mastery[0].completion %>%;"></div>
-                <div class="slice 2" style="--color: <%= mastery[1].color %>; --start: 12.5%; --end: 25%;  --radius: <%= mastery[1].completion %>%;"></div>
-                <div class="slice 3" style="--color: <%= mastery[2].color %>; --start: 25%; --end: 37.5%; --radius: <%= mastery[2].completion %>%;"></div>
-                <div class="slice 4" style="--color: <%= mastery[3].color %>; --start: 37.5%; --end: 50%; --radius: <%= mastery[3].completion %>%;"></div>
-                <div class="slice 5" style="--color: <%= mastery[4].color %>; --start: 50%; --end: 62.5%; --radius: <%= mastery[4].completion %>%;"></div>
-                <div class="slice 6" style="--color: <%= mastery[5].color %>; --start: 62.5%; --end: 75%; --radius: <%= mastery[5].completion %>%;"></div>
-                <div class="slice 7" style="--color: <%= mastery[6].color %>; --start: 75%; --end: 87.5%; --radius: <%= mastery[6].completion %>%;"></div>
-                <div class="slice 8" style="--color: <%= mastery[7].color %>; --start: 87.5%; --end: 100%; --radius: <%= mastery[7].completion %>%;"></div>
-                <div class="overallCont">
-                    <div class="overallScore">
-                        <%= Math.round((mastery[0].completion + mastery[1].completion + mastery[2].completion + mastery[3].completion + mastery[4].completion + mastery[5].completion) / 6) %>%
+        <% mastery.forEach((courseSet, courseIndex) => { %>
+            <% const sections = courseSet.sections || []; %>
+            <% const courseAverage = Math.round(sections.reduce((total, section) => total + section.completion, 0) / sections.length); %>
+            <div class="masteryCont course-group <%= courseIndex === 0 ? 'active' : '' %>" data-group="<%= courseIndex %>">
+                <div class="courseHeaderRow">
+                    <div class="header"><%= courseSet.name %></div>
+                    <div class="courseButtons">
+                        <% mastery.forEach((_, buttonIndex) => { %>
+                            <button type="button" class="courseBtn <%= buttonIndex === courseIndex ? 'active' : '' %>" data-group="<%= buttonIndex %>">
+                                <%= buttonIndex + 1 %>
+                            </button>
+                        <% }); %>
                     </div>
                 </div>
-            </div>
-            <div class="header">MASTERY</div>
-            <div class="sectionsKey">
-                <% mastery.forEach((section, index) => { %>
-                    <div class="section <%= index + 1 %>">
-                        <div class="secContLeft">
-                            <div class="secColor" style="--color: <%= section.color %>;"></div>
-                            <div class="secName"><%= section.name %>
-                                <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
-                            </div>
-                        </div>
-                        <div class="secPercent"><%= section.completion %>%</div>
+                <div class="pieParent" data-group="<%= courseIndex %>">
+                    <% sections.forEach((section, sectionIndex) => { %>
+                        <% const start = (sectionIndex / sections.length) * 100; %>
+                        <% const end = ((sectionIndex + 1) / sections.length) * 100; %>
+                        <div class="slice" data-course-index="<%= courseIndex %>" data-section-index="<%= sectionIndex %>" data-base-color="<%= section.color %>" style="--color: <%= section.color %>; --start: <%= start %>%; --end: <%= end %>%; --radius: <%= section.completion %>%;"></div>
+                    <% }); %>
+                    <div class="overallCont">
+                        <div class="overallScore"><%= courseAverage %>%</div>
                     </div>
-                <% }); %>
+                </div>
+                <div class="sectionsKey">
+                    <% sections.forEach((section, index) => { %>
+                        <div class="section" data-course-index="<%= courseIndex %>" data-section-index="<%= index %>">
+                            <div class="secContLeft">
+                                <div class="secColor" style="--color: <%= section.color %>;"></div>
+                                <div class="secName">
+                                    <span class="secNameText"><%= section.name %><% if (section.current) { %> <strong>(CURRENT)</strong><% } %></span>
+                                </div>
+                            </div>
+                            <div class="secPercent"><%= section.completion %>%</div>
+                        </div>
+                    <% }); %>
+                </div>
             </div>
-        </div>
+        <% }); %>
     </div>
 </body>
 <script>
-    const slice = document.querySelectorAll('.slice');
-    const courses = document.querySelectorAll('.section');
-    slice.forEach(s => {
-        s.dataset.baseColor = s.style.getPropertyValue('--color');
-    });
-    courses.forEach(e => {
-        e.addEventListener('mouseenter', () => {
-            slice.forEach(s => {
-                if (e.classList[1] === s.classList[1]) {
-                    s.style.setProperty('--color', '#9F54DA');
-                }
-            })
-        });
-        e.addEventListener('mouseleave', () => {
-        slice.forEach(s => {
-            if (e.classList[1] === s.classList[1]) {
-                s.style.setProperty('--color', s.dataset.baseColor);
-            }
+    const courseButtons = document.querySelectorAll('.courseBtn');
+    const courseGroups = document.querySelectorAll('.course-group');
+
+    courseButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const targetGroup = Number(button.dataset.group);
+            courseGroups.forEach((group, idx) => {
+                const isActive = idx === targetGroup;
+                group.classList.toggle('active', isActive);
+                group.style.display = isActive ? 'flex' : 'none';
+            });
+            courseButtons.forEach((btn) => {
+                btn.classList.toggle('active', Number(btn.dataset.group) === targetGroup);
+            });
+            courseGroups[targetGroup]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     });
+
+    courseGroups.forEach((group, idx) => {
+        group.style.display = idx === 0 ? 'flex' : 'none';
+    });
+
+    document.querySelectorAll('.section').forEach((section) => {
+        const courseIndex = Number(section.dataset.courseIndex);
+        const sectionIndex = Number(section.dataset.sectionIndex);
+
+        section.addEventListener('mouseenter', () => {
+            document.querySelectorAll(`.slice[data-course-index="${courseIndex}"][data-section-index="${sectionIndex}"]`).forEach((slice) => {
+                slice.style.setProperty('--color', '#9F54DA');
+            });
+        });
+
+        section.addEventListener('mouseleave', () => {
+            document.querySelectorAll(`.slice[data-course-index="${courseIndex}"][data-section-index="${sectionIndex}"]`).forEach((slice) => {
+                slice.style.setProperty('--color', slice.dataset.baseColor || '#ffffff');
+            });
+        });
     });
 </script>
 </html>
