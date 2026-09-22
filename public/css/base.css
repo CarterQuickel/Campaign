@@ -190,7 +190,6 @@ button {
     border-radius: 8px;
     cursor: pointer;
     display: flex;
-    height: 30px;
     align-items: center;
     justify-content: center;
     color: var(--primary-color);
@@ -199,6 +198,9 @@ button {
     background: var(--background-color);
     resize: none;
     border: 1px solid var(--border-color);
+}
+button:not(.theme) {
+    height: 30px;
 }
 button:hover {
     background: none;
