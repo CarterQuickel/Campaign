@@ -54,11 +54,43 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-bottom: 32px;
+    width: 95%;
+}
+.course-group {
+    display: none;
+}
+.course-group.active {
+    display: flex;
+}
+.courseHeaderRow {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+.courseButtons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.courseBtn.active {
+    background: var(--active-color);
+    color: var(--text-color);
+    border: 1px solid var(--accent-color);
+}
+.course-group.active .pieParent {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
 }
 .sectionsKey {
+    width: 100%;
     margin-top: 10px;
     display: grid;
-    grid-template-columns: 400px 400px;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 3fr));
     gap: 10px;
 }
 .secColor {
@@ -80,6 +112,7 @@
     background: var(--background-color);
     resize: none;
     border: 1px solid var(--border-color);
+    min-width: 0;
 }
 .section:hover {
     background: none;
@@ -94,9 +127,53 @@
     gap: 10px;
     justify-content: left;
     align-items: center;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+.secName {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+}
+.secNameText {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+.secNameText strong {
+    white-space: nowrap;
+}
+.secName:hover .secNameText {
+    overflow: visible;
+    text-overflow: clip;
+    animation: mastery-marquee 4s linear infinite;
+}
+@keyframes mastery-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    10% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-15%);
+    }
+    90% {
+        transform: translateX(-15%);
+    }
+    100% {
+        transform: translateX(0);
+    }
 }
 .secPercent {
     color: var(--text-color);
     font-size: 15px;
     font-weight: bold;
+    flex: 0 0 auto;
+    margin-left: 12px;
 }
