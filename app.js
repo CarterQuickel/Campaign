@@ -6,10 +6,13 @@ const port = process.env.PORT || 3000;
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
+const dotenv = require('dotenv');
+dotenv.config();
 
-const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost:3000';
+const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || 'http://localhost:3000/login';
+const PORT = process.env.PORT || 3000;
 
 const gameState = {
     gold: 0,
@@ -193,7 +196,7 @@ function isAuthenticated(req, res, next) {
         return next();
     }
 
-    const callbackUrl = `${IP_ADDRESS}/login/callback`;
+    const callbackUrl = `${IP_ADDRESS}:${PORT}/login/callback`;
 
     const loginUrl = new URL('/oauth', AUTH_URL);
     loginUrl.searchParams.set('redirectURL', callbackUrl);
@@ -515,4 +518,4 @@ app.post('/ask', async (req, res) => {
 });
 
 // Get localhost
-app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
+app.listen(PORT, () => console.log(`Server running on ${IP_ADDRESS}:${PORT}`));
