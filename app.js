@@ -1,4 +1,4 @@
-const express= require('express');
+const express = require('express');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
+const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -87,7 +88,7 @@ database.run(`
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 `);
-database.run('ALTER TABLE messages ADD COLUMN conversation_id INTEGER', () => {});
+database.run('ALTER TABLE messages ADD COLUMN conversation_id INTEGER', () => { });
 database.run(`
     CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,10 +115,10 @@ function getRecentMessages(conversationId, limit = 20) {
 }
 
 // Default message
-function addDefaultAiMessage(messages) {
+function addDefaultAiMessage(messages, displayName) {
     const defaultAiMessage = {
         role: 'assistant',
-        content: `Welcome, adventurer ${gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
+        content: `Welcome, adventurer ${displayName || ""}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
     };
     return [defaultAiMessage, ...messages];
 }
@@ -152,16 +153,16 @@ function createConversation(title) {
 async function getConversationTitle(prompt) {
     const convoNamer = require('./convoNamer.js').convoNamer;
     const ollamaTitle = await fetch('http://localhost:11434/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'llama3.2',
-                prompt: `Create a title for this quest or conversation:\n${prompt}`,
-                system: convoNamer,
-                options: { temperature: 0.2, num_predict: 12 },
-                stream: false
-            })
-        });
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: 'llama3.2',
+            prompt: `Create a title for this quest or conversation:\n${prompt}`,
+            system: convoNamer,
+            options: { temperature: 0.2, num_predict: 12 },
+            stream: false
+        })
+    });
     const titleData = await ollamaTitle.json();
     if (!ollamaTitle.ok) {
         throw new Error(titleData.error || `AI server returned HTTP ${ollamaTitle.status}`);
@@ -185,11 +186,17 @@ app.use(express.json());
 systemAPI(app, gameState);
 
 //formbar stuff
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
     saveUninitialized: false
 }));
+
+app.use((req, res, next) => {
+    const FID = req.session && req.session.user && (req.session.user.fid || req.session.user.FID) ? Number(req.session.user.fid || req.session.user.FID) : null;
+    next();
+});
 
 function isAuthenticated(req, res, next) {
     if (req.session.formbarToken) {
@@ -211,6 +218,11 @@ app.get('/login/callback', (req, res) => {
 
     // SAVE THE Formbar TOKEN
     req.session.formbarToken = req.query.token;
+
+    const decoded = jwt.decode(req.query.token);
+    console.log('Decoded token:', decoded);
+
+    req.session.user = decoded;
 
     // Save session before redirecting
     req.session.save((err) => {
@@ -288,54 +300,70 @@ function applyActionFromText(responseText) {
 }
 
 // Get Quizbank API
-app.get('/api/course/:id', async (req, res) => {
+app.get('/api/course/:id/mastery', async (req, res) => {
     const courseId = req.params.id;
+    const studentId = req.query.studentId;
+
     try {
-        const headers = {};
-        if (req.headers.authorization) headers.authorization = req.headers.authorization;
-        if (req.headers.cookie) headers.cookie = req.headers.cookie;
-        const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}/mastery?studentId=${encodeURIComponent(studentId)}`, {
-            headers
-        });
-        const text = await upstreamResponse.text();
-        if (upstreamResponse.redirected || upstreamResponse.url.includes('/oauth')) {
+        if (!req.session.formbarApiKey) {
             return res.status(401).json({
-                error: 'Quizbank authentication is required',
-                loginUrl: upstreamResponse.url
+                error: 'Formbar API key not available'
             });
         }
+
+        const quizbankUrl =
+            `https://quizbank.yorktechapps.com/api/course/${courseId}/mastery?studentId=${encodeURIComponent(studentId)}`;
+
+        console.log('Fetching from:', quizbankUrl);
+        console.log('Course ID:', courseId);
+        console.log('Student ID:', studentId);
+
+        const upstreamResponse = await fetch(quizbankUrl, {
+            headers: {
+                api: req.session.formbarApiKey
+            }
+        });
+
+        const text = await upstreamResponse.text();
+
         if (!upstreamResponse.ok) {
+            console.error('Quizbank response:', text);
+
             return res.status(upstreamResponse.status).json({
                 error: 'Failed to fetch course data',
-                upstreamStatus: upstreamResponse.status
+                upstreamStatus: upstreamResponse.status,
+                upstreamResponse: text
             });
         }
+
         let data;
+
         try {
             data = JSON.parse(text);
-        } catch (parseError) {
-            console.error('Course API returned a non-JSON response:', parseError.message);
+        } catch (error) {
             return res.status(502).json({
-                error: 'Course API returned an invalid response',
-                upstreamStatus: upstreamResponse.status
+                error: 'Course API returned an invalid response'
             });
         }
+
         if (!Array.isArray(data.units)) {
             return res.status(404).json({
                 error: 'No units found for this course',
                 courseId
             });
         }
-        console.log(data.units, data.tasks);
+
         return res.json(data.units);
+
     } catch (error) {
         console.error('Course fetch error:', error);
+
         return res.status(500).json({
             error: 'Failed to load course data',
             details: error.message
         });
     }
-});
+}); f
 
 // Get AI online or offline
 let online = false;
@@ -365,26 +393,27 @@ app.get('/api/ai-status', async (req, res) => {
 // Render the initial page with a welcome message
 app.get('/', isAuthenticated, async (req, res) => {
     const aiReady = await checkAiStatus();
-    res.render('index', 
-    { 
-        response: null, 
-        prompt: null, 
-        conversations: await getConversations(), 
-        conversationId: null, 
-        messages: addDefaultAiMessage([]), 
-        online: aiReady, 
-        stats: stats, 
-        tools: tools, 
-        mastery: mastery, 
-        level: level, 
-        gold: gameState.gold,
-        charData: { 
-            name: gameState.charName, 
-            class: gameState.charClass, 
-            race: gameState.charRace, 
-            origin: gameState.charOrigin 
-        } 
-    });
+    res.render('index',
+        {
+            response: null,
+            prompt: null,
+            conversations: await getConversations(),
+            conversationId: null,
+            messages: addDefaultAiMessage([], req.session && req.session.user ? req.session.user.displayName : null),
+            online: aiReady,
+            stats: stats,
+            tools: tools,
+            mastery: mastery,
+            level: level,
+            gold: gameState.gold,
+            req: req.session ? req.session.user : null,
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
+                origin: gameState.charOrigin,
+            }
+        });
 });
 
 // Other pages
@@ -393,16 +422,17 @@ app.get('/mastery', async (req, res) => {
     res.render('mastery', {
         stats: stats,
         online: aiReady,
-        tools: tools, 
+        tools: tools,
         mastery: mastery,
         level: level,
         gold: gameState.gold,
-        charData: { 
-            name: gameState.charName, 
-            class: gameState.charClass, 
-            race: gameState.charRace, 
-            origin: gameState.charOrigin 
-        } 
+        req: req.session ? req.session.user : null,
+        charData: {
+            name: gameState.charName,
+            class: gameState.charClass,
+            race: gameState.charRace,
+            origin: gameState.charOrigin
+        }
     });
 });
 
@@ -469,7 +499,7 @@ app.post('/ask', async (req, res) => {
         }
         const cleanedResponse = applyActionFromText(data.response);
         await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = addDefaultAiMessage(await getRecentMessages(conversationId));
+        const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: cleanedResponse || data.response,
@@ -480,20 +510,20 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: mastery, 
+            mastery: mastery,
             level: level,
             gold: gameState.gold,
-            charData: { 
-                name: gameState.charName, 
-                class: gameState.charClass, 
-                race: gameState.charRace, 
-                origin: gameState.charOrigin 
-            } 
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
+                origin: gameState.charOrigin
+            }
         });
     } catch (error) {
         console.error("Ollama Error:", error);
         const conversationId = Number(req.body.conversationId) || null;
-        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : []);
+        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: `AI request failed: ${error.message}`,
@@ -504,15 +534,15 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: mastery, 
+            mastery: mastery,
             level: level,
             gold: gameState.gold,
-            charData: { 
-                name: gameState.charName, 
-                class: gameState.charClass, 
-                race: gameState.charRace, 
-                origin: gameState.charOrigin 
-            } 
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
+                origin: gameState.charOrigin
+            }
         });
     }
 });
