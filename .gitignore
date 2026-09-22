@@ -16,3 +16,4 @@ Thumbs.db
 .db
 *.db
 chat-history.db
+db/database.sqlite
