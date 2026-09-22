@@ -75,30 +75,7 @@ let mastery = [
     }
 ]
 
-// Run the database
-database.run(`
-    CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        conversation_id INTEGER,
-        role TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-database.run('ALTER TABLE messages ADD COLUMN conversation_id INTEGER', () => {});
-database.run(`
-    CREATE TABLE IF NOT EXISTS conversations (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
-database.run(`
-    CREATE TABLE IF NOT EXISTS claimed_rewards (
-        reward_id TEXT PRIMARY KEY,
-        claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+
 
 // Function to get recent messages from the database
 function getRecentMessages(conversationId, limit = 20) {
