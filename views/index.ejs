@@ -131,6 +131,7 @@
                             <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
                             <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
+                            <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
                             <button class="setting active" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
                         </div>
                     </div>
@@ -194,6 +195,9 @@
                             </div>
                             <button class="saveBtn">Save</button>
                         </form>
+                        <div class="settingCate disabled" data-setting="ai">
+                            <div class="header">Charma Personality</div>
+                        </div>
                         <div class="settingCate enabled" data-setting="data">
                             <div class="header">Danger Zone</div>
                             <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
@@ -242,7 +246,7 @@
                 <div class="topCont">
                     <div class="encumCont" id="encumCont" data-current-weight="0">
                         <div class="contBan">
-                            <div class="label">Level <%= level %></div>
+                            <div class="label">Level <%= charData.level %></div>
                             <div class="weight" id="weightTxt">413/1,135 XP</div>
                         </div>
                         <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
