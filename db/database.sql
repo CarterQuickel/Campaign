@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS game_state (
     charOrigin TEXT,
     HP INTEGER,
     level INTEGER DEFAULT 1,
+    XP INTEGER,
+    MAXXP INTEGER, 
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

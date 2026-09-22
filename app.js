@@ -12,7 +12,9 @@ let stats = [
     10, 3, 20, 15, 7, 14
 ];
 let campaignClass = "Barbarian";
-let level = 20;
+let level = 1;
+let XP = 42;
+let MAXXP = 135;
 const HP_equation = (classHP.find(c => c.name === campaignClass)?.default + ((stats[2] - 10) / 2)) + (((level - 1) * ((stats[2] - 10) / 2)) + ((level - 1) * (classHP.find(c => c.name === campaignClass)?.perLevel)))
 const gameState = {
     gold: 0,
@@ -272,6 +274,8 @@ app.get('/', async (req, res) => {
         mastery: masteryCourseSets, 
         gold: gameState.gold,
         level: level,
+        XP: XP,
+        MAXXP: MAXXP,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
@@ -292,6 +296,8 @@ app.get('/mastery', async (req, res) => {
         mastery: masteryCourseSets,
         gold: gameState.gold,
         level: level,
+        XP: XP,
+        MAXXP: MAXXP,
         charData: { 
             name: gameState.charName, 
             class: gameState.charClass, 
@@ -379,6 +385,8 @@ app.post('/ask', async (req, res) => {
             mastery: masteryCourseSets, 
             gold: gameState.gold,
             level: level,
+            XP: XP,
+            MAXXP: MAXXP,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
@@ -404,6 +412,8 @@ app.post('/ask', async (req, res) => {
             mastery: masteryCourseSets, 
             gold: gameState.gold,
             level: level,
+            XP: XP,
+            MAXXP: MAXXP,
             charData: { 
                 name: gameState.charName, 
                 class: gameState.charClass, 
