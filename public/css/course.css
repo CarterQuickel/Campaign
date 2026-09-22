@@ -58,9 +58,11 @@
     font-size: 30px;
 }
 .sectionsKey.mainPage {
-    padding-right: 10px;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     overflow-y: auto;
+}
+.sectionsKey.mainPage:not(.milestone) {
+    padding-right: 10px;
 }
 .sectionsKey.mainPage.milestone {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
