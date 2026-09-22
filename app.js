@@ -37,7 +37,7 @@ let mastery = {
     ],
     "CIW Javascript Specialist": [
         { name: 'Introduction to JavaScript', completion: 0, color: '#1a1a1a', current: false },
-        { name: 'Working with Variables and Data in JavaScript', completion: 0, color: '#2b2b2b', current: false },
+        { name: 'Working with Variables and Data in JavaScript', completion: 10, color: '#2b2b2b', current: false },
         { name: 'Functions, Methods, and Events in JavaScript', completion: 90, color: '#3c3c3c', current: false },
         { name: 'Debugging and Troubleshooting in JavaScript', completion: 15, color: '#4d4d4d', current: false },
         { name: 'Controlling Program Flow in JavaScript', completion: 0, color: '#5e5e5e', current: false },
