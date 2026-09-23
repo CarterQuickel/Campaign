@@ -256,3 +256,63 @@ dice.forEach(die => {
         }
     });
 });
+
+// Update milestones that the current course has reached.
+function updateClaimableMilestones() {
+    document.querySelectorAll('.milestone').forEach(milestoneList => {
+        const courseProgress = Number(milestoneList.dataset.courseProgress);
+        if (!Number.isFinite(courseProgress)) return;
+        milestoneList.querySelectorAll('.section').forEach(milestone => {
+            const requiredProgress = Number.parseInt(
+                milestone.querySelector('.secPerc')?.textContent,
+                10
+            );
+            const isClaimable = Number.isFinite(requiredProgress)
+                && courseProgress >= requiredProgress
+                && milestone.dataset.claimed !== 'true';
+            const isClaimed = milestone.dataset.claimed === 'true';
+            milestone.classList.toggle('claimable', isClaimable);
+            milestone.classList.toggle('claimed', isClaimed);
+            milestone.setAttribute('aria-disabled', String(isClaimed));
+        });
+    });
+}
+updateClaimableMilestones();
+
+// Click on milestone
+document.querySelectorAll('.milestone .section').forEach(milestone => {
+    milestone.addEventListener('click', async () => {
+        if (!milestone.classList.contains('claimable') || milestone.dataset.claimed === 'true') return;
+        const requiredProgress = Number.parseInt(
+            milestone.querySelector('.secPerc')?.textContent,
+            10
+        );
+        const experience = Number(milestone.dataset.xp);
+        milestone.classList.add('claiming');
+        try {
+            const response = await fetch('/api/course/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requiredProgress, experience })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Unable to claim milestone.');
+            }
+            milestone.dataset.claimed = 'true';
+            milestone.classList.remove('claimable');
+            milestone.classList.add('claimed');
+            milestone.querySelector('.secPercent').textContent = 'CLAIMED';
+            const weightTxt = document.getElementById('xpTxt');
+            const encumbar = document.getElementById('xpprogress');
+            const levelTxt = document.getElementById('levelTxt');
+            if (weightTxt) weightTxt.textContent = `${result.xp}/${result.maxXp} XP`;
+            if (encumbar) encumbar.value = result.xp;
+            if (levelTxt) levelTxt.textContent = `Level ${result.level}`;
+        } catch (error) {
+            console.error('Unable to claim milestone:', error);
+        } finally {
+            milestone.classList.remove('claiming');
+        }
+    });
+});
