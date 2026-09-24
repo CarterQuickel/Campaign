@@ -52,16 +52,13 @@ body {
     margin: 10px;
     height: 50px;
 }
-.status.desktop, .status.mobile {
+.status {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: flex-end;
     gap: 4px;
     color: var(--primary-color);
-}
-.status.mobile {
-    display: none;
 }
 .dot {
     width: 8px;

@@ -1,10 +1,17 @@
 @media only screen and (max-width: 767px) {
     /* BASICS ================================================================== */
+    body {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
     .response-area {
         border: none;
     }
     #SuperCont {
-        height: calc(84.5vh);
+        flex: 1;
+        flex-shrink: 0;
+        min-height: 0;
     } 
     .response-box {
         height: 100%;
@@ -26,7 +33,7 @@
     }
     .footer {
         width: 100%;
-        height: 40px;
+        height: 50px;
         border-top: 1px solid var(--site-border);
         display: flex;
         flex-direction: row;
@@ -34,23 +41,44 @@
         justify-content: space-between;
         padding: 30px;
         background-color: var(--background-color);
+        flex-shrink: 0;
     }
     .navIMG {
-        background-image: linear-gradient(var(--primary-color));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        color: transparent;
-        display: inline-block;
-        font-size: 30px;
+        width: 30px;
+        height: 30px;
+        background-color: var(--primary-color);
+        display: block;
+    }
+    .navIMG img {
+        display: none;
+    }
+    .navIMG.navIcon--inventory {
+        -webkit-mask: url("/icons/inventory.png") center / contain no-repeat;
+        mask: url("/icons/inventory.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--chat {
+        -webkit-mask: url("/icons/chat.png") center / contain no-repeat;
+        mask: url("/icons/chat.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--dice {
+        -webkit-mask: url("/icons/dice.png") center / contain no-repeat;
+        mask: url("/icons/dice.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--course {
+        -webkit-mask: url("/icons/course.png") center / contain no-repeat;
+        mask: url("/icons/course.png") center / contain no-repeat;
+    }
+    .navIMG.navIcon--settings {
+        -webkit-mask: url("/icons/settings.png") center / contain no-repeat;
+        mask: url("/icons/settings.png") center / contain no-repeat;
     }
     .navTxt {
         color: var(--primary-color);
         font-weight: 500;
         font-size: 15px;
     }
-    .status.mobile {
-        display: flex;
+    .status {
+        display: none;
     }
     .horiz.mobileHidden {
         display: none;
@@ -100,5 +128,60 @@
     }
     .close {
         display: none;
+    }
+
+    /* INVENTORY ================================================================== */
+    .toolsContainer {
+        overflow-y: none;
+    }
+
+    /* COURSE ================================================================== */
+    #combatCont {
+        width: 80%;
+        position: relative;
+    }
+    #combatCont[data-view="course"] .topCont {
+        display: flex;
+    }
+    #combatCont[data-view="course"] .bottomCont,
+    #combatCont[data-view="dice"] .topCont {
+        display: none;
+    }
+    #combatCont[data-view="dice"] .bottomCont {
+        display: flex;
+    }
+    .currentPanelCate {
+        overflow-y: auto;
+    }
+    .sectionsKey.mainPage.milestone {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .sectionsKey.mainPage.milestone .section {
+        min-width: 300px;
+    }
+    .categorySelected {
+        height: 60vh;
+    }
+    #combatCont[data-view="dice"] .header:not(.attackCont .header) {
+        display: none;
+    }
+    .rollCont {
+        flex-direction: column;
+        align-items: center;
+    }
+    .diceResultCont {
+        width: 95%;
+    }
+    .modInput {
+        width: 80%;
+        height: 50px;
+    }
+    .diceCont {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+    .diceBtn {
+        font-size: 20px;
+        padding: 20px;
     }
 }

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "dotenv": "^18.0.2",
+    "dotenv": "^17.4.2",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
@@ -8,5 +8,16 @@
     "jsonwebtoken": "^9.0.3",
     "socket-io": "^1.0.0",
     "sqlite3": "^6.0.1"
-  }
+  },
+  "name": "campaign",
+  "version": "1.0.0",
+  "main": "APIendpoints.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init-db": "node scripts/initDatabase.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }

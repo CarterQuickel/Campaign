@@ -52,20 +52,17 @@
                 <% }); %>
             </div>
             <div class="horiz"></div>
-            <div class="status desktop">
+            <div class="stat">
+                    <div class="statType">HP</div>
+                    <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
+                </div>
+            <div class="horiz mobileHidden"></div>
+            <div class="status">
                 <div class="dot <%= online ? 'online' : 'offline' %>"></div>
                 <% if (online) { %>
                     <h5 class="on">AI Online</h5>
                 <% } else { %>
                     <h5 class="off">AI Offline</h5>
-                <% } %>
-            </div>
-            <div class="status mobile">
-                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
-                <% if (online) { %>
-                    <h5 class="on">Online</h5>
-                <% } else { %>
-                    <h5 class="off">Offline</h5>
                 <% } %>
             </div>
         </div>
@@ -98,9 +95,6 @@
                 </button>
                 <button class="cate" data-category='Spell'>
                     Spell
-                </button>
-                <button class="cate" data-category='Key'>
-                    Key
                 </button>
                 <button class="cate" data-category='Misc'>
                     Misc
@@ -233,7 +227,7 @@
                             <div class="userTypeCont">
                                 <div class="preCont">
                                     <button class="preResponse">Where am I?</button>
-                                    <button class="preResponse">What important events have happened so far?</button>
+                                    <button class="preResponse">What's happened so far?</button>
                                 </div>
                                 <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
                                 <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
@@ -246,13 +240,13 @@
                 </div>
             </div>
         </div>
-        <div id="combatCont">
+        <div id="combatCont" data-view="course">
             <div class="header">COURSE</div>
             <div class="attackCont">
                 <div class="topCont">
                     <div class="encumCont" id="encumCont" data-current-weight="0">
                         <div class="contBan">
-                            <div class="label">Level <%= level %></div>
+                            <div class="label">Level <%= charData.level %></div>
                             <div class="weight" id="weightTxt">413/1,135 XP</div>
                         </div>
                         <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
@@ -270,85 +264,91 @@
                     </div>
                     <div class="categorySelected">
                         <div class="currentPanelCate disabled" data-category="vocab">
-                            <% mastery.forEach((section, index) => { %>
-                                <% if (section.current) { %>
-                                    <div class="header"><%= section.name %></div>
-                                <% } %>
+                            <% mastery.forEach((courseSet) => { %>
+                                <% (courseSet.sections || []).forEach((section) => { %>
+                                    <% if (section.current) { %>
+                                        <div class="header"><%= section.name %></div>
+                                    <% } %>
+                                <% }); %>
                             <% }); %>
                         </div>
                         <div class="currentPanelCate enabled" data-category="progress">
-                            <% mastery.forEach((section, index) => { %>
-                                <% if (section.current) { %>
-                                    <div class="header"><%= section.name %></div>
-                                    <div class="completionCont" style="margin-top: -10px;">
-                                        <div class="fillCircle"
-                                            role="progressbar"
-                                            aria-valuemin="0"
-                                            aria-valuemax="100"
-                                            style="--progress: <%= section.completion %>%; --color: <%= section.color %>"></div>
-                                        <div class="fillTxt"><%= section.completion %>%</div>
-                                    </div>
-                                    <div class="header">Milestones</div>
-                                    <div class="sectionsKey mainPage milestone" style="width: 100%; margin-top: -10px;">
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">5%</div>
-                                                <div class="secName">Beginner</div>
-                                            </div>
-                                            <div class="secPercent">+500 XP</div>
+                            <% mastery.forEach((courseSet) => { %>
+                                <% (courseSet.sections || []).forEach((section) => { %>
+                                    <% if (section.current) { %>
+                                        <div class="header"><%= section.name %></div>
+                                        <div class="completionCont" style="margin-top: -10px;">
+                                            <div class="fillCircle"
+                                                role="progressbar"
+                                                aria-valuemin="0"
+                                                aria-valuemax="100"
+                                                style="--progress: <%= section.completion %>%; --color: <%= section.color %>"></div>
+                                            <div class="fillTxt"><%= section.completion %>%</div>
                                         </div>
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">15%</div>
-                                                <div class="secName">Novice</div>
+                                        <div class="header">Milestones</div>
+                                        <div class="sectionsKey mainPage milestone" style="width: 100%; margin-top: -10px;">
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">5%</div>
+                                                    <div class="secName">Beginner</div>
+                                                </div>
+                                                <div class="secPercent">+500 XP</div>
                                             </div>
-                                            <div class="secPercent">+800 XP</div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">30%</div>
-                                                <div class="secName">Apprentice</div>
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">15%</div>
+                                                    <div class="secName">Novice</div>
+                                                </div>
+                                                <div class="secPercent">+800 XP</div>
                                             </div>
-                                            <div class="secPercent">+1200 XP</div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">50%</div>
-                                                <div class="secName">Experienced</div>
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">30%</div>
+                                                    <div class="secName">Apprentice</div>
+                                                </div>
+                                                <div class="secPercent">+1200 XP</div>
                                             </div>
-                                            <div class="secPercent">+1700 XP</div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">75%</div>
-                                                <div class="secName">Expert</div>
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">50%</div>
+                                                    <div class="secName">Experienced</div>
+                                                </div>
+                                                <div class="secPercent">+1700 XP</div>
                                             </div>
-                                            <div class="secPercent">+2300 XP</div>
-                                        </div>
-                                        <div class="section">
-                                            <div class="secContLeft">
-                                                <div class="secPerc">100%</div>
-                                                <div class="secName">Completionist</div>
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">75%</div>
+                                                    <div class="secName">Expert</div>
+                                                </div>
+                                                <div class="secPercent">+2300 XP</div>
                                             </div>
-                                            <div class="secPercent">+3000 XP</div>
+                                            <div class="section">
+                                                <div class="secContLeft">
+                                                    <div class="secPerc">100%</div>
+                                                    <div class="secName">Completionist</div>
+                                                </div>
+                                                <div class="secPercent">+3000 XP</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                <% } %>
+                                    <% } %>
+                                <% }); %>
                             <% }); %>
                         </div>
                         <div class="currentPanelCate disabled" data-category="units">
                             <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL MASTERY</button>
                             <div class="sectionsKey mainPage">
-                                <% mastery.forEach((section, index) => { %>
-                                    <div class="section <%= index + 1 %>">
-                                        <div class="secContLeft">
-                                            <div class="secColor" style="--color: <%= section.color %>;"></div>
-                                            <div class="secName"><%= section.name%>
-                                                <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
+                                <% mastery.forEach((courseSet) => { %>
+                                    <% (courseSet.sections || []).forEach((section, index) => { %>
+                                        <div class="section" data-course-index="<%= index %>">
+                                            <div class="secContLeft">
+                                                <div class="secColor" style="--color: <%= section.color %>;"></div>
+                                                <div class="secName"><%= section.name %>
+                                                    <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
+                                                </div>
                                             </div>
+                                            <div class="secPercent"><%= section.completion %>%</div>
                                         </div>
-                                        <div class="secPercent"><%= section.completion %>%</div>
-                                    </div>
+                                    <% }); %>
                                 <% }); %>
                             </div>
                         </div>
@@ -357,7 +357,7 @@
                 <div class="bottomCont">
                     <div class="spellSlotsCont">
                     </div>
-                    <div class="rollCont">
+                    <div class="rollCont" id="roll">
                         <div class="diceRoller">
                             <div class="header">DICE ROLLER</div>
                             <div class="diceCont">
@@ -388,16 +388,19 @@
     </div>
     <div class="footer">
         <div class="nav">
-            <div class="navIMG">📚</div>
+            <div class="navIMG navIcon--inventory" onclick="viewMobilePage('inventory')"><img src="/icons/inventory.png" width="30" height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG">🗣️</div>
+            <div class="navIMG navIcon--chat" onclick="viewMobilePage('chat')"><img src="/icons/chat.png" width="30" height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG">🎓</div>
+            <div class="navIMG navIcon--dice" onclick="viewMobilePage('dice')"><img src="/icons/dice.png" width="30" height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG" onclick="viewSettings(false)">⚙️</div>
+            <div class="navIMG navIcon--course" onclick="viewMobilePage('course')"><img src="/icons/course.png" width="30" height="30"></div>
+        </div>
+        <div class="nav">
+            <div class="navIMG navIcon--settings" onclick="viewMobilePage('settings')"><img src="/icons/settings.png" width="30" height="30"></div>
         </div>
     </div>
 
@@ -497,6 +500,42 @@
             textarea.style.height = "auto";
             textarea.style.height = textarea.scrollHeight + "px";
         });
+
+        // FOR MOBILE: View the current page
+        function hideAll() {
+            const elements = [
+                document.getElementById("inventoryCont"),
+                document.getElementById("combatCont"),
+                document.querySelector(".centerCont"),
+                document.getElementById("settings"),
+                document.getElementById("chat")
+            ];
+
+            elements.filter(Boolean).forEach(el => {
+                el.style.display = "none";
+            });
+        }
+        function viewMobilePage(page) {
+            const key = page.toLowerCase();
+            const sections = {
+                inventory: document.getElementById("inventoryCont"),
+                course: document.getElementById("combatCont"),
+                dice: document.getElementById("combatCont"),
+                settings: document.getElementById("settings"),
+                chat: document.getElementById("chat")
+            };
+            const center = document.querySelector(".centerCont");
+            hideAll();
+            if (key === "settings" || key === "chat") {
+                center.style.display = "flex";
+            }
+            if (sections[key]) {
+                sections[key].style.display = "flex";
+            }
+            if (key === "course" || key === "dice") {
+                sections[key].dataset.view = key;
+            }
+        }
     </script>
 </body>
 </html>

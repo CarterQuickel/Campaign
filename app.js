@@ -1,8 +1,11 @@
 const express = require('express');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
+const env = require('dotenv').config();
+const initializeDatabase = require('./scripts/initDatabase');
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
+const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 const database = new sqlite3.Database('./chat-history.db');
@@ -15,68 +18,51 @@ const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 const THIS_URL = process.env.THIS_URL || 'http://localhost:3000/login';
 const PORT = process.env.PORT || 3000;
 
+const classHP = require('./healthCalc.js').classHP;
+let stats = [
+    10, 3, 20, 15, 7, 14
+];
+let campaignClass = "Barbarian";
+let level = 20;
+const HP_equation = (classHP.find(c => c.name === campaignClass)?.default + ((stats[2] - 10) / 2)) + (((level - 1) * ((stats[2] - 10) / 2)) + ((level - 1) * (classHP.find(c => c.name === campaignClass)?.perLevel)))
 const gameState = {
     gold: 0,
     tools: tools.map(tool => ({ ...tool })),
     charName: "Carter",
-    charClass: "Druid",
+    charClass: campaignClass,
     charRace: "Elvish",
-    charOrigin: ""
+    charOrigin: "",
+    HP: HP_equation
 };
-let stats = [
-    10, 3, 10, 15, 7, 14
-]
-let level = 3;
-let mastery = [
-    {
-        name: 'General Information and Concepts',
-        completion: 24,
-        color: '#f1ece2',
-        current: false
-    },
-    {
-        name: 'Ethics, Legal Compliance, and Security',
-        completion: 87,
-        color: '#6b625e',
-        current: false
-    },
-    {
-        name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions',
-        completion: 54,
-        color: '#b8cfd0',
-        current: true
-    },
-    {
-        name: 'Design Program Solutions',
-        completion: 12,
-        color: '#5a617a',
-        current: false
-    },
-    {
-        name: 'Code Programs',
-        completion: 67,
-        color: '#828e6f',
-        current: false
-    },
-    {
-        name: 'Test Programs',
-        completion: 24,
-        color: '#5d5f37',
-        current: false
-    },
-    {
-        name: 'Maintain Programs and Implement Change Management Procedures',
-        completion: 19,
-        color: '#d3a7a8',
-        current: false
-    },
-    {
-        name: 'Complete User Documentation and Technical Writing',
-        completion: 62,
-        color: '#b1756a',
-        current: false
-    }
-]
+console.log(gameState.HP);
+let mastery = {
+    "Computer Programming NOCTI": [
+        { name: 'General Information and Concepts', completion: 24, color: '#f1ece2', current: false },
+        { name: 'Ethics, Legal Compliance, and Security', completion: 87, color: '#6b625e', current: false },
+        { name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions', completion: 54, color: '#b8cfd0', current: false },
+        { name: 'Design Program Solutions', completion: 12, color: '#5a617a', current: false },
+        { name: 'Code Programs', completion: 67, color: '#828e6f', current: true },
+        { name: 'Test Programs', completion: 24, color: '#5d5f37', current: false },
+        { name: 'Maintain Programs and Implement Change Management Procedures', completion: 19, color: '#d3a7a8', current: false },
+        { name: 'Complete User Documentation and Technical Writing', completion: 62, color: '#b1756a', current: false }
+    ],
+    "CIW Javascript Specialist": [
+        { name: 'Introduction to JavaScript', completion: 0, color: '#1a1a1a', current: false },
+        { name: 'Working with Variables and Data in JavaScript', completion: 0, color: '#2b2b2b', current: false },
+        { name: 'Functions, Methods, and Events in JavaScript', completion: 90, color: '#3c3c3c', current: false },
+        { name: 'Debugging and Troubleshooting in JavaScript', completion: 15, color: '#4d4d4d', current: false },
+        { name: 'Controlling Program Flow in JavaScript', completion: 0, color: '#5e5e5e', current: false },
+        { name: 'The JavaScript Document Object Model (DOM)', completion: 0, color: '#6f6f6f', current: false },
+        { name: 'JavaScript Language Objects', completion: 8, color: '#7a7a7a', current: false },
+        { name: 'Custom JavaScript Objects', completion: 100, color: '#8b8b8b', current: false },
+        { name: 'Changing HTML on the Fly', completion: 5, color: '#7a6f6f', current: false },
+        { name: 'Developing Interactive Forms with JavaScript', completion: 98, color: '#635050', current: false },
+        { name: 'JavaScript Security', completion: 12, color: '#614b4b', current: false },
+        { name: 'JavaScript Libraries and Frameworks', completion: 38, color: '#746767', current: false },
+        { name: 'JavaScript and AJAX', completion: 19, color: '#615252', current: false },
+        { name: 'Introduction to Web APIs', completion: 70, color: '#4b3d3d', current: false }
+    ]
+};
 
 // Run the database
 database.run(`
@@ -102,6 +88,10 @@ database.run(`
         claimed_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 `);
+const masteryCourseSets = Object.entries(mastery).map(([name, sections]) => ({
+    name,
+    sections
+}));
 
 // Function to get recent messages from the database
 function getRecentMessages(conversationId, limit = 20) {
@@ -152,7 +142,7 @@ function createConversation(title) {
 }
 async function getConversationTitle(prompt) {
     const convoNamer = require('./convoNamer.js').convoNamer;
-    const ollamaTitle = await fetch('http://localhost:11434/api/generate', {
+    const ollamaTitle = await fetch(`http://localhost:11434/api/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -369,7 +359,7 @@ app.get('/api/course/:id/mastery', async (req, res) => {
 let online = false;
 async function checkAiStatus() {
     try {
-        const response = await fetch('http://localhost:11434/api/tags');
+        const response = await fetch(`http://localhost:11434/api/tags`);
         if (!response.ok) {
             online = false;
             return false;
@@ -412,140 +402,151 @@ app.get('/', isAuthenticated, async (req, res) => {
                 class: gameState.charClass,
                 race: gameState.charRace,
                 origin: gameState.charOrigin,
+                HP: gameState.HP
             }
         });
-});
 
-// Other pages
-app.get('/mastery', async (req, res) => {
-    const aiReady = await checkAiStatus();
-    res.render('mastery', {
-        stats: stats,
-        online: aiReady,
-        tools: tools,
-        mastery: mastery,
-        level: level,
-        gold: gameState.gold,
-        req: req.session ? req.session.user : null,
-        charData: {
-            name: gameState.charName,
-            class: gameState.charClass,
-            race: gameState.charRace,
-            origin: gameState.charOrigin
+    // Other pages
+    app.get('/mastery', async (req, res) => {
+        const aiReady = await checkAiStatus();
+        res.render('mastery', {
+            stats: stats,
+            online: aiReady,
+            tools: tools,
+            mastery: masteryCourseSets,
+            gold: gameState.gold,
+            req: req.session ? req.session.user : null,
+            level: level,
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
+                origin: gameState.charOrigin,
+                HP: gameState.HP
+            }
+        });
+    });
+
+    app.post('/updateSheet', async (req, res) => {
+        const cName = req.body.name;
+        const cOrigin = req.body.origin;
+        const cRace = req.body.race;
+        const cClass = req.body.class;
+        try {
+            gameState.charName = cName;
+            gameState.charClass = cClass;
+            gameState.charRace = cRace;
+            gameState.charOrigin = cOrigin;
+            gameState.HP = classHP.find(c => c.name === cClass)?.default + ((level - 1) * classHP.find(c => c.name === cClass)?.perLevel)
+            res.redirect('/');
+        } catch (err) {
+            console.log("Character Sheet Saving Error: ", err);
         }
     });
-});
 
-app.post('/updateSheet', async (req, res) => {
-    const cName = req.body.name;
-    const cOrigin = req.body.origin;
-    const cRace = req.body.race;
-    const cClass = req.body.class;
-    try {
-        gameState.charName = cName;
-        gameState.charClass = cClass;
-        gameState.charRace = cRace;
-        gameState.charOrigin = cOrigin;
-        console.log(gameState);
-        res.redirect('/');
-    } catch (err) {
-        console.log("Character Sheet Saving Error: ", err);
-    }
-});
-
-// Handle the form submission and call Ollama
-app.post('/ask', async (req, res) => {
-    const userPrompt = req.body.prompt;
-    try {
-        const system = require('./system.js').system;
-        const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
-        const landmarks = require('./StoryAPI/landmarks').landmarks;
-        const stories = require('./StoryAPI/stories').stories;
-        const storyContext = {
-            stories,
-            landmarks,
-            storySpecRewards
-        };
-        let conversationId = Number(req.body.conversationId) || null;
-        if (!conversationId) {
-            const title = await getConversationTitle(userPrompt);
-            conversationId = await createConversation(title);
-        }
-        const history = await getRecentMessages(conversationId);
-        await saveMessage(conversationId, 'user', userPrompt);
-        const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'llama3.2',
-                prompt: [
-                    `You are a helpful assistant. Use the conversation history when it is relevant.
+    // Handle the form submission and call Ollama
+    app.post('/ask', async (req, res) => {
+        const userPrompt = req.body.prompt;
+        try {
+            const system = require('./system.js').system;
+            const storySpecRewards = require('./StoryAPI/storySpecRewards').storySpecRewards;
+            const landmarks = require('./StoryAPI/landmarks').landmarks;
+            const stories = require('./StoryAPI/stories').stories;
+            const storyContext = {
+                stories,
+                landmarks,
+                storySpecRewards
+            };
+            let conversationId = Number(req.body.conversationId) || null;
+            if (!conversationId) {
+                const title = await getConversationTitle(userPrompt);
+                conversationId = await createConversation(title);
+            }
+            const history = await getRecentMessages(conversationId);
+            await saveMessage(conversationId, 'user', userPrompt);
+            const ollamaResponse = await fetch(`http://localhost:11434/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'llama3.2',
+                    prompt: [
+                        `You are a helpful assistant. Use the conversation history when it is relevant.
                     Use the following StoryAPI data as the source of truth for the adventure:
                     ${JSON.stringify(storyContext, null, 2)}
 
                     If a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.
                     `,
-                    ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
-                    `User: ${userPrompt}`,
-                    'Assistant:',
-                ].join('\n\n'),
-                system: system,
-                stream: false
-            })
-        });
-        const data = await ollamaResponse.json();
-        if (!ollamaResponse.ok) {
-            throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
+                        ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
+                        `User: ${userPrompt}`,
+                        'Assistant:',
+                    ].join('\n\n'),
+                    system: system,
+                    stream: false
+                })
+            });
+            const data = await ollamaResponse.json();
+            if (!ollamaResponse.ok) {
+                throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
+            }
+            const cleanedResponse = applyActionFromText(data.response);
+            await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
+            const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
+            const aiReady = await checkAiStatus();
+            res.render('index', {
+                response: cleanedResponse || data.response,
+                prompt: userPrompt,
+                conversations: await getConversations(),
+                conversationId,
+                messages,
+                online: aiReady,
+                stats: stats,
+                tools: tools,
+                mastery: masteryCourseSets,
+                gold: gameState.gold,
+                level: level,
+                charData: {
+                    name: gameState.charName,
+                    class: gameState.charClass,
+                    race: gameState.charRace,
+                    origin: gameState.charOrigin,
+                    HP: gameState.HP
+                }
+            });
+        } catch (error) {
+            console.error("Ollama Error:", error);
+            const conversationId = Number(req.body.conversationId) || null;
+            const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
+            const aiReady = await checkAiStatus();
+            res.render('index', {
+                response: `AI request failed: ${error.message}`,
+                prompt: userPrompt,
+                conversations: await getConversations(),
+                conversationId,
+                messages,
+                online: aiReady,
+                stats: stats,
+                tools: tools,
+                mastery: masteryCourseSets,
+                gold: gameState.gold,
+                level: level,
+                charData: {
+                    name: gameState.charName,
+                    class: gameState.charClass,
+                    race: gameState.charRace,
+                    origin: gameState.charOrigin,
+                    HP: gameState.HP
+                }
+            });
         }
-        const cleanedResponse = applyActionFromText(data.response);
-        await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
-        const aiReady = await checkAiStatus();
-        res.render('index', {
-            response: cleanedResponse || data.response,
-            prompt: userPrompt,
-            conversations: await getConversations(),
-            conversationId,
-            messages,
-            online: aiReady,
-            stats: stats,
-            tools: tools,
-            mastery: mastery,
-            level: level,
-            gold: gameState.gold,
-            charData: {
-                name: gameState.charName,
-                class: gameState.charClass,
-                race: gameState.charRace,
-                origin: gameState.charOrigin
-            }
-        });
-    } catch (error) {
-        console.error("Ollama Error:", error);
-        const conversationId = Number(req.body.conversationId) || null;
-        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
-        const aiReady = await checkAiStatus();
-        res.render('index', {
-            response: `AI request failed: ${error.message}`,
-            prompt: userPrompt,
-            conversations: await getConversations(),
-            conversationId,
-            messages,
-            online: aiReady,
-            stats: stats,
-            tools: tools,
-            mastery: mastery,
-            level: level,
-            gold: gameState.gold,
-            charData: {
-                name: gameState.charName,
-                class: gameState.charClass,
-                race: gameState.charRace,
-                origin: gameState.charOrigin
-            }
-        });
-    }
-});
+    });
 
-// Get localhost
-app.listen(PORT, () => console.log(`Server running on ${IP_ADDRESS}:${PORT}`));
+    // Get localhost
+    initializeDatabase()
+        .then((initializedDatabase) => {
+            database = initializedDatabase;
+            app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
+        })
+        .catch((error) => {
+            console.error('Database initialization failed:', error.message);
+            process.exitCode = 1;
+        });
