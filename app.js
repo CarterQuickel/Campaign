@@ -420,19 +420,19 @@ app.get('/mastery', async (req, res) => {
     res.render('mastery', {
         stats: stats,
         online: aiReady,
-        tools: tools, 
+        tools: tools,
         mastery: masteryCourseSets,
         gold: gameState.gold,
         level: level,
         XP: XP,
         MAXXP: MAXXP,
-        charData: { 
-            name: gameState.charName, 
-            class: gameState.charClass, 
-            race: gameState.charRace, 
+        charData: {
+            name: gameState.charName,
+            class: gameState.charClass,
+            race: gameState.charRace,
             origin: gameState.charOrigin,
             HP: gameState.HP
-        } 
+        }
     });
 });
 
@@ -505,82 +505,32 @@ app.post('/ask', async (req, res) => {
         const history = await getRecentMessages(conversationId);
         await saveMessage(conversationId, 'user', userPrompt);
         const ollamaResponse = await fetch(`http://localhost:11434/api/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: 'llama3.2',
-                        prompt: [
-                            `You are a helpful assistant. Use the conversation history when it is relevant.
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama3.2',
+                prompt: [
+                    `You are a helpful assistant. Use the conversation history when it is relevant.
                     Use the following StoryAPI data as the source of truth for the adventure:
                     ${JSON.stringify(storyContext, null, 2)}
 
                     If a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.
                     `,
-                            ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
-                            `User: ${userPrompt}`,
-                            'Assistant:',
-                        ].join('\n\n'),
-                        system: system,
-                        stream: false
-                    })
-            });
-            const data = await ollamaResponse.json();
-            if(!ollamaResponse.ok) {
-                throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
-    }
-            const cleanedResponse = applyActionFromText(data.response);
-    await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-    const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
-    const aiReady = await checkAiStatus();
-    res.render('index', {
-        response: cleanedResponse || data.response,
-        prompt: userPrompt,
-        conversations: await getConversations(),
-        conversationId,
-        messages,
-        online: aiReady,
-        stats: stats,
-        tools: tools,
-        mastery: masteryCourseSets,
-        gold: gameState.gold,
-        level: level,
-        charData: {
-            name: gameState.charName,
-            class: gameState.charClass,
-            race: gameState.charRace,
-            origin: gameState.charOrigin,
-            HP: gameState.HP
+                    ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
+                    `User: ${userPrompt}`,
+                    'Assistant:',
+                ].join('\n\n'),
+                system: system,
+                stream: false
+            })
+        });
+        const data = await ollamaResponse.json();
+        if (!ollamaResponse.ok) {
+            throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
-    });
-} catch (error) {
-    console.error("Ollama Error:", error);
-    const conversationId = Number(req.body.conversationId) || null;
-    const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
-    const aiReady = await checkAiStatus();
-    res.render('index', {
-        response: `AI request failed: ${error.message}`,
-        prompt: userPrompt,
-        conversations: await getConversations(),
-        conversationId,
-        messages,
-        online: aiReady,
-        stats: stats,
-        tools: tools,
-        mastery: masteryCourseSets,
-        gold: gameState.gold,
-        level: level,
-        charData: {
-            name: gameState.charName,
-            class: gameState.charClass,
-            race: gameState.charRace,
-            origin: gameState.charOrigin,
-            HP: gameState.HP
-        }
-    });
-}
         const cleanedResponse = applyActionFromText(data.response);
         await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = addDefaultAiMessage(await getRecentMessages(conversationId));
+        const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: cleanedResponse || data.response,
@@ -591,24 +541,21 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: masteryCourseSets, 
+            mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
-            XP: XP,
-            MAXXP: MAXXP,
-            claimedMilestones: [...claimedMilestones],
-            charData: { 
-                name: gameState.charName, 
-                class: gameState.charClass, 
-                race: gameState.charRace, 
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
                 origin: gameState.charOrigin,
                 HP: gameState.HP
-            } 
+            }
         });
     } catch (error) {
         console.error("Ollama Error:", error);
         const conversationId = Number(req.body.conversationId) || null;
-        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : []);
+        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: `AI request failed: ${error.message}`,
@@ -619,19 +566,16 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: masteryCourseSets, 
+            mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
-            XP: XP,
-            MAXXP: MAXXP,
-            claimedMilestones: [...claimedMilestones],
-            charData: { 
-                name: gameState.charName, 
-                class: gameState.charClass, 
-                race: gameState.charRace, 
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
                 origin: gameState.charOrigin,
                 HP: gameState.HP
-            } 
+            }
         });
     }
 });
