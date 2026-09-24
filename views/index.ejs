@@ -53,9 +53,9 @@
             </div>
             <div class="horiz"></div>
             <div class="stat">
-                    <div class="statType">HP</div>
-                    <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
-                </div>
+                <div class="statType">HP</div>
+                <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
+            </div>
             <div class="horiz mobileHidden"></div>
             <div class="status">
                 <div class="dot <%= online ? 'online' : 'offline' %>"></div>
@@ -244,17 +244,14 @@
             <div class="header">COURSE</div>
             <div class="attackCont">
                 <div class="topCont">
-                    <div class="encumCont" id="encumCont" data-current-weight="0">
+                    <div class="encumCont" id="xpcont" data-current-weight="0">
                         <div class="contBan">
-                            <div class="label">Level <%= charData.level %></div>
-                            <div class="weight" id="weightTxt">413/1,135 XP</div>
+                            <div class="label" id="levelTxt">Level <%= level %></div>
+                            <div class="weight" id="xpTxt"><%= XP %>/<%= MAXXP %> XP</div>
                         </div>
-                        <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
+                        <progress class="encumBar" id="xpprogress" value="<%= XP %>" max="<%= MAXXP %>"></progress>
                     </div>
                     <div class="categoryCont">
-                        <button class="courseCate" data-category='vocab'>
-                            Vocabulary
-                        </button>
                         <button class="courseCate active" data-category='progress'>
                             Progress
                         </button>
@@ -263,15 +260,6 @@
                         </button>
                     </div>
                     <div class="categorySelected">
-                        <div class="currentPanelCate disabled" data-category="vocab">
-                            <% mastery.forEach((courseSet) => { %>
-                                <% (courseSet.sections || []).forEach((section) => { %>
-                                    <% if (section.current) { %>
-                                        <div class="header"><%= section.name %></div>
-                                    <% } %>
-                                <% }); %>
-                            <% }); %>
-                        </div>
                         <div class="currentPanelCate enabled" data-category="progress">
                             <% mastery.forEach((courseSet) => { %>
                                 <% (courseSet.sections || []).forEach((section) => { %>
@@ -286,48 +274,48 @@
                                             <div class="fillTxt"><%= section.completion %>%</div>
                                         </div>
                                         <div class="header">Milestones</div>
-                                        <div class="sectionsKey mainPage milestone" style="width: 100%; margin-top: -10px;">
-                                            <div class="section">
+                                        <div class="sectionsKey mainPage milestone" data-course-progress="<%= section.completion %>" style="width: 100%; margin-top: -10px;">
+                                            <div class="section" data-xp="500" data-claimed="<%= claimedMilestones.includes(5) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">5%</div>
                                                     <div class="secName">Beginner</div>
                                                 </div>
-                                                <div class="secPercent">+500 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(5) ? 'CLAIMED' : '+500 XP' %></div>
                                             </div>
-                                            <div class="section">
+                                            <div class="section" data-xp="800" data-claimed="<%= claimedMilestones.includes(15) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">15%</div>
                                                     <div class="secName">Novice</div>
                                                 </div>
-                                                <div class="secPercent">+800 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(15) ? 'CLAIMED' : '+800 XP' %></div>
                                             </div>
-                                            <div class="section">
+                                            <div class="section" data-xp="1200" data-claimed="<%= claimedMilestones.includes(30) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">30%</div>
                                                     <div class="secName">Apprentice</div>
                                                 </div>
-                                                <div class="secPercent">+1200 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(30) ? 'CLAIMED' : '+1200 XP' %></div>
                                             </div>
-                                            <div class="section">
+                                            <div class="section" data-xp="1700" data-claimed="<%= claimedMilestones.includes(50) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">50%</div>
                                                     <div class="secName">Experienced</div>
                                                 </div>
-                                                <div class="secPercent">+1700 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(50) ? 'CLAIMED' : '+1700 XP' %></div>
                                             </div>
-                                            <div class="section">
+                                            <div class="section" data-xp="2300" data-claimed="<%= claimedMilestones.includes(75) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">75%</div>
                                                     <div class="secName">Expert</div>
                                                 </div>
-                                                <div class="secPercent">+2300 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(75) ? 'CLAIMED' : '+2300 XP' %></div>
                                             </div>
-                                            <div class="section">
+                                            <div class="section" data-xp="3000" data-claimed="<%= claimedMilestones.includes(100) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">100%</div>
                                                     <div class="secName">Completionist</div>
                                                 </div>
-                                                <div class="secPercent">+3000 XP</div>
+                                                <div class="secPercent"><%= claimedMilestones.includes(100) ? 'CLAIMED' : '+3000 XP' %></div>
                                             </div>
                                         </div>
                                     <% } %>

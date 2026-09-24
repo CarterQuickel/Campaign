@@ -49,6 +49,11 @@
                 <% }); %>
             </div>
             <div class="horiz"></div>
+            <div class="stat">
+                <div class="statType">HP</div>
+                <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
+            </div>
+            <div class="horiz"></div>
             <div class="status">
                 <div class="dot <%= online ? 'online' : 'offline' %>"></div>
                 <% if (online) { %>
@@ -59,21 +64,21 @@
             </div>
         </div>
     </div>
-    <div id="SuperCont">
+    <div id="SuperCont" class="pieWrap">
+        <div class="courseHeaderRow courseHeaderBar">
+            <div class="header courseTitleHeader">MASTERY COURSE</div>
+            <div class="courseButtons">
+                <% mastery.forEach((courseSet, buttonIndex) => { %>
+                    <button type="button" class="courseBtn <%= buttonIndex === 0 ? 'active' : '' %>" data-group="<%= buttonIndex %>">
+                        <%= courseSet.name %>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
         <% mastery.forEach((courseSet, courseIndex) => { %>
             <% const sections = courseSet.sections || []; %>
             <% const courseAverage = Math.round(sections.reduce((total, section) => total + section.completion, 0) / sections.length); %>
             <div class="masteryCont course-group <%= courseIndex === 0 ? 'active' : '' %>" data-group="<%= courseIndex %>">
-                <div class="courseHeaderRow">
-                    <div class="header"><%= courseSet.name %></div>
-                    <div class="courseButtons">
-                        <% mastery.forEach((_, buttonIndex) => { %>
-                            <button type="button" class="courseBtn <%= buttonIndex === courseIndex ? 'active' : '' %>" data-group="<%= buttonIndex %>">
-                                <%= buttonIndex + 1 %>
-                            </button>
-                        <% }); %>
-                    </div>
-                </div>
                 <div class="pieParent" data-group="<%= courseIndex %>">
                     <% sections.forEach((section, sectionIndex) => { %>
                         <% const start = (sectionIndex / sections.length) * 100; %>
