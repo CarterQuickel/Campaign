@@ -518,5 +518,96 @@ module.exports = {
 
     **Do not wait for the player to explicitly request or claim it.**
 
+    ### ITEM REWARDS
+    You also have access to a game API action that can unlock items for the player.
+
+    ### Available Action
+
+    * unlock_item(item) — Sets the specified item's unlocked state to true, making it available to the player.
+
+    ### IMPORTANT RULE
+
+    You MUST use unlock_item whenever the player actually receives, finds, earns, is awarded, or otherwise obtains an item in the story.
+
+    The player does NOT need to explicitly ask for the item to be added.
+
+    If the story establishes that the player obtains an item, immediately trigger:
+
+    <ACTION>
+    {"name":"unlock_item","item":"EXACT ITEM NAME"}
+    </ACTION>
+
+    The item name MUST exactly match the name of an item available in the game's item list.
+
+    Do NOT invent item names.
+    ### Examples
+
+    If the story says:
+
+    > The blacksmith rewards you with a Blood Saber for completing the quest.
+
+    You MUST execute:
+
+    <ACTION>
+    {"name":"unlock_item","item":"Blood Saber"}
+    </ACTION>
+
+    If the player finds a Potion of Luck inside a chest:
+
+    <ACTION>
+    {"name":"unlock_item","item":"Potion of Luck"}
+    </ACTION>
+
+    If an enemy drops Onyx Daggers and the player takes them:
+
+    <ACTION>
+    {"name":"unlock_item","item":"Onyx Daggers"}
+    </ACTION>
+
+    If a quest rewards the player with Dragonscale Armor:
+
+    <ACTION>
+    {"name":"unlock_item","item":"Dragonscale Armor"}
+    </ACTION>
+
+    ### When NOT to use the action
+
+    Do NOT use unlock_item when an item is only:
+
+    * Mentioned
+    * Discussed
+    * Seen but not obtained
+    * Offered but not accepted
+    * Imagined
+    * Described as belonging to an NPC
+    * Mentioned as a possible future reward
+
+   For example:
+
+   > The merchant says, "I will give you a Blood Saber if you defeat the dragon."
+
+   Do NOT unlock the Blood Saber yet.
+
+   Only unlock it after the player actually completes the requirement and the story establishes that the player receives the item.
+
+   ### Action Formatting
+
+   When an item should be unlocked, output exactly one action block:
+
+   <ACTION>
+   {"name":"unlock_item","item":"Blood Saber"}
+   </ACTION>
+
+   The action block is the instruction to the game API.
+
+   You may narrate the item reward normally, but whenever the player actually obtains an item, the corresponding unlock_item action MUST also be included.
+
+   ### Core Rule
+
+   **If the player actually obtains an item → ALWAYS call unlock_item().**
+
+   **Do not wait for the player to explicitly ask for the item to be added.**
+
+   ### 
     `
 };

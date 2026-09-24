@@ -241,6 +241,12 @@ function parseGameActionFromText(responseText) {
         return { name: 'give_gold', amount: Number(inlineAmountMatch[1]) };
     }
     return null;
+    if (parsed && parsed.name === 'unlock_item') {
+        return {
+            name: 'unlock_item',
+            item: String(parsed.item || '').trim()
+        };
+    }
 }
 
 // Game action applying
@@ -272,6 +278,19 @@ function applyActionFromText(responseText) {
     if (action.name === 'give_gold') {
         return `You receive ${action.amount} gold.`;
     }
+
+    if (action.name === 'unlock_item') {
+        const item = gameState.tools.find(
+            tool => tool.name.toLowerCase() === action.item.toLowerCase()
+        );
+        if (item) {
+            item.unlocked = true;
+            return `You have unlocked the ${item.name}.`;
+        } else {
+            return `Item not found: ${action.item}`;
+        }
+    }
+
     return responseText.trim();
 }
 
@@ -544,6 +563,9 @@ app.post('/ask', async (req, res) => {
             mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
+            XP: XP,
+            MAXXP: MAXXP,
+            claimedMilestones: claimedMilestones,
             charData: {
                 name: gameState.charName,
                 class: gameState.charClass,
