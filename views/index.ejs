@@ -26,7 +26,7 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum"><%= level %></div>
+                    <div class="statNum" id="level"><%= level %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
@@ -131,7 +131,6 @@
                             <button class="setting" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
                             <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
                             <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
-                            <button class="setting" data-setting="ai"><div class="emoji">🤖</div><div>Charma AI</div></button>
                             <button class="setting active" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
                         </div>
                     </div>
@@ -195,9 +194,6 @@
                             </div>
                             <button class="saveBtn">Save</button>
                         </form>
-                        <div class="settingCate disabled" data-setting="ai">
-                            <div class="header">Charma Personality</div>
-                        </div>
                         <div class="settingCate enabled" data-setting="data">
                             <div class="header">Danger Zone</div>
                             <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">

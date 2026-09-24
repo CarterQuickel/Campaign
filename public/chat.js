@@ -306,9 +306,11 @@ document.querySelectorAll('.milestone .section').forEach(milestone => {
             const weightTxt = document.getElementById('xpTxt');
             const encumbar = document.getElementById('xpprogress');
             const levelTxt = document.getElementById('levelTxt');
+            const levelBannerTxt = document.getElementById('level');
             if (weightTxt) weightTxt.textContent = `${result.xp}/${result.maxXp} XP`;
             if (encumbar) encumbar.value = result.xp;
             if (levelTxt) levelTxt.textContent = `Level ${result.level}`;
+            if (levelBannerTxt) levelBannerTxt.textContent = result.level;
         } catch (error) {
             console.error('Unable to claim milestone:', error);
         } finally {

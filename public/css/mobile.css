@@ -184,4 +184,12 @@
         font-size: 20px;
         padding: 20px;
     }
+
+    /* FULL MASTERY ================================================================== */
+    #title img {
+        display: none;
+    }
+    .header.courseTitleHeader {
+        display: none;
+    }
 }
