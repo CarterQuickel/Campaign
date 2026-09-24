@@ -5,7 +5,6 @@ const env = require('dotenv').config();
 const initializeDatabase = require('./scripts/initDatabase');
 const app = express();
 const port = 3000;
-const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
 let database = new sqlite3.Database('./chat-history.db');
@@ -15,8 +14,6 @@ dotenv.config();
 
 const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
-const THIS_URL = process.env.THIS_URL || 'http://localhost:3000/login';
-const PORT = process.env.PORT || 3000;
 
 const classHP = require('./healthCalc.js').classHP;
 let stats = [
@@ -94,7 +91,7 @@ function getRecentMessages(conversationId, limit = 20) {
 function addDefaultAiMessage(messages, displayName) {
     const defaultAiMessage = {
         role: 'assistant',
-        content: `Welcome, adventurer ${displayName || ""}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
+        content: `Welcome, adventurer ${displayName || gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
     };
     return [defaultAiMessage, ...messages];
 }
@@ -161,8 +158,8 @@ app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 systemAPI(app, gameState);
 
-//formbar stuff
-
+//formbar stuff ---- COME BACK TO LATER
+/*
 app.use(session({
     secret: process.env.SESSION_SECRET || 'default_secret',
     resave: false,
@@ -178,12 +175,9 @@ function isAuthenticated(req, res, next) {
     if (req.session.formbarToken) {
         return next();
     }
-
-    const callbackUrl = `${IP_ADDRESS}:${PORT}/login/callback`;
-
+    const callbackUrl = `${IP_ADDRESS}:${port}/login/callback`;
     const loginUrl = new URL('/oauth', AUTH_URL);
     loginUrl.searchParams.set('redirectURL', callbackUrl);
-
     res.redirect(loginUrl.toString());
 }
 
@@ -191,25 +185,21 @@ app.get('/login/callback', (req, res) => {
     if (!req.query.token) {
         return res.status(400).send('Missing token in callback');
     }
-
     // SAVE THE Formbar TOKEN
     req.session.formbarToken = req.query.token;
-
     const decoded = jwt.decode(req.query.token);
     console.log('Decoded token:', decoded);
-
     req.session.user = decoded;
-
     // Save session before redirecting
     req.session.save((err) => {
         if (err) {
             console.error('Failed to save session:', err);
             return res.status(500).send('Failed to save login session');
         }
-
         res.redirect('/');
     });
 });
+*/
 
 // Game action parsing
 function parseGameActionFromText(responseText) {
@@ -298,29 +288,23 @@ function applyActionFromText(responseText) {
 app.get('/api/course/:id/mastery', async (req, res) => {
     const courseId = req.params.id;
     const studentId = req.query.studentId;
-
     try {
         if (!req.session.formbarApiKey) {
             return res.status(401).json({
                 error: 'Formbar API key not available'
             });
         }
-
         const quizbankUrl =
             `https://quizbank.yorktechapps.com/api/course/${courseId}/mastery?studentId=${encodeURIComponent(studentId)}`;
-
         console.log('Fetching from:', quizbankUrl);
         console.log('Course ID:', courseId);
         console.log('Student ID:', studentId);
-
         const upstreamResponse = await fetch(quizbankUrl, {
             headers: {
                 api: req.session.formbarApiKey
             }
         });
-
         const text = await upstreamResponse.text();
-
         if (!upstreamResponse.ok) {
             console.error('Quizbank response:', text);
 
@@ -330,9 +314,7 @@ app.get('/api/course/:id/mastery', async (req, res) => {
                 upstreamResponse: text
             });
         }
-
         let data;
-
         try {
             data = JSON.parse(text);
         } catch (error) {
@@ -340,19 +322,15 @@ app.get('/api/course/:id/mastery', async (req, res) => {
                 error: 'Course API returned an invalid response'
             });
         }
-
         if (!Array.isArray(data.units)) {
             return res.status(404).json({
                 error: 'No units found for this course',
                 courseId
             });
         }
-
         return res.json(data.units);
-
     } catch (error) {
         console.error('Course fetch error:', error);
-
         return res.status(500).json({
             error: 'Failed to load course data',
             details: error.message
@@ -385,8 +363,8 @@ app.get('/api/ai-status', async (req, res) => {
     return res.json({ ready: true, message: 'AI online' });
 });
 
-// Render the initial page with a welcome message
-app.get('/', isAuthenticated, async (req, res) => {
+// Render the initial page with a welcome message ----- REMOVE THE COMMENTED-OUT isAuthenticated WHEN ADDING BACK OAUTH
+app.get('/', /*isAuthenticated,*/ async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('index',
         {
@@ -414,8 +392,8 @@ app.get('/', isAuthenticated, async (req, res) => {
             }
         });
 });
-// Other pages
 
+// Other pages
 app.post('/updateSheet', async (req, res) => {
     const cName = req.body.name;
     const cOrigin = req.body.origin;
@@ -433,7 +411,6 @@ app.post('/updateSheet', async (req, res) => {
     }
 });
 
-// Other pages
 app.get('/mastery', async (req, res) => {
     const aiReady = await checkAiStatus();
     res.render('mastery', {
@@ -606,18 +583,7 @@ app.post('/ask', async (req, res) => {
 initializeDatabase()
     .then((initializedDatabase) => {
         database = initializedDatabase;
-        app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
-    })
-    .catch((error) => {
-        console.error('Database initialization failed:', error.message);
-        process.exitCode = 1;
-    });
-
-// Get localhost
-initializeDatabase()
-    .then((initializedDatabase) => {
-        database = initializedDatabase;
-        app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
+        app.listen(port, () => console.log(`Server running on ${IP_ADDRESS}`));
     })
     .catch((error) => {
         console.error('Database initialization failed:', error.message);

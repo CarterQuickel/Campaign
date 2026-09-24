@@ -182,3 +182,6 @@
     flex: 0 0 auto;
     margin-left: 12px;
 }
+#mobileBack {
+    display: none;
+}
