@@ -22,6 +22,7 @@
 .courseCate {
     border-bottom-left-radius: 0px;
     border-bottom-right-radius: 0px;
+    width: 50%;
 }
 .categorySelected {
     margin-top: -21px;
@@ -58,9 +59,11 @@
     font-size: 30px;
 }
 .sectionsKey.mainPage {
-    padding-right: 10px;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     overflow-y: auto;
+}
+.sectionsKey.mainPage:not(.milestone) {
+    padding-right: 10px;
 }
 .sectionsKey.mainPage.milestone {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -68,6 +71,22 @@
 }
 .sectionsKey.mainPage.milestone .section {
     min-width: 220px;
+}
+.sectionsKey.mainPage.milestone .section.claimable {
+    color: var(--text-color);
+    border-color: var(--accent-color);
+    background: var(--active-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+    cursor: pointer;
+}
+.sectionsKey.mainPage.milestone .section.claiming {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.sectionsKey.mainPage.milestone .section.claimed {
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 .currentPanelCate {
     display: none;
