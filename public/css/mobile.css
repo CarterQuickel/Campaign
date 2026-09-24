@@ -186,20 +186,33 @@
     }
 
     /* FULL MASTERY ================================================================== */
-    #leftBan {
+    .fullMast #leftBan {
         display: none;
     }
-    .header.courseTitleHeader {
+    .fullMast .header.courseTitleHeader {
         display: none;
     }
-    #desktopBack, .masteryB .statCont, .masteryB .horiz, .masteryB .stat {
+    .fullMast #desktopBack, .fullMast .masteryB .statCont, .fullMast .masteryB .horiz, .fullMast .masteryB .stat {
         display: none;
     }
-    #mobileBack {
+    .fullMast #mobileBack {
         display: flex !important;
     }
-    .back {
+    .fullMast .back {
         width: 100%;
         height: 100%;
+    }
+    .fullMast .sectionsKey:not(.mainPage) {
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+    .fullMast .courseButtons {
+        position: absolute;
+        top: 80px;
+        z-index: 100;
+    }
+    .fullMast {
+        overflow-y: auto;
     }
 }
