@@ -8,7 +8,7 @@ const port = 3000;
 const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
-const database = new sqlite3.Database('./chat-history.db');
+let database = new sqlite3.Database('./chat-history.db');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -353,7 +353,7 @@ app.get('/api/course/:id/mastery', async (req, res) => {
             details: error.message
         });
     }
-}); f
+});
 
 // Get AI online or offline
 let online = false;
@@ -393,7 +393,7 @@ app.get('/', isAuthenticated, async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: mastery,
+            mastery: masteryCourseSets,
             level: level,
             gold: gameState.gold,
             req: req.session ? req.session.user : null,
@@ -405,7 +405,7 @@ app.get('/', isAuthenticated, async (req, res) => {
                 HP: gameState.HP
             }
         });
-
+    });
     // Other pages
     app.get('/mastery', async (req, res) => {
         const aiReady = await checkAiStatus();
