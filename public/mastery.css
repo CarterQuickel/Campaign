@@ -3,8 +3,9 @@
     background: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: 50%;
-    width: 400px;
-    height: 400px;
+    width: min(400px, calc(100vw - 40px));
+    aspect-ratio: 1 / 1;
+    height: auto;
     margin: 20px auto;
     display: flex;
     align-items: center;

@@ -422,6 +422,7 @@ app.get('/mastery', async (req, res) => {
         level: level,
         XP: XP,
         MAXXP: MAXXP,
+        claimedMilestones: [...claimedMilestones],
         charData: {
             name: gameState.charName,
             class: gameState.charClass,
@@ -542,7 +543,7 @@ app.post('/ask', async (req, res) => {
             level: level,
             XP: XP,
             MAXXP: MAXXP,
-            claimedMilestones: claimedMilestones,
+            claimedMilestones: [...claimedMilestones],
             charData: {
                 name: gameState.charName,
                 class: gameState.charClass,
@@ -568,6 +569,9 @@ app.post('/ask', async (req, res) => {
             mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
+            XP: XP,
+            MAXXP: MAXXP,
+            claimedMilestones: [...claimedMilestones],
             charData: {
                 name: gameState.charName,
                 class: gameState.charClass,
