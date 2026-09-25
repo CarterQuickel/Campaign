@@ -19,4 +19,4 @@ Future updates that can be added after 1.0:
 
 1. A streak system will encourage the player to get more consecutive questions right. With a larger streak, your modifier goes up, and therefore, you do more damage. However, the bigger your streak, the harder the detriment when you get a question wrong. If you win in a combat scenario with a high streak, you'll get more XP and slightly more mastery.
 
-2. Notifications would be used on an app version, if that is persued. It would give a basic 
+2. Notifications would be used on an app version, if that is persued. It would give a basic message to encourage players to hop back on, continuing their streaks.
