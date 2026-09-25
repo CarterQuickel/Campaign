@@ -222,9 +222,57 @@ tools.forEach(tool => {
 });
 
 //dice roll
+async function rollDiceWithFlicker(sides, mod, unmoddedRoll, roll, resultElement, rolledElement, natElement, modElement) {
+    const flickerDuration = 600; // Total flicker time in ms
+    const startTime = Date.now();
+    let isFlickering = true;
+    // Flicker animation
+    while (isFlickering) {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / flickerDuration, 1);
+        // Calculate flicker speed based on progress (fast at start, slow at end)
+        const flickerSpeed = Math.max(50, 300 * progress);
+        if (elapsed % flickerSpeed < flickerSpeed / 2) {
+            const randomNumber = Math.floor(Math.random() * sides) + 1;
+            if (resultElement) {
+                resultElement.textContent = `${randomNumber + mod}`;
+            }
+        }
+        if (progress >= 1) {
+            isFlickering = false;
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 16)); // ~60fps
+        }
+    }
+    // Show final result
+    if (resultElement) {
+        resultElement.textContent = `${roll}`;
+    }
+    // Show the other elements after flicker completes
+    // NAT 1
+    if (unmoddedRoll === 1) {
+        natElement.style.opacity = 1;
+    } else {
+        natElement.style.opacity = 0;
+    }
+    // mod
+    if (mod !== 0 && modElement) {
+        modElement.textContent = `${mod > 0 ? `+` : ``}${mod}`
+        modElement.style.opacity = 1;
+    } else {
+        modElement.style.opacity = 0;
+    }
+    // dice
+    if (rolledElement) {
+        rolledElement.textContent = `d${sides} ⟶ ${unmoddedRoll}`;
+        rolledElement.style.opacity = 1;
+    }
+}
+
+//Roll dice
 const dice = document.querySelectorAll('.diceBtn');
 dice.forEach(die => {
-    die.addEventListener('click', () => {
+    die.addEventListener('click', async () => {
         const sides = parseInt(die.getAttribute('data-dice'));
         const mod = parseInt(document.getElementById('modInput').value) || 0;
         const unmoddedRoll = Math.floor(Math.random() * sides) + 1
@@ -233,27 +281,18 @@ dice.forEach(die => {
         const rolledElement = document.getElementById('rolled');
         const natElement = document.getElementById('nat');
         const modElement = document.getElementById('modResult');
-        // NAT 1
-        if (unmoddedRoll === 1) {
-            natElement.style.opacity = 1;
-        } else {
+        // Hide the elements before starting flicker
+        if (rolledElement) {
+            rolledElement.style.opacity = 0;
+        }
+        if (natElement) {
             natElement.style.opacity = 0;
         }
-        // mod
-        if (mod !== 0 && modElement) {
-            modElement.textContent = `${mod > 0 ? `+` : ``}${mod}`
-            modElement.style.opacity = 1;
-        } else {
+        if (modElement) {
             modElement.style.opacity = 0;
         }
-        // dice
-        if (rolledElement) {
-            rolledElement.textContent = `d${sides} ⟶ ${unmoddedRoll}`;
-        }
-        // result
-        if (resultElement) {
-            resultElement.textContent = `${roll}`;
-        }
+        // Start flicker animation and wait for it to complete
+        await rollDiceWithFlicker(sides, mod, unmoddedRoll, roll, resultElement, rolledElement, natElement, modElement);
     });
 });
 
