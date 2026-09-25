@@ -206,37 +206,65 @@ function parseGameActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return null;
     }
+
     const text = responseText.trim();
-    const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
+
+    const tagMatch = text.match(
+        /<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i
+    );
+
     if (tagMatch) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
             if (parsed && parsed.name === 'give_gold') {
-                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
+                return {
+                    name: 'give_gold',
+                    amount: Number(
+                        parsed.amount ?? parsed.gold_amount ?? 0
+                    )
+                };
+            }
+            if (parsed && parsed.name === 'unlock_item') {
+                return {
+                    name: 'unlock_item',
+                    item: String(parsed.item || '').trim()
+                };
             }
         } catch (error) {
-            console.error('Could not parse game action tag:', error.message);
+            console.error(
+                'Could not parse game action tag:',
+                error.message
+            );
         }
     }
-    const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
+    const directJsonMatch = text.match(
+        /\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i
+    );
     if (directJsonMatch) {
-        return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
-    }
-    const giveGoldFnMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
-    if (giveGoldFnMatch) {
-        return { name: 'give_gold', amount: Number(giveGoldFnMatch[1]) };
-    }
-    const inlineAmountMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
-    if (inlineAmountMatch) {
-        return { name: 'give_gold', amount: Number(inlineAmountMatch[1]) };
-    }
-    return null;
-    if (parsed && parsed.name === 'unlock_item') {
         return {
-            name: 'unlock_item',
-            item: String(parsed.item || '').trim()
+            name: 'give_gold',
+            amount: Number(directJsonMatch[1])
         };
     }
+    const giveGoldFnMatch = text.match(
+        /give_gold\s*\(\s*(\d+)\s*\)/i
+    );
+    if (giveGoldFnMatch) {
+        return {
+            name: 'give_gold',
+            amount: Number(giveGoldFnMatch[1])
+        };
+    }
+    const inlineAmountMatch = text.match(
+        /(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i
+    );
+    if (inlineAmountMatch) {
+        return {
+            name: 'give_gold',
+            amount: Number(inlineAmountMatch[1])
+        };
+    }
+    return null;
 }
 
 // Game action applying
@@ -244,41 +272,80 @@ function applyActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return responseText;
     }
+
     const action = parseGameActionFromText(responseText);
+
     if (!action) {
         return responseText;
     }
+
+    console.log('GAME ACTION:', action);
+
+    // Give gold
     if (action.name === 'give_gold') {
         const amount = Number(action.amount ?? 0);
+
         if (Number.isFinite(amount) && amount !== 0) {
-            gameState.gold = (Number(gameState.gold) || 0) + amount;
+            gameState.gold =
+                (Number(gameState.gold) || 0) + amount;
+
+            console.log('GOLD AWARDED:', amount);
+            console.log('NEW GOLD:', gameState.gold);
         }
     }
+
+    // Unlock item
+    if (action.name === 'unlock_item') {
+        console.log('=== ITEM REWARD ===');
+        console.log('Requested item:', action.item);
+
+        const item = gameState.tools.find(
+            tool =>
+                tool.name &&
+                tool.name.trim().toLowerCase() ===
+                action.item.trim().toLowerCase()
+        );
+
+        if (item) {
+            item.unlocked = true;
+
+            console.log('UNLOCKED ITEM:', item.name);
+            console.log('New state:', item.unlocked);
+        } else {
+            console.log('ITEM NOT FOUND:', action.item);
+
+            console.log(
+                'Available items:',
+                gameState.tools.map(item => item.name)
+            );
+        }
+    }
+
+    // Remove the ACTION tag from the message shown to the player
     const cleanedText = responseText
         .replace(/<ACTION>[\s\S]*?<\/ACTION>/gi, '')
-        .replace(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi, '')
+        .replace(
+            /\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi,
+            ''
+        )
         .replace(/give_gold\s*\(\s*\d+\s*\)/gi, '')
-        .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
+        .replace(
+            /(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi,
+            ''
+        )
         .replace(/\s+/g, ' ')
         .trim();
 
     if (cleanedText) {
         return cleanedText;
     }
+
     if (action.name === 'give_gold') {
         return `You receive ${action.amount} gold.`;
     }
 
     if (action.name === 'unlock_item') {
-        const item = gameState.tools.find(
-            tool => tool.name.toLowerCase() === action.item.toLowerCase()
-        );
-        if (item) {
-            item.unlocked = true;
-            return `You have unlocked the ${item.name}.`;
-        } else {
-            return `Item not found: ${action.item}`;
-        }
+        return `You have unlocked the ${action.item}.`;
     }
 
     return responseText.trim();
@@ -375,7 +442,7 @@ app.get('/', /*isAuthenticated,*/ async (req, res) => {
             messages: addDefaultAiMessage([], req.session && req.session.user ? req.session.user.displayName : null),
             online: aiReady,
             stats: stats,
-            tools: tools,
+            tools: gameState.tools,
             mastery: masteryCourseSets,
             level: level,
             XP: XP,
@@ -416,7 +483,7 @@ app.get('/mastery', async (req, res) => {
     res.render('mastery', {
         stats: stats,
         online: aiReady,
-        tools: tools,
+        tools: gameState.tools,
         mastery: masteryCourseSets,
         gold: gameState.gold,
         level: level,
@@ -492,7 +559,9 @@ app.post('/ask', async (req, res) => {
         const storyContext = {
             stories,
             landmarks,
-            storySpecRewards
+            storySpecRewards,
+
+            availableItems: gameState.tools.map(item => item.name)
         };
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
