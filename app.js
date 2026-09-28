@@ -17,6 +17,8 @@ const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
 dotenv.config();
 
+const { storySpecRewards } = require('./StoryAPI/storySpecRewards');
+
 const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost';
 const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
 
@@ -232,7 +234,8 @@ function parseGameActionFromText(responseText) {
             if (parsed && parsed.name === 'unlock_item') {
                 return {
                     name: 'unlock_item',
-                    item: String(parsed.item || '').trim()
+                    item: String(parsed.item || '').trim(),
+                    storyReward: parsed.storyReward === true
                 };
             }
         } catch (error) {
@@ -301,27 +304,29 @@ function applyActionFromText(responseText) {
 
     // Unlock item
     if (action.name === 'unlock_item') {
-        console.log('=== ITEM REWARD ===');
-        console.log('Requested item:', action.item);
-
-        const item = gameState.tools.find(
-            tool =>
-                tool.name &&
-                tool.name.trim().toLowerCase() ===
-                action.item.trim().toLowerCase()
-        );
-
-        if (item) {
+        const rewards = Array.isArray(storySpecRewards) ? storySpecRewards : [];
+        const reward = rewards
+            .flatMap(story => story.rewards || [])
+            .find(item =>
+                item.name?.trim().toLowerCase() ===
+                action.item?.trim().toLowerCase()
+            );
+        if (!reward) {
+            console.log('ITEM NOT FOUND:', action.item);
+        } else {
+            let item = gameState.tools.find(tool =>
+                tool.name?.trim().toLowerCase() ===
+                reward.name.trim().toLowerCase()
+            );
+            if (!item) {
+                item = { ...reward };
+                gameState.tools.push(item);
+            }
             item.unlocked = true;
-
             console.log('UNLOCKED ITEM:', item.name);
-            console.log('New state:', item.unlocked);
-
             io.emit('inventory:update', {
                 tools: gameState.tools
             });
-        } else {
-            console.log('ITEM NOT FOUND:', action.item);
         }
     }
 
@@ -598,12 +603,16 @@ app.post('/ask', async (req, res) => {
         if (!ollamaResponse.ok) {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
-        const cleanedResponse = applyActionFromText(data.response);
-        await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
+        const responseText = typeof data.response === 'string'
+            ? data.response.replace(/^[ \t]+/gm, '').trim()
+            : '';
+        const cleanedResponse = applyActionFromText(responseText);
+        const finalResponse = (cleanedResponse || responseText).trim();
+        await saveMessage(conversationId, 'assistant', finalResponse);
         const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
-            response: cleanedResponse || data.response,
+            response: finalResponse,
             prompt: userPrompt,
             conversations: await getConversations(),
             conversationId,
