@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="default" data-mode="default">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div id="banner">
         <div id="leftBan">
@@ -26,7 +28,9 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum" id="level"><%= level %></div>
+                    <div class="statNum" id="level">
+                        <%= level %>
+                    </div>
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
@@ -34,37 +38,45 @@
                 </div>
                 <div class="stat">
                     <div class="statType">AC</div>
-                    <div class="statNum"><%= Math.floor((stats[1] - 10) / 2) + 10 %></div>
+                    <div class="statNum">
+                        <%= Math.floor((stats[1] - 10) / 2) + 10 %>
+                    </div>
                 </div>
             </div>
             <div class="horiz"></div>
-            <% const statLabels = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA']; %>
-            <div class="statCont">
-                <% statLabels.forEach((label, index) => { %>
-                    <div class="stat">
-                        <div class="statType"><%= label %></div>
-                        <div class="statNum"><%= stats[index] %></div>
-                        <div class="statMod">
-                            <% const mod = Math.floor((stats[index] - 10) / 2); %>
-                            <%= mod >= 0 ? '+' : '' %><%= mod %>
+            <% const statLabels=['STR', 'DEX' , 'CON' , 'INT' , 'WIS' , 'CHA' ]; %>
+                <div class="statCont">
+                    <% statLabels.forEach((label, index)=> { %>
+                        <div class="stat">
+                            <div class="statType">
+                                <%= label %>
+                            </div>
+                            <div class="statNum">
+                                <%= stats[index] %>
+                            </div>
+                            <div class="statMod">
+                                <% const mod=Math.floor((stats[index] - 10) / 2); %>
+                                    <%= mod>= 0 ? '+' : '' %><%= mod %>
+                            </div>
                         </div>
+                        <% }); %>
+                </div>
+                <div class="horiz"></div>
+                <div class="stat">
+                    <div class="statType">HP</div>
+                    <div class="statNum">
+                        <%= charData.HP %>/<%= charData.HP %>
                     </div>
-                <% }); %>
-            </div>
-            <div class="horiz"></div>
-            <div class="stat">
-                <div class="statType">HP</div>
-                <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
-            </div>
-            <div class="horiz mobileHidden"></div>
-            <div class="status">
-                <div class="dot <%= online ? 'online' : 'offline' %>"></div>
-                <% if (online) { %>
-                    <h5 class="on">AI Online</h5>
-                <% } else { %>
-                    <h5 class="off">AI Offline</h5>
-                <% } %>
-            </div>
+                </div>
+                <div class="horiz mobileHidden"></div>
+                <div class="status">
+                    <div class="dot <%= online ? 'online' : 'offline' %>"></div>
+                    <% if (online) { %>
+                        <h5 class="on">AI Online</h5>
+                        <% } else { %>
+                            <h5 class="off">AI Offline</h5>
+                            <% } %>
+                </div>
         </div>
     </div>
     <div id="SuperCont">
@@ -101,14 +113,19 @@
                 </button>
             </div>
             <div class="toolsContainer">
-                <% tools.forEach(tool => { %>
-                    <div class="tool <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>" data-name="<%= tool.name %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>" data-weight="<%= tool.weight %>">
+                <% tools.forEach(tool=> { %>
+                    <div class="tool <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>"
+                        data-name="<%= tool.name %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>"
+                        data-weight="<%= tool.weight %>">
                         <div class="left-tool">
                             <div class="tool-icon <%= tool.class.toLowerCase() %>">
-                                <%= tool.class === 'Weapon' ? '⚔️' : tool.class === 'Armor' ? '🛡️' : tool.class === 'Potion' ? '🧪' : tool.class === 'Spell' ? '🔮' : '💎' %>
+                                <%= tool.class==='Weapon' ? '⚔️' : tool.class==='Armor' ? '🛡️' : tool.class==='Potion'
+                                    ? '🧪' : tool.class==='Spell' ? '🔮' : '💎' %>
                             </div>
                             <div class="tool-cont">
-                                <div class="tool-name"><%= tool.name %></div>
+                                <div class="tool-name">
+                                    <%= tool.name %>
+                                </div>
                                 <div class="tool-weight" style="display: <%= tool.weight > 0 ? 'flex' : 'none' %>">
                                     <%= tool.weight %> lb
                                 </div>
@@ -118,7 +135,7 @@
                             Equip
                         </button>
                     </div>
-                <% }); %>
+                    <% }); %>
             </div>
         </div>
         <div class="centerCont">
@@ -128,10 +145,22 @@
                     <div class="settingsSidePanel">
                         <div class="header">SETTINGS</div>
                         <div class="settingsList">
-                            <button class="setting active" data-setting="appearance"><div class="emoji">🖌️</div><div>Appearance</div></button>
-                            <button class="setting" data-setting="campaign"><div class="emoji">🔔</div><div>Notifications</div></button>
-                            <button class="setting" data-setting="character"><div class="emoji">🙋</div><div>Character Sheet</div></button>
-                            <button class="setting" data-setting="data"><div class="emoji">💿</div><div>Data</div></button>
+                            <button class="setting active" data-setting="appearance">
+                                <div class="emoji">🖌️</div>
+                                <div>Appearance</div>
+                            </button>
+                            <button class="setting" data-setting="campaign">
+                                <div class="emoji">🔔</div>
+                                <div>Notifications</div>
+                            </button>
+                            <button class="setting" data-setting="character">
+                                <div class="emoji">🙋</div>
+                                <div>Character Sheet</div>
+                            </button>
+                            <button class="setting" data-setting="data">
+                                <div class="emoji">💿</div>
+                                <div>Data</div>
+                            </button>
                         </div>
                     </div>
                     <div class="settingsCont">
@@ -158,7 +187,7 @@
                                     <div class="info">Temporarily hide inventory and course</div>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" onclick = "hidePanels()">
+                                    <input type="checkbox" onclick="hidePanels()">
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -176,7 +205,8 @@
                         <div class="settingCate disabled" data-setting="campaign">
                             <div class="header">Notifications</div>
                         </div>
-                        <form class="settingCate disabled" action="/updateSheet" data-setting="character" method="POST" autocomplete="off">
+                        <form class="settingCate disabled" action="/updateSheet" data-setting="character" method="POST"
+                            autocomplete="off">
                             <div class="header">Origin</div>
                             <textarea name="origin" class="origin" id="origin"><%= charData.origin %></textarea>
                             <div class="header" style="margin-bottom: 10px;">Character</div>
@@ -196,13 +226,14 @@
                         </form>
                         <div class="settingCate disabled" data-setting="data">
                             <div class="header">Danger Zone</div>
-                            <button class="new-conversation" type="button" onclick="window.location.href='/'" style="margin-right: 10px;">
+                            <button class="new-conversation" type="button" onclick="window.location.href='/'"
+                                style="margin-right: 10px;">
                                 RESTART CAMPAIGN
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="questionCont">
+                <div class="questionCont" style="display: none">
                     <div class="enemyHP">
                         <div class="enemCont">
                             <label class="enemyTxt"><%= enemies.name %></label>
@@ -233,35 +264,45 @@
                 </div>
                 <div class="response-box" id="chat">
                     <div id="text-scroll" class="chat-container">
-                        <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
-                            <% let omitLastAssistant = false; %>
-                            <% if (response && messages[messages.length - 1] && messages[messages.length - 1].role === 'assistant' && messages[messages.length - 1].content === response) { omitLastAssistant = true; } %>
-                            <% for (let i = 0; i < messages.length; i++) { %>
-                                <% if (omitLastAssistant && i === messages.length - 1) { continue; } %>
-                                <% const msg = messages[i]; %>
-                                <div class="message <%= msg.role === 'user' ? 'user' : 'assistant' %>"><div class="bubble"><%= msg.content %></div></div>
-                            <% } %>
-                        <% } %>
+                        <% if (typeof messages !=='undefined' && messages && messages.length) { %>
+                            <% let omitLastAssistant=false; %>
+                                <% if (response && messages[messages.length - 1] && messages[messages.length -
+                                    1].role==='assistant' && messages[messages.length - 1].content===response) {
+                                    omitLastAssistant=true; } %>
+                                    <% for (let i=0; i < messages.length; i++) { %>
+                                        <% if (omitLastAssistant && i===messages.length - 1) { continue; } %>
+                                            <% const msg=messages[i]; %>
+                                                <div class="message <%= msg.role === 'user' ? 'user' : 'assistant' %>">
+                                                    <div class="bubble">
+                                                        <%= msg.content %>
+                                                    </div>
+                                                </div>
+                                                <% } %>
+                                                    <% } %>
                     </div>
                     <% if (response) { %>
-                        <div id="ai-response" hidden><%= response %></div>
-                    <% } %>
-                    <div class="chat-form">
-                        <!-- Form links directly to the /ask route in app.js -->
-                        <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
-                            <div class="userTypeCont">
-                                <div class="preCont">
-                                    <button class="preResponse">Where am I?</button>
-                                    <button class="preResponse">What's happened so far?</button>
-                                </div>
-                                <textarea name="prompt" placeholder="Describe your action or ask the DM..." id="chatbox" required><%= prompt || '' %></textarea>
-                                <input type="hidden" name="conversationId" id="conversation-id" value="<%= conversationId || '' %>">
+                        <div id="ai-response" hidden>
+                            <%= response %>
+                        </div>
+                        <% } %>
+                            <div class="chat-form">
+                                <!-- Form links directly to the /ask route in app.js -->
+                                <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
+                                    <div class="userTypeCont">
+                                        <div class="preCont">
+                                            <button class="preResponse">Where am I?</button>
+                                            <button class="preResponse">What's happened so far?</button>
+                                        </div>
+                                        <textarea name="prompt" placeholder="Describe your action or ask the DM..."
+                                            id="chatbox" required><%= prompt || '' %></textarea>
+                                        <input type="hidden" name="conversationId" id="conversation-id"
+                                            value="<%= conversationId || '' %>">
+                                    </div>
+                                    <button type="submit" id="submit-btn">
+                                        <img src="/icons/send.png" width="30" height="30">
+                                    </button>
+                                </form>
                             </div>
-                            <button type="submit" id="submit-btn">
-                                <img src="/icons/send.png" width="30" height="30">
-                            </button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
@@ -271,8 +312,11 @@
                 <div class="topCont">
                     <div class="encumCont" id="xpcont" data-current-weight="0">
                         <div class="contBan">
-                            <div class="label" id="levelTxt">Level <%= level %></div>
-                            <div class="weight" id="xpTxt"><%= XP %>/<%= MAXXP %> XP</div>
+                            <div class="label" id="levelTxt">Level <%= level %>
+                            </div>
+                            <div class="weight" id="xpTxt">
+                                <%= XP %>/<%= MAXXP %> XP
+                            </div>
                         </div>
                         <progress class="encumBar" id="xpprogress" value="<%= XP %>" max="<%= MAXXP %>"></progress>
                     </div>
@@ -286,83 +330,112 @@
                     </div>
                     <div class="categorySelected">
                         <div class="currentPanelCate enabled" data-category="progress">
-                            <% mastery.forEach((courseSet) => { %>
-                                <% (courseSet.sections || []).forEach((section) => { %>
+                            <% mastery.forEach((courseSet)=> { %>
+                                <% (courseSet.sections || []).forEach((section)=> { %>
                                     <% if (section.current) { %>
-                                        <div class="header"><%= section.name %></div>
+                                        <div class="header">
+                                            <%= section.name %>
+                                        </div>
                                         <div class="completionCont" style="margin-top: -10px;">
-                                            <div class="fillCircle"
-                                                role="progressbar"
-                                                aria-valuemin="0"
+                                            <div class="fillCircle" role="progressbar" aria-valuemin="0"
                                                 aria-valuemax="100"
-                                                style="--progress: <%= section.completion %>%; --color: <%= section.color %>"></div>
-                                            <div class="fillTxt"><%= section.completion %>%</div>
+                                                style="--progress: <%= section.completion %>%; --color: <%= section.color %>">
+                                            </div>
+                                            <div class="fillTxt">
+                                                <%= section.completion %>%
+                                            </div>
                                         </div>
                                         <div class="header">Milestones</div>
-                                        <div class="sectionsKey mainPage milestone" data-course-progress="<%= section.completion %>" style="width: 100%; margin-top: -10px;">
-                                            <div class="section" data-xp="500" data-claimed="<%= claimedMilestones.includes(5) %>">
+                                        <div class="sectionsKey mainPage milestone"
+                                            data-course-progress="<%= section.completion %>"
+                                            style="width: 100%; margin-top: -10px;">
+                                            <div class="section" data-xp="500"
+                                                data-claimed="<%= claimedMilestones.includes(5) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">5%</div>
                                                     <div class="secName">Beginner</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(5) ? 'CLAIMED' : '+500 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(5) ? 'CLAIMED' : '+500 XP' %>
+                                                </div>
                                             </div>
-                                            <div class="section" data-xp="800" data-claimed="<%= claimedMilestones.includes(15) %>">
+                                            <div class="section" data-xp="800"
+                                                data-claimed="<%= claimedMilestones.includes(15) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">15%</div>
                                                     <div class="secName">Novice</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(15) ? 'CLAIMED' : '+800 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(15) ? 'CLAIMED' : '+800 XP' %>
+                                                </div>
                                             </div>
-                                            <div class="section" data-xp="1200" data-claimed="<%= claimedMilestones.includes(30) %>">
+                                            <div class="section" data-xp="1200"
+                                                data-claimed="<%= claimedMilestones.includes(30) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">30%</div>
                                                     <div class="secName">Apprentice</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(30) ? 'CLAIMED' : '+1200 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(30) ? 'CLAIMED' : '+1200 XP' %>
+                                                </div>
                                             </div>
-                                            <div class="section" data-xp="1700" data-claimed="<%= claimedMilestones.includes(50) %>">
+                                            <div class="section" data-xp="1700"
+                                                data-claimed="<%= claimedMilestones.includes(50) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">50%</div>
                                                     <div class="secName">Experienced</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(50) ? 'CLAIMED' : '+1700 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(50) ? 'CLAIMED' : '+1700 XP' %>
+                                                </div>
                                             </div>
-                                            <div class="section" data-xp="2300" data-claimed="<%= claimedMilestones.includes(75) %>">
+                                            <div class="section" data-xp="2300"
+                                                data-claimed="<%= claimedMilestones.includes(75) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">75%</div>
                                                     <div class="secName">Expert</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(75) ? 'CLAIMED' : '+2300 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(75) ? 'CLAIMED' : '+2300 XP' %>
+                                                </div>
                                             </div>
-                                            <div class="section" data-xp="3000" data-claimed="<%= claimedMilestones.includes(100) %>">
+                                            <div class="section" data-xp="3000"
+                                                data-claimed="<%= claimedMilestones.includes(100) %>">
                                                 <div class="secContLeft">
                                                     <div class="secPerc">100%</div>
                                                     <div class="secName">Completionist</div>
                                                 </div>
-                                                <div class="secPercent"><%= claimedMilestones.includes(100) ? 'CLAIMED' : '+3000 XP' %></div>
+                                                <div class="secPercent">
+                                                    <%= claimedMilestones.includes(100) ? 'CLAIMED' : '+3000 XP' %>
+                                                </div>
                                             </div>
                                         </div>
-                                    <% } %>
-                                <% }); %>
-                            <% }); %>
+                                        <% } %>
+                                            <% }); %>
+                                                <% }); %>
                         </div>
                         <div class="currentPanelCate disabled" data-category="units">
-                            <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL MASTERY</button>
+                            <button onclick="window.location.href='/mastery'" style="margin-top: 10px;">VIEW FULL
+                                MASTERY</button>
                             <div class="sectionsKey mainPage">
-                                <% mastery.forEach((courseSet) => { %>
-                                    <% (courseSet.sections || []).forEach((section, index) => { %>
+                                <% mastery.forEach((courseSet)=> { %>
+                                    <% (courseSet.sections || []).forEach((section, index)=> { %>
                                         <div class="section" data-course-index="<%= index %>">
                                             <div class="secContLeft">
                                                 <div class="secColor" style="--color: <%= section.color %>;"></div>
-                                                <div class="secName"><%= section.name %>
-                                                    <strong><%= (section.current ? ' (CURRENT)' : '') %></strong>
+                                                <div class="secName">
+                                                    <%= section.name %>
+                                                        <strong>
+                                                            <%= (section.current ? ' (CURRENT)' : '' ) %>
+                                                        </strong>
                                                 </div>
                                             </div>
-                                            <div class="secPercent"><%= section.completion %>%</div>
+                                            <div class="secPercent">
+                                                <%= section.completion %>%
+                                            </div>
                                         </div>
-                                    <% }); %>
-                                <% }); %>
+                                        <% }); %>
+                                            <% }); %>
                             </div>
                         </div>
                     </div>
@@ -401,19 +474,24 @@
     </div>
     <div class="footer">
         <div class="nav">
-            <div class="navIMG navIcon--inventory" onclick="viewMobilePage('inventory')"><img src="/icons/inventory.png" width="30" height="30"></div>
+            <div class="navIMG navIcon--inventory" onclick="viewMobilePage('inventory')"><img src="/icons/inventory.png"
+                    width="30" height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG navIcon--chat" onclick="viewMobilePage('chat')"><img src="/icons/chat.png" width="30" height="30"></div>
+            <div class="navIMG navIcon--chat" onclick="viewMobilePage('chat')"><img src="/icons/chat.png" width="30"
+                    height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG navIcon--dice" onclick="viewMobilePage('dice')"><img src="/icons/dice.png" width="30" height="30"></div>
+            <div class="navIMG navIcon--dice" onclick="viewMobilePage('dice')"><img src="/icons/dice.png" width="30"
+                    height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG navIcon--course" onclick="viewMobilePage('course')"><img src="/icons/course.png" width="30" height="30"></div>
+            <div class="navIMG navIcon--course" onclick="viewMobilePage('course')"><img src="/icons/course.png"
+                    width="30" height="30"></div>
         </div>
         <div class="nav">
-            <div class="navIMG navIcon--settings" onclick="viewMobilePage('settings')"><img src="/icons/settings.png" width="30" height="30"></div>
+            <div class="navIMG navIcon--settings" onclick="viewMobilePage('settings')"><img src="/icons/settings.png"
+                    width="30" height="30"></div>
         </div>
     </div>
 
@@ -489,10 +567,10 @@
             const chat = document.getElementById("chat");
             if (!settings) return;
             if (hideorshow) {
-                settings.style.display = "none"; 
+                settings.style.display = "none";
                 chat.style.display = "flex";
             } else {
-                settings.style.display = "flex"; 
+                settings.style.display = "flex";
                 chat.style.display = "none";
             }
         }
@@ -550,5 +628,32 @@
             }
         }
     </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => {
+            console.log('Connected to Charma:', socket.id);
+        });
+        function updateInventory(tools) {
+            if (!Array.isArray(tools)) return;
+            document.querySelectorAll('.toolsContainer .tool').forEach(card => {
+                const name = card.dataset.name;
+                const item = tools.find(
+                    tool => tool.name === name
+                );
+                if (!item) return;
+                card.dataset.unlocked = String(item.unlocked);
+                card.classList.toggle('locked', !item.unlocked);
+            });
+            console.log('Inventory display updated');
+        }
+        socket.on('inventory:update', (data) => {
+            console.log('Inventory update received:', data);
+            if (data && Array.isArray(data.tools)) {
+                updateInventory(data.tools);
+            }
+        });
+    </script>
 </body>
+
 </html>

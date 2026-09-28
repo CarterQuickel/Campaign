@@ -250,7 +250,6 @@ button:hover {
 .response-box p {
     line-height: 1.6;
     margin-bottom: 0;
-    white-space: pre-wrap;
 }
 .preCont {
     display: flex;

@@ -2,14 +2,28 @@ const express= require('express');
 const path = require('path');
 const env = require('dotenv').config();
 const initializeDatabase = require('./scripts/initDatabase');
+const http = require('http');
+const { Server } = require('socket.io');
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+const sqlite3 = require('sqlite3').verbose();
 const port = 3000;
 const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
 const enemies = require('./enemies/enemyStats.js').enemies;
 const tools = require('./StoryAPI/tools.js').Tools;
+let database = new sqlite3.Database('./chat-history.db');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+dotenv.config();
+
+const { storySpecRewards } = require('./StoryAPI/storySpecRewards');
+
+const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost';
+const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
+
 const classHP = require('./healthCalc.js').classHP;
-let database;
 let stats = [
     10, 3, 20, 15, 7, 14
 ];
@@ -162,29 +176,64 @@ function parseGameActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return null;
     }
+
     const text = responseText.trim();
-    const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
+
+    const tagMatch = text.match(
+        /<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i
+    );
+
     if (tagMatch) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
             if (parsed && parsed.name === 'give_gold') {
-                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
+                return {
+                    name: 'give_gold',
+                    amount: Number(
+                        parsed.amount ?? parsed.gold_amount ?? 0
+                    )
+                };
+            }
+            if (parsed && parsed.name === 'unlock_item') {
+                return {
+                    name: 'unlock_item',
+                    item: String(parsed.item || '').trim(),
+                    storyReward: parsed.storyReward === true
+                };
             }
         } catch (error) {
-            console.error('Could not parse game action tag:', error.message);
+            console.error(
+                'Could not parse game action tag:',
+                error.message
+            );
         }
     }
-    const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
+    const directJsonMatch = text.match(
+        /\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i
+    );
     if (directJsonMatch) {
-        return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
+        return {
+            name: 'give_gold',
+            amount: Number(directJsonMatch[1])
+        };
     }
-    const giveGoldFnMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
+    const giveGoldFnMatch = text.match(
+        /give_gold\s*\(\s*(\d+)\s*\)/i
+    );
     if (giveGoldFnMatch) {
-        return { name: 'give_gold', amount: Number(giveGoldFnMatch[1]) };
+        return {
+            name: 'give_gold',
+            amount: Number(giveGoldFnMatch[1])
+        };
     }
-    const inlineAmountMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
+    const inlineAmountMatch = text.match(
+        /(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i
+    );
     if (inlineAmountMatch) {
-        return { name: 'give_gold', amount: Number(inlineAmountMatch[1]) };
+        return {
+            name: 'give_gold',
+            amount: Number(inlineAmountMatch[1])
+        };
     }
     return null;
 }
@@ -194,30 +243,83 @@ function applyActionFromText(responseText) {
     if (typeof responseText !== 'string') {
         return responseText;
     }
+
     const action = parseGameActionFromText(responseText);
+
     if (!action) {
         return responseText;
     }
+
+    console.log('GAME ACTION:', action);
+
+    // Give gold
     if (action.name === 'give_gold') {
         const amount = Number(action.amount ?? 0);
+
         if (Number.isFinite(amount) && amount !== 0) {
-            gameState.gold = (Number(gameState.gold) || 0) + amount;
+            gameState.gold =
+                (Number(gameState.gold) || 0) + amount;
+
+            console.log('GOLD AWARDED:', amount);
+            console.log('NEW GOLD:', gameState.gold);
         }
     }
+
+    // Unlock item
+    if (action.name === 'unlock_item') {
+        const rewards = Array.isArray(storySpecRewards) ? storySpecRewards : [];
+        const reward = rewards
+            .flatMap(story => story.rewards || [])
+            .find(item =>
+                item.name?.trim().toLowerCase() ===
+                action.item?.trim().toLowerCase()
+            );
+        if (!reward) {
+            console.log('ITEM NOT FOUND:', action.item);
+        } else {
+            let item = gameState.tools.find(tool =>
+                tool.name?.trim().toLowerCase() ===
+                reward.name.trim().toLowerCase()
+            );
+            if (!item) {
+                item = { ...reward };
+                gameState.tools.push(item);
+            }
+            item.unlocked = true;
+            console.log('UNLOCKED ITEM:', item.name);
+            io.emit('inventory:update', {
+                tools: gameState.tools
+            });
+        }
+    }
+
+    // Remove the ACTION tag from the message shown to the player
     const cleanedText = responseText
         .replace(/<ACTION>[\s\S]*?<\/ACTION>/gi, '')
-        .replace(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi, '')
+        .replace(
+            /\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*\d+\s*\}/gi,
+            ''
+        )
         .replace(/give_gold\s*\(\s*\d+\s*\)/gi, '')
-        .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
+        .replace(
+            /(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi,
+            ''
+        )
         .replace(/\s+/g, ' ')
         .trim();
 
     if (cleanedText) {
         return cleanedText;
     }
+
     if (action.name === 'give_gold') {
         return `You receive ${action.amount} gold.`;
     }
+
+    if (action.name === 'unlock_item') {
+        return `You have unlocked the ${action.item}.`;
+    }
+
     return responseText.trim();
 }
 
@@ -276,17 +378,59 @@ app.get('/api/ai-status', async (req, res) => {
 // Render the initial page with a welcome message
 app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
-    res.render('index', 
-    { 
-        response: null, 
-        prompt: null, 
-        conversations: await getConversations(), 
-        conversationId: null, 
-        messages: addDefaultAiMessage([]), 
-        online: aiReady, 
-        stats: stats, 
-        tools: tools, 
-        mastery: masteryCourseSets, 
+    res.render('index',
+        {
+            response: null,
+            prompt: null,
+            conversations: await getConversations(),
+            conversationId: null,
+            messages: addDefaultAiMessage([], req.session && req.session.user ? req.session.user.displayName : null),
+            online: aiReady,
+            stats: stats,
+            tools: gameState.tools,
+            mastery: masteryCourseSets,
+            level: level,
+            XP: XP,
+            MAXXP: MAXXP,
+            claimedMilestones: [...claimedMilestones],
+            gold: gameState.gold,
+            req: req.session ? req.session.user : null,
+            charData: {
+                name: gameState.charName,
+                class: gameState.charClass,
+                race: gameState.charRace,
+                origin: gameState.charOrigin,
+                HP: gameState.HP
+            },
+            enemies: randoEnem
+        });
+});
+
+// Other pages
+app.post('/updateSheet', async (req, res) => {
+    const cName = req.body.name;
+    const cOrigin = req.body.origin;
+    const cRace = req.body.race;
+    const cClass = req.body.class;
+    try {
+        gameState.charName = cName;
+        gameState.charClass = cClass;
+        gameState.charRace = cRace;
+        gameState.charOrigin = cOrigin;
+        gameState.HP = classHP.find(c => c.name === cClass)?.default + ((level - 1) * classHP.find(c => c.name === cClass)?.perLevel)
+        res.redirect('/');
+    } catch (err) {
+        console.log("Character Sheet Saving Error: ", err);
+    }
+});
+
+app.get('/mastery', async (req, res) => {
+    const aiReady = await checkAiStatus();
+    res.render('mastery', {
+        stats: stats,
+        online: aiReady,
+        tools: gameState.tools,
+        mastery: masteryCourseSets,
         gold: gameState.gold,
         level: level,
         XP: XP,
@@ -385,7 +529,9 @@ app.post('/ask', async (req, res) => {
         const storyContext = {
             stories,
             landmarks,
-            storySpecRewards
+            storySpecRewards,
+
+            availableItems: gameState.tools.map(item => item.name)
         };
         let conversationId = Number(req.body.conversationId) || null;
         if (!conversationId) {
@@ -418,20 +564,24 @@ app.post('/ask', async (req, res) => {
         if (!ollamaResponse.ok) {
             throw new Error(data.error || `AI server returned HTTP ${ollamaResponse.status}`);
         }
-        const cleanedResponse = applyActionFromText(data.response);
-        await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = addDefaultAiMessage(await getRecentMessages(conversationId));
+        const responseText = typeof data.response === 'string'
+            ? data.response.replace(/^[ \t]+/gm, '').trim()
+            : '';
+        const cleanedResponse = applyActionFromText(responseText);
+        const finalResponse = (cleanedResponse || responseText).trim();
+        await saveMessage(conversationId, 'assistant', finalResponse);
+        const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
         const aiReady = await checkAiStatus();
         res.render('index', {
-            response: cleanedResponse || data.response,
+            response: finalResponse,
             prompt: userPrompt,
             conversations: await getConversations(),
             conversationId,
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools,
-            mastery: masteryCourseSets, 
+            tools: gameState.tools,
+            mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
             XP: XP,
@@ -459,8 +609,8 @@ app.post('/ask', async (req, res) => {
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools,
-            mastery: masteryCourseSets, 
+            tools: gameState.tools,
+            mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
             XP: XP,
@@ -478,11 +628,20 @@ app.post('/ask', async (req, res) => {
     }
 });
 
+//socket stuff
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
 // Get localhost
 initializeDatabase()
     .then((initializedDatabase) => {
         database = initializedDatabase;
-        app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
+        server.listen(port, () => console.log(`Server running on ${IP_ADDRESS}`));
     })
     .catch((error) => {
         console.error('Database initialization failed:', error.message);
