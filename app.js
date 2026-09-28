@@ -1,21 +1,15 @@
-const express = require('express');
-const session = require('express-session');
-const sqlite3 = require('sqlite3').verbose();
+const express= require('express');
+const path = require('path');
 const env = require('dotenv').config();
 const initializeDatabase = require('./scripts/initDatabase');
 const app = express();
 const port = 3000;
+const IP = process.env.IP_ADDRESS || 'localhost';
 const systemAPI = require('./APIendpoints.js');
+const enemies = require('./enemies/enemyStats.js').enemies;
 const tools = require('./StoryAPI/tools.js').Tools;
-let database = new sqlite3.Database('./chat-history.db');
-const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv');
-dotenv.config();
-
-const IP_ADDRESS = process.env.IP_ADDRESS || 'http://localhost';
-const AUTH_URL = process.env.AUTH_URL || 'https://formbar.yorktechapps.com';
-
 const classHP = require('./healthCalc.js').classHP;
+let database;
 let stats = [
     10, 3, 20, 15, 7, 14
 ];
@@ -76,6 +70,10 @@ const masteryCourseSets = Object.entries(mastery).map(([name, sections]) => ({
     sections
 }));
 
+// Select a random enemy for the encounter.
+const randomEnemyIndex = Math.floor(Math.random() * enemies.length);
+const randoEnem = enemies[randomEnemyIndex];
+
 // Function to get recent messages from the database
 function getRecentMessages(conversationId, limit = 20) {
     return new Promise((resolve, reject) => {
@@ -88,10 +86,10 @@ function getRecentMessages(conversationId, limit = 20) {
 }
 
 // Default message
-function addDefaultAiMessage(messages, displayName) {
+function addDefaultAiMessage(messages) {
     const defaultAiMessage = {
         role: 'assistant',
-        content: `Welcome, adventurer ${displayName || gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
+        content: `Welcome, adventurer ${gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
     };
     return [defaultAiMessage, ...messages];
 }
@@ -126,16 +124,16 @@ function createConversation(title) {
 async function getConversationTitle(prompt) {
     const convoNamer = require('./convoNamer.js').convoNamer;
     const ollamaTitle = await fetch(`http://localhost:11434/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            model: 'llama3.2',
-            prompt: `Create a title for this quest or conversation:\n${prompt}`,
-            system: convoNamer,
-            options: { temperature: 0.2, num_predict: 12 },
-            stream: false
-        })
-    });
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama3.2',
+                prompt: `Create a title for this quest or conversation:\n${prompt}`,
+                system: convoNamer,
+                options: { temperature: 0.2, num_predict: 12 },
+                stream: false
+            })
+        });
     const titleData = await ollamaTitle.json();
     if (!ollamaTitle.ok) {
         throw new Error(titleData.error || `AI server returned HTTP ${ollamaTitle.status}`);
@@ -153,53 +151,11 @@ async function getConversationTitle(prompt) {
 //======================================================================================================================//
 
 app.set('view engine', 'ejs');
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/enemies', express.static(path.join(__dirname, 'enemies')));
 app.use(express.urlencoded({ extended: true })); // Allows reading form data
 app.use(express.json());
 systemAPI(app, gameState);
-
-//formbar stuff ---- COME BACK TO LATER
-/*
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'default_secret',
-    resave: false,
-    saveUninitialized: false
-}));
-
-app.use((req, res, next) => {
-    const FID = req.session && req.session.user && (req.session.user.fid || req.session.user.FID) ? Number(req.session.user.fid || req.session.user.FID) : null;
-    next();
-});
-
-function isAuthenticated(req, res, next) {
-    if (req.session.formbarToken) {
-        return next();
-    }
-    const callbackUrl = `${IP_ADDRESS}:${port}/login/callback`;
-    const loginUrl = new URL('/oauth', AUTH_URL);
-    loginUrl.searchParams.set('redirectURL', callbackUrl);
-    res.redirect(loginUrl.toString());
-}
-
-app.get('/login/callback', (req, res) => {
-    if (!req.query.token) {
-        return res.status(400).send('Missing token in callback');
-    }
-    // SAVE THE Formbar TOKEN
-    req.session.formbarToken = req.query.token;
-    const decoded = jwt.decode(req.query.token);
-    console.log('Decoded token:', decoded);
-    req.session.user = decoded;
-    // Save session before redirecting
-    req.session.save((err) => {
-        if (err) {
-            console.error('Failed to save session:', err);
-            return res.status(500).send('Failed to save login session');
-        }
-        res.redirect('/');
-    });
-});
-*/
 
 // Game action parsing
 function parseGameActionFromText(responseText) {
@@ -266,49 +222,22 @@ function applyActionFromText(responseText) {
 }
 
 // Get Quizbank API
-app.get('/api/course/:id/mastery', async (req, res) => {
+app.get('/api/course/:id', async (req, res) => {
     const courseId = req.params.id;
-    const studentId = req.query.studentId;
     try {
-        if (!req.session.formbarApiKey) {
-            return res.status(401).json({
-                error: 'Formbar API key not available'
-            });
-        }
-        const quizbankUrl =
-            `https://quizbank.yorktechapps.com/api/course/${courseId}/mastery?studentId=${encodeURIComponent(studentId)}`;
-        console.log('Fetching from:', quizbankUrl);
-        console.log('Course ID:', courseId);
-        console.log('Student ID:', studentId);
-        const upstreamResponse = await fetch(quizbankUrl, {
-            headers: {
-                api: req.session.formbarApiKey
-            }
-        });
+        const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}`);
         const text = await upstreamResponse.text();
         if (!upstreamResponse.ok) {
-            console.error('Quizbank response:', text);
-
-            return res.status(upstreamResponse.status).json({
-                error: 'Failed to fetch course data',
-                upstreamStatus: upstreamResponse.status,
-                upstreamResponse: text
-            });
+            return res.status(upstreamResponse.status).send(text || 'Failed to fetch course data');
         }
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (error) {
-            return res.status(502).json({
-                error: 'Course API returned an invalid response'
-            });
-        }
+        const data = JSON.parse(text);
         if (!Array.isArray(data.units)) {
             return res.status(404).json({
                 error: 'No units found for this course',
                 courseId
             });
         }
+        console.log(data.units, data.tasks);
         return res.json(data.units);
     } catch (error) {
         console.error('Course fetch error:', error);
@@ -344,73 +273,56 @@ app.get('/api/ai-status', async (req, res) => {
     return res.json({ ready: true, message: 'AI online' });
 });
 
-// Render the initial page with a welcome message ----- REMOVE THE COMMENTED-OUT isAuthenticated WHEN ADDING BACK OAUTH
-app.get('/', /*isAuthenticated,*/ async (req, res) => {
+// Render the initial page with a welcome message
+app.get('/', async (req, res) => {
     const aiReady = await checkAiStatus();
-    res.render('index',
-        {
-            response: null,
-            prompt: null,
-            conversations: await getConversations(),
-            conversationId: null,
-            messages: addDefaultAiMessage([], req.session && req.session.user ? req.session.user.displayName : null),
-            online: aiReady,
-            stats: stats,
-            tools: tools,
-            mastery: masteryCourseSets,
-            level: level,
-            XP: XP,
-            MAXXP: MAXXP,
-            claimedMilestones: [...claimedMilestones],
-            gold: gameState.gold,
-            req: req.session ? req.session.user : null,
-            charData: {
-                name: gameState.charName,
-                class: gameState.charClass,
-                race: gameState.charRace,
-                origin: gameState.charOrigin,
-                HP: gameState.HP
-            }
-        });
-});
-
-// Other pages
-app.post('/updateSheet', async (req, res) => {
-    const cName = req.body.name;
-    const cOrigin = req.body.origin;
-    const cRace = req.body.race;
-    const cClass = req.body.class;
-    try {
-        gameState.charName = cName;
-        gameState.charClass = cClass;
-        gameState.charRace = cRace;
-        gameState.charOrigin = cOrigin;
-        gameState.HP = classHP.find(c => c.name === cClass)?.default + ((level - 1) * classHP.find(c => c.name === cClass)?.perLevel)
-        res.redirect('/');
-    } catch (err) {
-        console.log("Character Sheet Saving Error: ", err);
-    }
-});
-
-app.get('/mastery', async (req, res) => {
-    const aiReady = await checkAiStatus();
-    res.render('mastery', {
-        stats: stats,
-        online: aiReady,
-        tools: tools,
-        mastery: masteryCourseSets,
+    res.render('index', 
+    { 
+        response: null, 
+        prompt: null, 
+        conversations: await getConversations(), 
+        conversationId: null, 
+        messages: addDefaultAiMessage([]), 
+        online: aiReady, 
+        stats: stats, 
+        tools: tools, 
+        mastery: masteryCourseSets, 
         gold: gameState.gold,
         level: level,
         XP: XP,
         MAXXP: MAXXP,
         claimedMilestones: [...claimedMilestones],
-        charData: {
-            name: gameState.charName,
-            class: gameState.charClass,
-            race: gameState.charRace,
+        charData: { 
+            name: gameState.charName, 
+            class: gameState.charClass, 
+            race: gameState.charRace, 
             origin: gameState.charOrigin,
             HP: gameState.HP
-        }
+        },
+        enemies: randoEnem
+    });
+});
+
+// Other pages
+app.get('/mastery', async (req, res) => {
+    const aiReady = await checkAiStatus();
+    res.render('mastery', {
+        stats: stats,
+        online: aiReady,
+        tools: tools, 
+        mastery: masteryCourseSets,
+        gold: gameState.gold,
+        level: level,
+        XP: XP,
+        MAXXP: MAXXP,
+        charData: { 
+            name: gameState.charName, 
+            class: gameState.charClass, 
+            race: gameState.charRace, 
+            origin: gameState.charOrigin,
+            HP: gameState.HP
+        },
+        enemies: randoEnem
     });
 });
 
@@ -508,7 +420,7 @@ app.post('/ask', async (req, res) => {
         }
         const cleanedResponse = applyActionFromText(data.response);
         await saveMessage(conversationId, 'assistant', cleanedResponse || data.response);
-        const messages = addDefaultAiMessage(await getRecentMessages(conversationId), req.session && req.session.user ? req.session.user.displayName : null);
+        const messages = addDefaultAiMessage(await getRecentMessages(conversationId));
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: cleanedResponse || data.response,
@@ -519,24 +431,25 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: masteryCourseSets,
+            mastery: masteryCourseSets, 
             gold: gameState.gold,
             level: level,
             XP: XP,
             MAXXP: MAXXP,
             claimedMilestones: [...claimedMilestones],
-            charData: {
-                name: gameState.charName,
-                class: gameState.charClass,
-                race: gameState.charRace,
+            charData: { 
+                name: gameState.charName, 
+                class: gameState.charClass, 
+                race: gameState.charRace, 
                 origin: gameState.charOrigin,
                 HP: gameState.HP
-            }
+            },
+            enemies: randoEnem
         });
     } catch (error) {
         console.error("Ollama Error:", error);
         const conversationId = Number(req.body.conversationId) || null;
-        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : [], req.session && req.session.user ? req.session.user.displayName : null);
+        const messages = addDefaultAiMessage(conversationId ? await getRecentMessages(conversationId) : []);
         const aiReady = await checkAiStatus();
         res.render('index', {
             response: `AI request failed: ${error.message}`,
@@ -547,19 +460,20 @@ app.post('/ask', async (req, res) => {
             online: aiReady,
             stats: stats,
             tools: tools,
-            mastery: masteryCourseSets,
+            mastery: masteryCourseSets, 
             gold: gameState.gold,
             level: level,
             XP: XP,
             MAXXP: MAXXP,
             claimedMilestones: [...claimedMilestones],
-            charData: {
-                name: gameState.charName,
-                class: gameState.charClass,
-                race: gameState.charRace,
+            charData: { 
+                name: gameState.charName, 
+                class: gameState.charClass, 
+                race: gameState.charRace, 
                 origin: gameState.charOrigin,
                 HP: gameState.HP
-            }
+            },
+            enemies: randoEnem
         });
     }
 });
@@ -568,7 +482,7 @@ app.post('/ask', async (req, res) => {
 initializeDatabase()
     .then((initializedDatabase) => {
         database = initializedDatabase;
-        app.listen(port, () => console.log(`Server running on ${IP_ADDRESS}`));
+        app.listen(port, () => console.log(`Server running on http://${IP}:${port}`));
     })
     .catch((error) => {
         console.error('Database initialization failed:', error.message);

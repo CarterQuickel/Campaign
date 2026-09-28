@@ -357,3 +357,19 @@ document.querySelectorAll('.milestone .section').forEach(milestone => {
         }
     });
 });
+
+const options = document.querySelectorAll(".answerOption");
+options.forEach(btn => {
+    btn.addEventListener('click', () => {
+        options.forEach(b => {
+            b.classList.add("active")
+            if (btn.classList.contains("correct")) {
+                btn.style.border = "5px solid rgb(165, 255, 91)";
+                btn.children[1].textContent = "✓";
+            } else {
+                btn.style.border = "5px solid rgb(255, 91, 91)";
+                btn.children[1].textContent = "X";
+            }
+        });
+    });
+});

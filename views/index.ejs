@@ -202,6 +202,35 @@
                         </div>
                     </div>
                 </div>
+                <div class="questionCont">
+                    <div class="enemyHP">
+                        <div class="enemCont">
+                            <label class="enemyTxt"><%= enemies.name %></label>
+                            <div class="HPTxt"><%= enemies.HP %>/<%= enemies.HP %> HP</div>
+                        </div>
+                        <progress value="<%= enemies.HP %>" max="<%= enemies.HP %>"></progress>
+                    </div>
+                    <div class="question">Which task is JavaScript BEST suited to perform on a web page?</div>
+                    <div class="answerCont">
+                        <div class="answerOption incorrect">
+                            <div class="optionTxt">Creating the HTML page layout</div>
+                            <div class="selectedAns"></div>
+                        </div>
+                        <div class="answerOption correct">
+                            <div class="optionTxt">Validating form input before submission</div>
+                            <div class="selectedAns"></div>
+                        </div>
+                        <div class="answerOption incorrect">
+                            <div class="optionTxt">Defining CSS color schemes</div>
+                            <div class="selectedAns"></div>
+                        </div>
+                        <div class="answerOption incorrect">
+                            <div class="optionTxt">Registering a domain name</div>
+                            <div class="selectedAns"></div>
+                        </div>
+                    </div>
+                    <img class="monsterIMG" src="<%= enemies.image %>" alt="<%= enemies.name %>">
+                </div>
                 <div class="response-box" id="chat">
                     <div id="text-scroll" class="chat-container">
                         <% if (typeof messages !== 'undefined' && messages && messages.length) { %>
