@@ -3,7 +3,12 @@ const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const env = require('dotenv').config();
 const initializeDatabase = require('./scripts/initDatabase');
+const http = require('http');
+const { Server } = require('socket.io');
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
 const port = 3000;
 const systemAPI = require('./APIendpoints.js');
 const tools = require('./StoryAPI/tools.js').Tools;
@@ -311,13 +316,12 @@ function applyActionFromText(responseText) {
 
             console.log('UNLOCKED ITEM:', item.name);
             console.log('New state:', item.unlocked);
+
+            io.emit('inventory:update', {
+                tools: gameState.tools
+            });
         } else {
             console.log('ITEM NOT FOUND:', action.item);
-
-            console.log(
-                'Available items:',
-                gameState.tools.map(item => item.name)
-            );
         }
     }
 
@@ -606,7 +610,7 @@ app.post('/ask', async (req, res) => {
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools,
+            tools: gameState.tools,
             mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
@@ -634,7 +638,7 @@ app.post('/ask', async (req, res) => {
             messages,
             online: aiReady,
             stats: stats,
-            tools: tools,
+            tools: gameState.tools,
             mastery: masteryCourseSets,
             gold: gameState.gold,
             level: level,
@@ -652,11 +656,20 @@ app.post('/ask', async (req, res) => {
     }
 });
 
+//socket stuff
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
 // Get localhost
 initializeDatabase()
     .then((initializedDatabase) => {
         database = initializedDatabase;
-        app.listen(port, () => console.log(`Server running on ${IP_ADDRESS}`));
+        server.listen(port, () => console.log(`Server running on ${IP_ADDRESS}`));
     })
     .catch((error) => {
         console.error('Database initialization failed:', error.message);

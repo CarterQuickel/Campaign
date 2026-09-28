@@ -6,13 +6,12 @@
     "express-session": "^1.19.0",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.3",
-    "socket-io": "^1.0.0",
+    "socket.io": "^4.8.4",
     "sqlite3": "^6.0.1"
   },
   "name": "campaign",
   "version": "1.0.0",
   "main": "APIendpoints.js",
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "init-db": "node scripts/initDatabase.js"
