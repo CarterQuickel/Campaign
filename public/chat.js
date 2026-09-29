@@ -204,7 +204,7 @@ function updateWeightDisplay() {
     if (encumCont) encumCont.setAttribute('data-current-weight', currentWeight);
 }
 updateWeightDisplay();
-const tools = document.querySelectorAll('.tool');
+const tools = document.querySelectorAll('.toolsContainer .tool');
 tools.forEach(tool => {
     const btn = tool.querySelector('.tool-equip-btn');
     btn.addEventListener('click', () => {
@@ -358,18 +358,134 @@ document.querySelectorAll('.milestone .section').forEach(milestone => {
     });
 });
 
-const options = document.querySelectorAll(".answerOption");
-options.forEach(btn => {
-    btn.addEventListener('click', () => {
-        options.forEach(b => {
-            b.classList.add("active")
-            if (btn.classList.contains("correct")) {
-                btn.style.border = "5px solid rgb(165, 255, 91)";
-                btn.children[1].textContent = "✓";
-            } else {
-                btn.style.border = "5px solid rgb(255, 91, 91)";
-                btn.children[1].textContent = "X";
-            }
-        });
+// Combat
+const combatOverlay = document.getElementById('combatOverlay');
+const combatStatus = document.getElementById('combatStatus');
+const combatMessage = document.getElementById('combatMessage');
+const attackItems = document.getElementById('attackItems');
+const combatContinue = document.getElementById('combatContinue');
+const answerOptions = [...document.querySelectorAll('.answerOption')];
+
+function updateCombatVitals(result) {
+    if (Number.isFinite(Number(result.enemyHP))) {
+        const enemyHPBar = document.getElementById('enemyHPBar');
+        const enemyHPText = document.getElementById('enemyHPText');
+        if (enemyHPBar) enemyHPBar.value = Number(result.enemyHP);
+        if (enemyHPText && enemyHPBar) {
+            enemyHPText.textContent = `${result.enemyHP}/${enemyHPBar.max} HP`;
+        }
+    }
+    if (Number.isFinite(Number(result.playerHP))) {
+        const playerHPDisplay = document.getElementById('playerHPDisplay');
+        if (playerHPDisplay) {
+            const maxHP = playerHPDisplay.textContent.trim().split('/')[1];
+            playerHPDisplay.textContent = `${result.playerHP}/${maxHP}`;
+        }
+    }
+}
+
+function showCombatPanel({ correct, message = '', showAttacks = false, phase = 'result' }) {
+    if (!combatOverlay) return;
+    combatOverlay.classList.add('open');
+    combatOverlay.setAttribute('aria-hidden', 'false');
+    combatStatus.textContent = phase === 'won' ? 'Victory!' : phase === 'lost' ? 'Defeated' : correct ? 'Correct!' : 'Incorrect!';
+    combatStatus.classList.toggle('correct', Boolean(correct));
+    combatStatus.classList.toggle('incorrect', !correct);
+    combatMessage.textContent = message;
+    attackItems.hidden = !showAttacks;
+    combatContinue.hidden = showAttacks;
+    combatOverlay.dataset.phase = phase;
+    combatContinue.disabled = false;
+    combatContinue.textContent = phase === 'won' ? 'Claim Rewards and Continue' : 'Continue';
+}
+
+answerOptions.forEach(button => {
+    button.addEventListener('click', async () => {
+        answerOptions.forEach(option => { option.disabled = true; });
+        try {
+            const response = await fetch('/api/combat/answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answerId: button.dataset.answerId })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit answer.');
+
+            answerOptions.forEach(option => {
+                const isCorrectAnswer = option.dataset.answerId === result.correctAnswerId;
+                const isSelected = option === button;
+                option.classList.toggle('active', isCorrectAnswer || isSelected);
+                option.classList.toggle('correct', isCorrectAnswer);
+                option.classList.toggle('incorrect', isSelected && !result.correct);
+                option.querySelector('.selectedAns').textContent = isCorrectAnswer ? '✓' : isSelected ? '×' : '';
+            });
+            updateCombatVitals(result);
+            showCombatPanel({
+                correct: result.correct,
+                message: result.message || (result.correct ? 'Choose a weapon to attack with.' : 'Your turn is skipped.'),
+                showAttacks: result.canAttack,
+                phase: result.phase
+            });
+        } catch (error) {
+            console.error('Unable to submit combat answer:', error);
+            answerOptions.forEach(option => { option.disabled = false; });
+        }
     });
+});
+
+document.querySelectorAll('#attackItems .selectable').forEach(button => {
+    button.addEventListener('click', async () => {
+        document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = true; });
+        try {
+            const response = await fetch('/api/combat/attack', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemName: button.dataset.name })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'Unable to attack.');
+            updateCombatVitals(result);
+            showCombatPanel({
+                correct: true,
+                message: result.message,
+                phase: result.phase
+            });
+        } catch (error) {
+            console.error('Unable to use attack:', error);
+            document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
+        }
+    });
+});
+
+combatContinue?.addEventListener('click', async () => {
+    try {
+        if (combatOverlay.dataset.phase === 'result') {
+            const response = await fetch('/api/combat/continue', { method: 'POST' });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'Unable to return to the question.');
+            updateCombatVitals(result);
+        }
+        combatOverlay.classList.remove('open');
+        combatOverlay.setAttribute('aria-hidden', 'true');
+        if (combatOverlay.dataset.phase === 'won') {
+            const questionPanel = document.getElementById('questionPanel');
+            const chatPanel = document.getElementById('chat');
+            const centerPanel = document.querySelector('.centerCont');
+            if (questionPanel) questionPanel.style.display = 'none';
+            if (typeof viewMobilePage === 'function' && window.matchMedia('(max-width: 767px)').matches) {
+                viewMobilePage('chat');
+            } else {
+                if (centerPanel) centerPanel.style.display = 'flex';
+                if (chatPanel) chatPanel.style.display = 'flex';
+            }
+        }
+        answerOptions.forEach(option => {
+            option.disabled = false;
+            option.classList.remove('active', 'correct', 'incorrect');
+            option.querySelector('.selectedAns').textContent = '';
+        });
+        document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
+    } catch (error) {
+        console.error('Unable to continue combat:', error);
+    }
 });

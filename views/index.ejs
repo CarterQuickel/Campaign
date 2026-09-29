@@ -64,8 +64,8 @@
                 <div class="horiz"></div>
                 <div class="stat">
                     <div class="statType">HP</div>
-                    <div class="statNum">
-                        <%= charData.HP %>/<%= charData.HP %>
+                    <div class="statNum" id="playerHPDisplay">
+                        <%= playerHP %>/<%= charData.HP %>
                     </div>
                 </div>
                 <div class="horiz mobileHidden"></div>
@@ -77,6 +77,37 @@
                             <h5 class="off">AI Offline</h5>
                             <% } %>
                 </div>
+        </div>
+    </div>
+    <div class="darkOverlay" id="combatOverlay">
+        <div class="atkActionPanel">
+            <div class="winStatus header" id="combatStatus"></div>
+            <div class="combatMessage header" id="combatMessage">Choose a weapon to attack with</div>
+            <div class="correctPanel" id="attackChoices">
+                <div class="attackGrid" id="attackItems">
+                    <% tools.filter(tool => tool.class !== 'Armor' && tool.unlocked && tool.damage !== '0').forEach(tool => { %>
+                        <button class="tool selectable <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>"
+                            data-name="<%= tool.name %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>"
+                            data-damage="<%= tool.damage %>">
+                            <div class="left-tool">
+                                <div class="tool-icon <%= tool.class.toLowerCase() %>">
+                                    <%= tool.class==='Weapon' ? '⚔️' : tool.class==='Armor' ? '🛡️' : tool.class==='Potion'
+                                        ? '🧪' : tool.class==='Spell' ? '🔮' : '💎' %>
+                                </div>
+                                <div class="tool-cont">
+                                    <div class="tool-name">
+                                        <%= tool.name %>
+                                    </div>
+                                    <div class="tool-damage">
+                                        <%= tool.damage %> dg
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                        <% }); %>
+                </div>
+                <button type="button" id="combatContinue" hidden>Continue</button>
+            </div>
         </div>
     </div>
     <div id="SuperCont">
@@ -233,32 +264,22 @@
                         </div>
                     </div>
                 </div>
-                <div class="questionCont">
+                <div class="questionCont" id="questionPanel">
                     <div class="enemyHP">
                         <div class="enemCont">
                             <label class="enemyTxt"><%= enemies.name %></label>
-                            <div class="HPTxt"><%= enemies.HP %>/<%= enemies.HP %> HP</div>
+                            <div class="HPTxt" id="enemyHPText"><%= enemyHP %>/<%= enemies.HP %> HP</div>
                         </div>
-                        <progress value="<%= enemies.HP %>" max="<%= enemies.HP %>"></progress>
+                        <progress id="enemyHPBar" value="<%= enemyHP %>" max="<%= enemies.HP %>"></progress>
                     </div>
-                    <div class="question">Which task is JavaScript BEST suited to perform on a web page?</div>
+                    <div class="question"><%= combatQuestion.prompt %></div>
                     <div class="answerCont">
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Creating the HTML page layout</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption correct">
-                            <div class="optionTxt">Validating form input before submission</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Defining CSS color schemes</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Registering a domain name</div>
-                            <div class="selectedAns"></div>
-                        </div>
+                        <% combatQuestion.answers.forEach(answer => { %>
+                            <button type="button" class="answerOption" data-answer-id="<%= answer.id %>">
+                                <span class="optionTxt"><%= answer.text %></span>
+                                <span class="selectedAns" aria-hidden="true"></span>
+                            </button>
+                        <% }); %>
                     </div>
                     <img class="monsterIMG" src="<%= enemies.image %>" alt="<%= enemies.name %>">
                 </div>
