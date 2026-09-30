@@ -22,7 +22,9 @@ function createViewData({ state, combat, conversations, ai }) {
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP
+                HP: state.gameState.HP,
+                weight: state.gameState.weight,
+                Mweight: state.gameState.maxWeight
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
@@ -47,9 +49,14 @@ function createViewData({ state, combat, conversations, ai }) {
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP
+                HP: state.gameState.HP,
+                weight: state.gameState.weight,
+                Mweight: state.gameState.maxWeight
             },
-            enemies: snapshot.enemy
+            enemies: snapshot.enemy,
+            enemyHP: snapshot.enemyHP,
+            playerHP: snapshot.playerHP,
+            combatQuestion: snapshot.question
         };
     }
 

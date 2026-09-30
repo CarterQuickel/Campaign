@@ -47,6 +47,11 @@ app.get('/api/ai-status', async (req, res) => {
     if (!ready) return res.status(503).json({ ready: false, message: 'AI server not ready' });
     return res.json({ ready: true, message: 'AI online' });
 });
+const { toggleToolEquipped } = require('./backend/gameState');
+app.post('/api/inventory/equip', (req, res) => {
+    const result = toggleToolEquipped(req.body?.name);
+    res.status(result.success ? 200 : 400).json(result);
+});
 
 // Socket
 io.on('connection', socket => {

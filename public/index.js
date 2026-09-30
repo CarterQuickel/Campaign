@@ -73,7 +73,6 @@ function parseGameActionFromText(text) {
     }
     return null;
 }
-
 async function applyGameActionFromText(text) {
     const action = parseGameActionFromText(text);
     if (!action || action.name !== 'give_gold') return false;
@@ -95,6 +94,7 @@ async function applyGameActionFromText(text) {
     return true;
 }
 
+//update chat boxes
 function typeAIResponseIntoElement(text, element, speed = 15) {
     let index = 0;
     document.getElementById("chatbox").value = "";
@@ -139,8 +139,6 @@ setTimeout(() => {
         });
     });
 }, 100);
-
-//filter
 function filterTools(filter) {
     const tools = document.querySelectorAll('.tool');
     tools.forEach(tool => {
@@ -172,7 +170,8 @@ if (courseTabs.length && coursePanels.length) {
         });
     });
 }
-//course panel select
+
+//settings panel select
 const settingsTabs = document.querySelectorAll('.setting');
 const settingsPanels = document.querySelectorAll('.settingCate');
 if (settingsTabs.length && settingsPanels.length) {
@@ -190,36 +189,6 @@ if (settingsTabs.length && settingsPanels.length) {
         });
     });
 }
-
-//add weight
-const maxWeight = 100;
-const encumCont = document.getElementById('encumCont');
-let currentWeight = parseInt(encumCont?.getAttribute('data-current-weight'));
-function updateWeightDisplay() {
-    const weightTxt = document.getElementById('weightTxt');
-    const encumbar = document.getElementById('encumbar');
-    
-    if (weightTxt) weightTxt.textContent = `${currentWeight}/${maxWeight} lb`;
-    if (encumbar) encumbar.value = currentWeight;
-    if (encumCont) encumCont.setAttribute('data-current-weight', currentWeight);
-}
-updateWeightDisplay();
-const tools = document.querySelectorAll('.toolsContainer .tool');
-tools.forEach(tool => {
-    const btn = tool.querySelector('.tool-equip-btn');
-    btn.addEventListener('click', () => {
-        const toolWeight = parseInt(tool.getAttribute('data-weight')) || 0;
-        tool.classList.toggle('equipped');
-        if (tool.classList.contains('equipped')) {
-            currentWeight += toolWeight;
-            btn.textContent = 'Equipped';
-        } else {
-            currentWeight -= toolWeight;
-            btn.textContent = 'Equip';
-        }
-        updateWeightDisplay();
-    });
-});
 
 //dice roll
 async function rollDiceWithFlicker(sides, mod, unmoddedRoll, roll, resultElement, rolledElement, natElement, modElement) {
@@ -488,4 +457,48 @@ combatContinue?.addEventListener('click', async () => {
     } catch (error) {
         console.error('Unable to continue combat:', error);
     }
+});
+
+//backend-authoritative equipment weight
+const encumCont = document.getElementById('encumCont');
+const maxWeight = Number(encumCont?.dataset.maxWeight);
+function updateWeightDisplay(weight) {
+    const weightTxt = document.getElementById('weightTxt');
+    const encumbar = document.getElementById('encumbar');
+    if (weightTxt) weightTxt.textContent = `${weight}/${maxWeight} lb`;
+    if (encumbar) encumbar.value = weight;
+    if (encumCont) encumCont.dataset.currentWeight = weight;
+}
+document.querySelectorAll('.toolsContainer .tool').forEach(card => {
+    const button = card.querySelector('.tool-equip-btn');
+    if (!button) return;
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+        try {
+            const response = await fetch('/api/inventory/equip', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: card.dataset.name })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Unable to equip item.');
+            }
+            updateWeightDisplay(result.weight);
+            result.tools.forEach(item => {
+                const itemCard = [...document.querySelectorAll('.toolsContainer .tool')]
+                    .find(candidate => candidate.dataset.name === item.name);
+                if (!itemCard) return;
+
+                itemCard.dataset.equipped = String(item.equipped);
+                itemCard.classList.toggle('equipped', item.equipped);
+                const itemButton = itemCard.querySelector('.tool-equip-btn');
+                if (itemButton) itemButton.textContent = item.equipped ? 'Unequip' : 'Equip';
+            });
+        } catch (error) {
+            console.error('Unable to equip item:', error);
+        } finally {
+            button.disabled = false;
+        }
+    });
 });

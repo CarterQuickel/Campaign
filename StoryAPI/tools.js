@@ -43,7 +43,7 @@ module.exports = {
             AC: 0,
             desc: "A magical wand that allows the user to alter the properties of objects.",
             weight: 4,
-            unlocked: false
+            unlocked: true
         },
         {
             name: "Holy Twin Blades",

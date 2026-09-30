@@ -34,7 +34,7 @@
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
-                    <div class="statNum">+2</div>
+                    <div class="statNum">+<%= Math.floor(level / 4) + 2 %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">AC</div>
@@ -116,12 +116,12 @@
                 <div class="header">INVENTORY</div>
                 <div class="gold" id="goldDisplay" data-gold="<%= gold %>">◈ <%= gold %>gp</div>
             </div>
-            <div class="encumCont" id="encumCont" data-current-weight="0">
+            <div class="encumCont" id="encumCont" data-current-weight="<%= charData.weight %>" data-max-weight="<%= charData.Mweight %>">
                 <div class="contBan">
                     <div class="label">Encumbrance</div>
-                    <div class="weight" id="weightTxt">50/100 lb</div>
+                    <div class="weight" id="weightTxt"><%= charData.weight %>/<%= charData.Mweight %> lb</div>
                 </div>
-                <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
+                <progress class="encumBar" id="encumbar" value="<%= charData.weight %>" max="<%= charData.Mweight %>"></progress>
             </div>
             <div class="categoryCont">
                 <button class="cate active" data-category='all'>
@@ -163,7 +163,7 @@
                             </div>
                         </div>
                         <button class="tool-equip-btn">
-                            Equip
+                            <%= tool.equipped ? 'Unequip' : 'Equip' %>
                         </button>
                     </div>
                     <% }); %>
@@ -516,7 +516,7 @@
         </div>
     </div>
 
-    <script src="/chat.js"></script>
+    <script src="/index.js"></script>
     <script>
         async function refreshAiStatus() {
             try {

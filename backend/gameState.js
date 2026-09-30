@@ -45,11 +45,13 @@ const initialConstitutionModifier = (stats[2] - 10) / 2;
 const initialClassStats = classHP.find(characterClass => characterClass.name === campaignClass);
 const gameState = {
     gold: 0,
-    tools: Tools.map(tool => ({ ...tool })),
+    tools: Tools.map(tool => ({ ...tool, equipped: Boolean(tool.equipped) })),
     charName: 'Carter',
     charClass: campaignClass,
     charRace: 'Elvish',
     charOrigin: '',
+    weight: 0,
+    maxWeight: 100,
     HP: (initialClassStats?.default + initialConstitutionModifier)
         + (((level - 1) * initialConstitutionModifier) + ((level - 1) * initialClassStats?.perLevel))
 };
@@ -79,6 +81,38 @@ function updateCharacter({ name, origin, race, characterClass }) {
     return true;
 }
 
+// Equip Tool
+function toggleToolEquipped(name) {
+    const tool = gameState.tools.find(item => item.name === name);
+    if (!tool || !tool.unlocked) {
+        return { success: false, message: 'Item is unavailable.' };
+    }
+    const toolWeight = Math.max(0, Number(tool.weight) || 0);
+    if (tool.equipped) {
+        tool.equipped = false;
+        gameState.weight = Math.max(0, gameState.weight - toolWeight);
+    } else {
+        if (gameState.weight + toolWeight > gameState.maxWeight) {
+            return {
+                success: false,
+                message: 'You are carrying too much.',
+                weight: gameState.weight,
+                maxWeight: gameState.maxWeight
+            };
+        }
+        tool.equipped = true;
+        gameState.weight += toolWeight;
+    }
+    return {
+        success: true,
+        weight: gameState.weight,
+        maxWeight: gameState.maxWeight,
+        tools: gameState.tools.map(({ name, unlocked, equipped }) => ({
+            name, unlocked, equipped: Boolean(equipped)
+        }))
+    };
+}
+
 module.exports = {
     addExperience,
     claimedMilestones,
@@ -86,5 +120,6 @@ module.exports = {
     getProgression,
     masteryCourseSets,
     stats,
-    updateCharacter
+    updateCharacter,
+    toggleToolEquipped
 };

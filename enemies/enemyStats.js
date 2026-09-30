@@ -9,12 +9,12 @@ module.exports = {
                 atk1: {
                     header: "Necromancer Swirl",
                     desc: "Death Possessor spins around the staff, a beam of light illuminating its tip as energy consumes you.",
-                    damage: "2d4"
+                    damage: "1d4"
                 },
                 atk2: {
                     header: "Protection Blast",
                     desc: "Death Possessor slams his staff into the ground, exploding a bubble that creates an AOE.",
-                    damage: "3d6"
+                    damage: "2d4"
                 },
                 atk3: {
                     header: "Skull Imprint",
@@ -37,12 +37,12 @@ module.exports = {
                 atk2: {
                     header: "Skeletal Stomp",
                     desc: "The bones within the bull build up energy, which creates a large shockwave upon the earth.",
-                    damage: "6d4"
+                    damage: "2d4"
                 },
                 atk3: {
                     header: "Matador Charge",
                     desc: "A magic red banner appears over the bull's eyes, making him go mad as he charges fowards.",
-                    damage: "3d8"
+                    damage: "3d6"
                 }
             }
         },
@@ -60,12 +60,12 @@ module.exports = {
                 atk2: {
                     header: "Impenetrable",
                     desc: "Fire Goblin casts fire upon your body, which cannot be put out.",
-                    damage: "1d20"
+                    damage: "1d10"
                 },
                 atk3: {
                     header: "Self-Destruct",
                     desc: "Fire Goblin uses a detonation spell to create an explosion around him, which doesn't harm him.",
-                    damage: "3d8"
+                    damage: "3d4"
                 }
             }
         }

@@ -317,7 +317,7 @@ button:hover {
     color: rgb(255, 91, 91);
 }
 .tool.selectable {
-    padding: 30px;
+    padding: 30px 15px 30px 15px;
 }
 #combatContinue {
     width: min(100%, 420px);
