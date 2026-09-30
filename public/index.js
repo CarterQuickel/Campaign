@@ -365,7 +365,28 @@ function showCombatPanel({ correct, message = '', showAttacks = false, phase = '
     combatContinue.hidden = showAttacks;
     combatOverlay.dataset.phase = phase;
     combatContinue.disabled = false;
-    combatContinue.textContent = phase === 'won' ? 'Claim Rewards and Continue' : 'Continue';
+    combatContinue.textContent = phase === 'won' || phase === 'lost' ? 'Continue Story' : 'Continue';
+}
+
+function returnToChatAfterCombat() {
+    const questionPanel = document.getElementById('questionPanel');
+    const chatPanel = document.getElementById('chat');
+    const centerPanel = document.querySelector('.centerCont');
+    if (questionPanel) questionPanel.style.display = 'none';
+    document.body.classList.remove('combat-active');
+    if (attackItems) attackItems.hidden = true;
+    if (combatContinue) combatContinue.hidden = true;
+    if (combatOverlay) {
+        combatOverlay.classList.remove('open');
+        combatOverlay.setAttribute('aria-hidden', 'true');
+        combatOverlay.dataset.phase = 'inactive';
+    }
+    if (typeof viewMobilePage === 'function' && window.matchMedia('(max-width: 767px)').matches) {
+        viewMobilePage('chat');
+    } else {
+        if (centerPanel) centerPanel.style.display = 'flex';
+        if (chatPanel) chatPanel.style.display = 'flex';
+    }
 }
 
 answerOptions.forEach(button => {
@@ -427,27 +448,50 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
 });
 
 combatContinue?.addEventListener('click', async () => {
+    let continuationBubble = null;
     try {
-        if (combatOverlay.dataset.phase === 'result') {
+        const phase = combatOverlay.dataset.phase;
+        if (phase === 'result') {
             const response = await fetch('/api/combat/continue', { method: 'POST' });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to return to the question.');
             updateCombatVitals(result);
+        } else if (phase === 'won' || phase === 'lost') {
+            combatContinue.disabled = true;
+            returnToChatAfterCombat();
+            const chatContainer = document.getElementById('text-scroll');
+            const enemyName = document.querySelector('.enemyTxt')?.textContent.trim() || 'the enemy';
+            const message = document.createElement('div');
+            message.className = 'message assistant';
+            continuationBubble = document.createElement('div');
+            continuationBubble.className = 'bubble';
+            continuationBubble.textContent = phase === 'won'
+                ? `With ${enemyName} defeated, the aftermath unfolds...`
+                : `Defeated by ${enemyName}, you face the consequences...`;
+            message.appendChild(continuationBubble);
+            chatContainer?.appendChild(message);
+            if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+            const response = await fetch('/api/combat/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    combatId: document.getElementById('active-combat-id')?.value,
+                    conversationId: document.getElementById('conversation-id')?.value
+                })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'Unable to continue the story.');
+            continuationBubble.textContent = '';
+            const fallbackText = phase === 'won'
+                ? `${enemyName} has fallen. What happens next is yours to decide.`
+                : `${enemyName} has overcome you, but this is not necessarily the end. What do you do next?`;
+            await typeAIResponseIntoElement(result.response || fallbackText, continuationBubble);
         }
-        combatOverlay.classList.remove('open');
-        combatOverlay.setAttribute('aria-hidden', 'true');
-        if (combatOverlay.dataset.phase === 'won') {
-            const questionPanel = document.getElementById('questionPanel');
-            const chatPanel = document.getElementById('chat');
-            const centerPanel = document.querySelector('.centerCont');
-            if (questionPanel) questionPanel.style.display = 'none';
-            if (typeof viewMobilePage === 'function' && window.matchMedia('(max-width: 767px)').matches) {
-                viewMobilePage('chat');
-            } else {
-                if (centerPanel) centerPanel.style.display = 'flex';
-                if (chatPanel) chatPanel.style.display = 'flex';
-            }
+        if (phase !== 'won' && phase !== 'lost') {
+            combatOverlay.classList.remove('open');
+            combatOverlay.setAttribute('aria-hidden', 'true');
         }
+        if (phase === 'won' || phase === 'lost') combatContinue.disabled = false;
         answerOptions.forEach(option => {
             option.disabled = false;
             option.classList.remove('active', 'correct', 'incorrect');
@@ -456,6 +500,12 @@ combatContinue?.addEventListener('click', async () => {
         document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
     } catch (error) {
         console.error('Unable to continue combat:', error);
+        if (continuationBubble) {
+            continuationBubble.textContent = `The story could not continue right now: ${error.message}. Refresh the page to retry.`;
+        } else if (combatContinue) {
+            combatContinue.disabled = false;
+            combatMessage.textContent = error.message;
+        }
     }
 });
 

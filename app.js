@@ -40,7 +40,6 @@ app.use(express.json());
 
 // APIs
 registerGameActionEndpoint(app, state.gameState);
-app.use('/api/combat', createCombatRouter(combat));
 app.use('/api/course', createCourseRouter(state));
 app.get('/api/ai-status', async (req, res) => {
     const ready = await ai.checkStatus();
@@ -66,11 +65,14 @@ initializeDatabase()
         const actions = createGameActionService({
             gameState: state.gameState,
             rewards: storySpecRewards,
+            enemies,
+            startCombat: (enemyName, conversationId) => combat.start(enemyName, conversationId),
             emitInventoryUpdate: tools => io.emit('inventory:update', { tools })
         });
         const viewData = createViewData({ state, combat, conversations, ai });
         app.use('/', createPagesRouter({ state, viewData, conversations }));
         app.use('/ask', createAskRouter({ state, conversations, ai, actions, viewData }));
+        app.use('/api/combat', createCombatRouter({ combat, ai, conversations, actions }));
         server.listen(port, () => console.log(`Server running on ${serverAddress}:${port}`));
     })
     .catch(error => {

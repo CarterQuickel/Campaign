@@ -7,7 +7,7 @@ function createViewData({ state, combat, conversations, ai }) {
             response,
             prompt,
             conversations: await conversations.getConversations(),
-            conversationId,
+            conversationId: conversationId || snapshot.conversationId,
             messages,
             online: await ai.checkStatus(),
             stats: state.stats,
@@ -29,6 +29,9 @@ function createViewData({ state, combat, conversations, ai }) {
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
             playerHP: snapshot.playerHP,
+            combatActive: snapshot.active,
+            combatId: snapshot.combatId,
+            combatPhase: snapshot.phase,
             combatQuestion: snapshot.question
         };
     }
@@ -56,6 +59,9 @@ function createViewData({ state, combat, conversations, ai }) {
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
             playerHP: snapshot.playerHP,
+            combatActive: snapshot.active,
+            combatId: snapshot.combatId,
+            combatPhase: snapshot.phase,
             combatQuestion: snapshot.question
         };
     }

@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="<%= combatActive ? 'combat-active' : '' %>">
     <div id="banner">
         <div id="leftBan">
             <div id="title">
@@ -313,11 +313,15 @@
                                         <div class="preCont">
                                             <button class="preResponse">Where am I?</button>
                                             <button class="preResponse">What's happened so far?</button>
+                                            <button class="preResponse">TEST: Make a random encounter</button>
+                                            <button class="preResponse">TEST: Give me a random tool</button>
+                                            <button class="preResponse">TEST: Give me a random amount of gold</button>
                                         </div>
                                         <textarea name="prompt" placeholder="Describe your action or ask the DM..."
                                             id="chatbox" required><%= prompt || '' %></textarea>
                                         <input type="hidden" name="conversationId" id="conversation-id"
                                             value="<%= conversationId || '' %>">
+                                        <input type="hidden" id="active-combat-id" value="<%= combatId %>">
                                     </div>
                                     <button type="submit" id="submit-btn">
                                         <img src="/icons/send.png" width="30" height="30">

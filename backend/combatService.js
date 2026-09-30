@@ -27,10 +27,32 @@ function rollDamage(expression) {
 
 // Initialize Combat
 function createCombatService({ gameState, enemies }) {
-    const enemy = enemies[Math.floor(Math.random() * enemies.length)];
-    let enemyHP = enemy.HP;
+    let enemy = null;
+    let enemyHP = 0;
     let playerHP = Math.max(0, Math.floor(gameState.HP));
-    let phase = 'question';
+    let phase = 'inactive';
+    let conversationId = null;
+    let combatId = 0;
+    let resolvingCombatId = null;
+    const completedResolutions = new Map();
+
+    function start(enemyName, startedInConversation = null) {
+        if (phase !== 'inactive') {
+            return { success: false, message: 'Combat is already active.' };
+        }
+        const normalizedName = String(enemyName || '').trim().toLowerCase();
+        const selectedEnemy = enemies.find(candidate => candidate.name.trim().toLowerCase() === normalizedName);
+        if (!selectedEnemy) {
+            return { success: false, message: 'That enemy is not available.' };
+        }
+        enemy = selectedEnemy;
+        enemyHP = enemy.HP;
+        playerHP = Math.max(0, Math.floor(gameState.HP));
+        phase = 'question';
+        conversationId = Number(startedInConversation) || null;
+        combatId += 1;
+        return { success: true, combatId, enemy: enemy.name };
+    }
 
     function performEnemyAttack() {
         const attacks = Object.values(enemy.attacks || {});
@@ -44,6 +66,9 @@ function createCombatService({ gameState, enemies }) {
 
     // Answer Question
     function answer(answerId) {
+        if (!enemy || phase === 'inactive' || phase === 'won' || phase === 'lost') {
+            return { status: 409, body: { success: false, message: 'There is no active combat.' } };
+        }
         if (phase !== 'question') {
             return { status: 409, body: { success: false, message: 'This question has already been answered.' } };
         }
@@ -74,6 +99,9 @@ function createCombatService({ gameState, enemies }) {
 
     // Attack
     function attack(itemName) {
+        if (!enemy || phase === 'inactive' || phase === 'won' || phase === 'lost') {
+            return { status: 409, body: { success: false, message: 'There is no active combat.' } };
+        }
         if (phase !== 'attack') {
             return { status: 409, body: { success: false, message: 'You do not have an attack ready.' } };
         }
@@ -111,10 +139,52 @@ function createCombatService({ gameState, enemies }) {
         phase = 'question';
         return { status: 200, body: { success: true, enemyHP, playerHP } };
     }
-    function getSnapshot() {
-        return { enemy, enemyHP, playerHP, phase, question: combatQuestion };
+    function canResolve(requestedCombatId, requestedConversationId) {
+        const id = Number(requestedCombatId);
+        const requestedConversation = Number(requestedConversationId) || null;
+        return Boolean(enemy)
+            && id === combatId
+            && (phase === 'won' || phase === 'lost')
+            && requestedConversation === conversationId;
     }
-    return { answer, attack, continueCombat, getSnapshot };
+    function beginResolution(requestedCombatId, requestedConversationId) {
+        if (resolvingCombatId !== null || !canResolve(requestedCombatId, requestedConversationId)) return null;
+        resolvingCombatId = Number(requestedCombatId);
+        return getSnapshot();
+    }
+    function cancelResolution(requestedCombatId) {
+        if (resolvingCombatId !== Number(requestedCombatId)) return false;
+        resolvingCombatId = null;
+        return true;
+    }
+    function close(requestedCombatId, responseText) {
+        if (Number(requestedCombatId) !== combatId || resolvingCombatId !== combatId || (phase !== 'won' && phase !== 'lost')) return false;
+        completedResolutions.set(combatId, { conversationId, responseText });
+        enemy = null;
+        enemyHP = 0;
+        phase = 'inactive';
+        conversationId = null;
+        resolvingCombatId = null;
+        return true;
+    }
+    function getCompletedResolution(requestedCombatId, requestedConversationId) {
+        const completed = completedResolutions.get(Number(requestedCombatId));
+        if (!completed || completed.conversationId !== (Number(requestedConversationId) || null)) return null;
+        return completed.responseText;
+    }
+    function getSnapshot() {
+        return {
+            enemy: enemy || enemies[0],
+            enemyHP,
+            playerHP,
+            phase,
+            active: Boolean(enemy),
+            combatId,
+            conversationId,
+            question: combatQuestion
+        };
+    }
+    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, start };
 }
 
 module.exports = { createCombatService };

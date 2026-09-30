@@ -11,6 +11,9 @@ function parseGameActionFromText(responseText) {
             if (parsed?.name === 'unlock_item') {
                 return { name: 'unlock_item', item: String(parsed.item || '').trim(), storyReward: parsed.storyReward === true };
             }
+            if (parsed?.name === 'start_combat') {
+                return { name: 'start_combat', enemy: String(parsed.enemy || parsed.enemies || '').trim() };
+            }
         } catch (error) {
             console.error('Could not parse game action tag:', error.message);
         }
@@ -23,17 +26,38 @@ function parseGameActionFromText(responseText) {
     return inlineAmountMatch ? { name: 'give_gold', amount: Number(inlineAmountMatch[1]) } : null;
 }
 
+function inferCombatActionFromText(responseText, enemies) {
+    const text = String(responseText || '');
+    const activeCombatLanguage = /\b(?:attacks?|strikes?|lunges(?: at)?|charges(?: at)?|rushes(?: at)?|ambushes?|pounces(?: on)?|fires at|swings at|leaps at|turns on)\b|\b(?:combat|battle|fight) (?:begins|starts)\b/i;
+    if (!activeCombatLanguage.test(text)) return null;
+
+    return (Array.isArray(enemies) ? enemies : []).find(enemy => {
+        const name = typeof enemy === 'string' ? enemy : enemy?.name;
+        if (!name) return false;
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`\\b${escapedName}\\b`, 'i').test(text);
+    }) || null;
+}
+
 // Game Actions Execuatble by the AI
-function createGameActionService({ gameState, rewards, emitInventoryUpdate = () => {} }) {
-    function apply(responseText) {
+function createGameActionService({ gameState, rewards, enemies = [], emitInventoryUpdate = () => {}, startCombat = () => ({ success: false }) }) {
+    function apply(responseText, context = {}) {
         if (typeof responseText !== 'string') return responseText;
-        const action = parseGameActionFromText(responseText);
+        const action = parseGameActionFromText(responseText)
+            || (() => {
+                const enemy = inferCombatActionFromText(responseText, enemies);
+                return enemy ? { name: 'start_combat', enemy: typeof enemy === 'string' ? enemy : enemy.name } : null;
+            })();
         if (!action) return responseText;
         console.log('GAME ACTION:', action);
 
         if (action.name === 'give_gold') {
             const amount = Number(action.amount ?? 0);
             if (Number.isFinite(amount) && amount !== 0) gameState.gold = (Number(gameState.gold) || 0) + amount;
+        }
+        if (action.name === 'start_combat' && context.allowCombatStart !== false) {
+            const result = startCombat(action.enemy, context.conversationId);
+            if (!result?.success) console.log('COMBAT NOT STARTED:', result?.message || action.enemy);
         }
         if (action.name === 'unlock_item') {
             const reward = (Array.isArray(rewards) ? rewards : [])
@@ -63,9 +87,10 @@ function createGameActionService({ gameState, rewards, emitInventoryUpdate = () 
         if (cleanedText) return cleanedText;
         if (action.name === 'give_gold') return `You receive ${action.amount} gold.`;
         if (action.name === 'unlock_item') return `You have unlocked the ${action.item}.`;
+        if (action.name === 'start_combat') return `Combat begins against ${action.enemy}.`;
         return responseText.trim();
     }
     return { apply };
 }
 
-module.exports = { createGameActionService, parseGameActionFromText };
+module.exports = { createGameActionService, inferCombatActionFromText, parseGameActionFromText };

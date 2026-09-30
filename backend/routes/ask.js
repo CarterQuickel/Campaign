@@ -3,6 +3,7 @@ const { system } = require('../../system');
 const { stories } = require('../../StoryAPI/stories');
 const { landmarks } = require('../../StoryAPI/landmarks');
 const { storySpecRewards } = require('../../StoryAPI/storySpecRewards');
+const { enemies } = require('../../enemies/enemyStats');
 
 // Initial root directory
 function createAskRouter({ state, conversations, ai, actions, viewData }) {
@@ -21,10 +22,11 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
                 stories,
                 landmarks,
                 storySpecRewards,
-                availableItems: state.gameState.tools.map(item => item.name)
+                availableItems: state.gameState.tools.map(item => item.name),
+                enemies: enemies.map(enemy => enemy.name)
             };
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
-            const finalResponse = (actions.apply(responseText) || responseText).trim();
+            const finalResponse = (actions.apply(responseText, { conversationId }) || responseText).trim();
             await conversations.saveMessage(conversationId, 'assistant', finalResponse);
             const messages = await conversations.getRecentMessages(conversationId);
             messages.unshift({
