@@ -60,7 +60,6 @@
 }
 .sectionsKey.mainPage {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    overflow-y: auto;
 }
 .sectionsKey.mainPage:not(.milestone) {
     padding-right: 10px;

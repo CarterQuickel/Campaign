@@ -333,7 +333,74 @@ const combatStatus = document.getElementById('combatStatus');
 const combatMessage = document.getElementById('combatMessage');
 const attackItems = document.getElementById('attackItems');
 const combatContinue = document.getElementById('combatContinue');
-const answerOptions = [...document.querySelectorAll('.answerOption')];
+const answerContainer = document.querySelector('.answerCont');
+
+function getAnswerOptions() {
+    return [...document.querySelectorAll('.answerOption')];
+}
+
+function renderCombatQuestion(question) {
+    if (!question) return;
+    const prompt = document.querySelector('#questionPanel .question');
+    if (prompt) prompt.textContent = question.prompt || '';
+    if (!answerContainer) return;
+    answerContainer.replaceChildren(...(question.answers || []).map(answer => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'answerOption';
+        button.dataset.answerId = String(answer.id);
+        const text = document.createElement('span');
+        text.className = 'optionTxt';
+        text.textContent = answer.text;
+        const selected = document.createElement('span');
+        selected.className = 'selectedAns';
+        selected.setAttribute('aria-hidden', 'true');
+        button.append(text, selected);
+        return button;
+    }));
+}
+
+function updateMasteryDisplay(mastery) {
+    if (!mastery) return;
+    document.querySelectorAll(`.mastery-unit[data-unit-id="${mastery.unitId}"]`).forEach(unit => {
+        unit.dataset.completion = mastery.completion;
+        const percent = unit.querySelector('.secPercent');
+        if (percent) percent.textContent = `${mastery.completion}%`;
+    });
+    document.querySelectorAll(`.slice[data-unit-id="${mastery.unitId}"]`).forEach(slice => {
+        slice.style.setProperty('--radius', `${mastery.completion}%`);
+    });
+
+    document.querySelectorAll('.mastery-unit').forEach(unit => {
+        const isCurrent = mastery.currentUnit
+            && Number(unit.dataset.unitId) === Number(mastery.currentUnit.id)
+            && Number(unit.dataset.courseId) === Number(mastery.currentUnit.courseId);
+        const mark = unit.querySelector('.mastery-current-mark');
+        if (mark) mark.textContent = isCurrent ? '(CURRENT)' : '';
+        unit.dataset.current = String(Boolean(isCurrent));
+    });
+
+    const currentUnit = mastery.currentUnit;
+    const title = document.querySelector('.currentUnitTitle');
+    const completion = document.querySelector('.currentUnitCompletion');
+    const progress = document.querySelector('.currentUnitProgress');
+    const milestones = document.querySelector('.milestone');
+    if (currentUnit) {
+        if (title) title.textContent = currentUnit.name;
+        if (completion) completion.textContent = `${currentUnit.completion}%`;
+        if (progress) progress.style.setProperty('--progress', `${currentUnit.completion}%`);
+        if (milestones) {
+            milestones.dataset.currentUnitId = currentUnit.id;
+            milestones.dataset.courseProgress = currentUnit.completion;
+        }
+    } else {
+        if (title) title.textContent = 'All mastery units complete';
+        if (completion) completion.textContent = '100%';
+        if (progress) progress.style.setProperty('--progress', '100%');
+        if (milestones) milestones.dataset.courseProgress = '100';
+    }
+    updateClaimableMilestones();
+}
 
 function updateCombatVitals(result) {
     if (Number.isFinite(Number(result.enemyHP))) {
@@ -389,8 +456,10 @@ function returnToChatAfterCombat() {
     }
 }
 
-answerOptions.forEach(button => {
-    button.addEventListener('click', async () => {
+answerContainer?.addEventListener('click', async event => {
+        const button = event.target.closest('.answerOption');
+        if (!button || button.disabled) return;
+        const answerOptions = getAnswerOptions();
         answerOptions.forEach(option => { option.disabled = true; });
         try {
             const response = await fetch('/api/combat/answer', {
@@ -409,6 +478,7 @@ answerOptions.forEach(button => {
                 option.classList.toggle('incorrect', isSelected && !result.correct);
                 option.querySelector('.selectedAns').textContent = isCorrectAnswer ? '✓' : isSelected ? '×' : '';
             });
+            updateMasteryDisplay(result.mastery);
             updateCombatVitals(result);
             showCombatPanel({
                 correct: result.correct,
@@ -418,9 +488,8 @@ answerOptions.forEach(button => {
             });
         } catch (error) {
             console.error('Unable to submit combat answer:', error);
-            answerOptions.forEach(option => { option.disabled = false; });
+            getAnswerOptions().forEach(option => { option.disabled = false; });
         }
-    });
 });
 
 document.querySelectorAll('#attackItems .selectable').forEach(button => {
@@ -456,6 +525,7 @@ combatContinue?.addEventListener('click', async () => {
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to return to the question.');
             updateCombatVitals(result);
+            renderCombatQuestion(result.question);
         } else if (phase === 'won' || phase === 'lost') {
             combatContinue.disabled = true;
             returnToChatAfterCombat();
@@ -492,7 +562,7 @@ combatContinue?.addEventListener('click', async () => {
             combatOverlay.setAttribute('aria-hidden', 'true');
         }
         if (phase === 'won' || phase === 'lost') combatContinue.disabled = false;
-        answerOptions.forEach(option => {
+        getAnswerOptions().forEach(option => {
             option.disabled = false;
             option.classList.remove('active', 'correct', 'incorrect');
             option.querySelector('.selectedAns').textContent = '';

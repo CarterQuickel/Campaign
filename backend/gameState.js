@@ -8,38 +8,145 @@ let XP = 0;
 let MAXXP = 800;
 const claimedMilestones = new Set();
 
-// Course Units (PLACEHOLDER)
-const mastery = {
-    'Computer Programming NOCTI': [
-        { name: 'General Information and Concepts', completion: 24, color: '#f1ece2', current: false },
-        { name: 'Ethics, Legal Compliance, and Security', completion: 87, color: '#6b625e', current: false },
-        { name: 'Analyze Programming Problems, Manage Projects, and Create Flowchart Solutions', completion: 54, color: '#b8cfd0', current: false },
-        { name: 'Design Program Solutions', completion: 12, color: '#5a617a', current: false },
-        { name: 'Code Programs', completion: 67, color: '#828e6f', current: false },
-        { name: 'Test Programs', completion: 24, color: '#5d5f37', current: false },
-        { name: 'Maintain Programs and Implement Change Management Procedures', completion: 19, color: '#d3a7a8', current: false },
-        { name: 'Complete User Documentation and Technical Writing', completion: 62, color: '#b1756a', current: false }
-    ],
-    'CIW Javascript Specialist': [
-        { name: 'Introduction to JavaScript', completion: 0, color: '#1a1a1a', current: false },
-        { name: 'Working with Variables and Data in JavaScript', completion: 10, color: '#2b2b2b', current: false },
-        { name: 'Functions, Methods, and Events in JavaScript', completion: 90, color: '#3c3c3c', current: false },
-        { name: 'Debugging and Troubleshooting in JavaScript', completion: 15, color: '#4d4d4d', current: false },
-        { name: 'Controlling Program Flow in JavaScript', completion: 0, color: '#5e5e5e', current: false },
-        { name: 'The JavaScript Document Object Model (DOM)', completion: 0, color: '#6f6f6f', current: false },
-        { name: 'JavaScript Language Objects', completion: 8, color: '#7a7a7a', current: false },
-        { name: 'Custom JavaScript Objects', completion: 100, color: '#8b8b8b', current: true },
-        { name: 'Changing HTML on the Fly', completion: 5, color: '#7a6f6f', current: false },
-        { name: 'Developing Interactive Forms with JavaScript', completion: 98, color: '#635050', current: false },
-        { name: 'JavaScript Security', completion: 12, color: '#614b4b', current: false },
-        { name: 'JavaScript Libraries and Frameworks', completion: 38, color: '#746767', current: false },
-        { name: 'JavaScript and AJAX', completion: 19, color: '#615252', current: false },
-        { name: 'Introduction to Web APIs', completion: 70, color: '#4b3d3d', current: false }
-    ]
-};
+const QUIZBANK_API = 'https://quizbank.yorktechapps.com/api';
+const MASTERY_COURSE_IDS = [10, 2];
+const masteryColors = [
+    '#1a1a1a', '#2b2b2b', '#3c3c3c', '#4d4d4d', '#5e5e5e', '#6f6f6f', '#7a7a7a', '#8b8b8b',
+    '#7a6f6f', '#635050', '#614b4b', '#746767', '#615252', '#4b3d3d'
+];
+const masteryCourseSets = [];
 
-// Game Mastery
-const masteryCourseSets = Object.entries(mastery).map(([name, sections]) => ({ name, sections }));
+// Fetch Quizbank JSON Data
+async function fetchQuizbankJson(path) {
+    const response = await fetch(`${QUIZBANK_API}${path}`, {
+        headers: { Accept: 'application/json' }
+    });
+    const text = await response.text();
+    if (!response.ok) {
+        throw new Error(`Quizbank request failed (${response.status}): ${text || response.statusText}`);
+    }
+    try {
+        return JSON.parse(text);
+    } catch (error) {
+        throw new Error(`Quizbank returned invalid JSON: ${error.message}`);
+    }
+}
+
+// Initialize Mastery Course Sets
+async function initializeMasteryCourseSets() {
+    const courses = await fetchQuizbankJson('/course');
+    if (!Array.isArray(courses)) throw new Error('Quizbank course list was not an array.');
+    const selectedCourses = MASTERY_COURSE_IDS.map(id => {
+        const course = courses.find(item => Number(item.id) === id);
+        if (!course) throw new Error(`Quizbank course ${id} was not found.`);
+        return course;
+    });
+    const courseSets = await Promise.all(selectedCourses.map(async course => {
+        const details = await fetchQuizbankJson(`/course/${course.id}`);
+        if (!Array.isArray(details.units)) {
+            throw new Error(`Quizbank course ${course.id} did not include units.`);
+        }
+        const units = [...details.units]
+            .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0));
+        return {
+            id: Number(course.id),
+            name: details.name || course.name,
+            sections: units.map((unit, index) => ({
+                id: unit.id,
+                name: unit.name,
+                completion: 0,
+                color: masteryColors[index % masteryColors.length],
+                current: Number(course.id) === MASTERY_COURSE_IDS[0] && index === 0
+            }))
+        };
+    }));
+    masteryCourseSets.splice(0, masteryCourseSets.length, ...courseSets);
+    return masteryCourseSets;
+}
+
+// Get the current mastery unit (course and section)
+function getCurrentMasteryUnit() {
+    for (const course of masteryCourseSets) {
+        const section = course.sections.find(unit => unit.current);
+        if (section) return { course, section };
+    }
+    return null;
+}
+
+// Set the current mastery unit (course and section)
+function setCurrentMasteryUnit(courseId, unitId) {
+    const selectedCourse = masteryCourseSets.find(course => Number(course.id) === Number(courseId));
+    const selectedSection = selectedCourse?.sections.find(section => Number(section.id) === Number(unitId));
+    if (!selectedCourse || !selectedSection) return null;
+
+    for (const course of masteryCourseSets) {
+        for (const section of course.sections) section.current = section === selectedSection;
+    }
+    return { course: selectedCourse, section: selectedSection };
+}
+
+// Fetch a question for the current mastery course
+async function fetchQuestionForCurrentCourse() {
+    const current = getCurrentMasteryUnit();
+    if (!current) throw new Error('There are no remaining mastery units.');
+    const questions = await fetchQuizbankJson(`/course/${current.course.id}?pick=1`);
+    if (!Array.isArray(questions) || !questions.length) {
+        throw new Error(`Quizbank returned no questions for ${current.course.name}.`);
+    }
+    const question = questions[0];
+    if (!question.prompt || !Array.isArray(question.answers) || !question.answers.length) {
+        throw new Error('Quizbank returned a question with an invalid format.');
+    }
+    const correctIndex = Number(question.correctIndex);
+    if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= question.answers.length) {
+        throw new Error('Quizbank returned a question with an invalid correct answer.');
+    }
+    return {
+        id: String(question.id),
+        prompt: question.prompt,
+        answers: question.answers.map((answer, index) => ({ id: String(index), text: String(answer) })),
+        correctAnswerId: String(correctIndex),
+        courseId: current.course.id,
+        courseName: current.course.name,
+        unitId: current.section.id,
+        unitName: current.section.name
+    };
+}
+
+// Record a correct answer for the current mastery unit
+function recordCorrectMasteryAnswer() {
+    const current = getCurrentMasteryUnit();
+    if (!current) return null;
+    current.section.completion = Math.min(100, current.section.completion + 10);
+    const completed = current.section.completion === 100;
+    let next = null;
+    if (completed) {
+        current.section.current = false;
+        const allUnits = masteryCourseSets.flatMap(course => course.sections.map(section => ({ course, section })));
+        const currentIndex = allUnits.findIndex(unit => unit.section === current.section);
+        next = allUnits[currentIndex + 1] || null;
+        if (next) next.section.current = true;
+    }
+    const active = next || current;
+    return {
+        completed,
+        completion: current.section.completion,
+        unitId: current.section.id,
+        unitName: current.section.name,
+        courseId: current.course.id,
+        courseName: current.course.name,
+        nextUnit: next ? { id: next.section.id, name: next.section.name, courseId: next.course.id, courseName: next.course.name } : null,
+        currentUnit: next ? { id: next.section.id, name: next.section.name, courseId: next.course.id, courseName: next.course.name, completion: next.section.completion } : !completed ? {
+            id: active.section.id,
+            name: active.section.name,
+            courseId: active.course.id,
+            courseName: active.course.name,
+            completion: active.section.completion
+        } : null
+    };
+}
+
+// Initialize Character Data
 const campaignClass = 'Barbarian';
 const initialConstitutionModifier = (stats[2] - 10) / 2;
 const initialClassStats = classHP.find(characterClass => characterClass.name === campaignClass);
@@ -117,8 +224,13 @@ module.exports = {
     addExperience,
     claimedMilestones,
     gameState,
+    fetchQuestionForCurrentCourse,
     getProgression,
+    getCurrentMasteryUnit,
+    initializeMasteryCourseSets,
     masteryCourseSets,
+    recordCorrectMasteryAnswer,
+    setCurrentMasteryUnit,
     stats,
     updateCharacter,
     toggleToolEquipped

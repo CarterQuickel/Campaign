@@ -16,8 +16,8 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
         const result = combat.attack(req.body.itemName);
         return res.status(result.status).json(result.body);
     });
-    router.post('/continue', (req, res) => {
-        const result = combat.continueCombat();
+    router.post('/continue', async (req, res) => {
+        const result = await combat.continueCombat();
         return res.status(result.status).json(result.body);
     });
     router.post('/resolve', async (req, res) => {

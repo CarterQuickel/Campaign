@@ -1,15 +1,3 @@
-const combatQuestion = {
-    id: 'javascript-web-page-task',
-    prompt: 'Which task is JavaScript BEST suited to perform on a web page?',
-    answers: [
-        { id: 'html-layout', text: 'Creating the HTML page layout' },
-        { id: 'validate-form', text: 'Validating form input before submission' },
-        { id: 'css-colors', text: 'Defining CSS color schemes' },
-        { id: 'register-domain', text: 'Registering a domain name' }
-    ],
-    correctAnswerId: 'validate-form'
-};
-
 // Roll Calculation
 function rollDamage(expression) {
     const match = String(expression || '').match(/^(\d{1,2})d(\d{1,3})([+-]\d{1,4})?$/i);
@@ -26,11 +14,12 @@ function rollDamage(expression) {
 }
 
 // Initialize Combat
-function createCombatService({ gameState, enemies }) {
+function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null }) {
     let enemy = null;
     let enemyHP = 0;
     let playerHP = Math.max(0, Math.floor(gameState.HP));
     let phase = 'inactive';
+    let combatQuestion = null;
     let conversationId = null;
     let combatId = 0;
     let resolvingCombatId = null;
@@ -49,9 +38,16 @@ function createCombatService({ gameState, enemies }) {
         enemyHP = enemy.HP;
         playerHP = Math.max(0, Math.floor(gameState.HP));
         phase = 'question';
+        combatQuestion = null;
         conversationId = Number(startedInConversation) || null;
         combatId += 1;
         return { success: true, combatId, enemy: enemy.name };
+    }
+
+    async function prepareQuestion() {
+        if (!enemy || phase !== 'question') return combatQuestion;
+        if (!combatQuestion) combatQuestion = await questionProvider();
+        return combatQuestion;
     }
 
     function performEnemyAttack() {
@@ -72,11 +68,19 @@ function createCombatService({ gameState, enemies }) {
         if (phase !== 'question') {
             return { status: 409, body: { success: false, message: 'This question has already been answered.' } };
         }
-        if (!combatQuestion.answers.some(answerOption => answerOption.id === answerId)) {
+        if (!combatQuestion || !combatQuestion.answers.some(answerOption => answerOption.id === answerId)) {
             return { status: 400, body: { success: false, message: 'Choose a valid answer.' } };
         }
         const correct = answerId === combatQuestion.correctAnswerId;
-        const result = { success: true, correct, correctAnswerId: combatQuestion.correctAnswerId, enemyHP, playerHP, canAttack: correct };
+        const result = {
+            success: true,
+            correct,
+            correctAnswerId: combatQuestion.correctAnswerId,
+            enemyHP,
+            playerHP,
+            canAttack: correct,
+            mastery: correct ? recordCorrectAnswer() : null
+        };
         if (correct) {
             phase = 'attack';
             return { status: 200, body: result };
@@ -132,13 +136,26 @@ function createCombatService({ gameState, enemies }) {
             }
         };
     }
-    function continueCombat() {
+    
+    async function continueCombat() {
         if (phase !== 'result') {
             return { status: 409, body: { success: false, message: 'Combat cannot continue yet.' } };
         }
+        let nextQuestion;
+        try {
+            nextQuestion = await questionProvider();
+        } catch (error) {
+            console.error('Unable to load the next Quizbank question:', error);
+            return { status: 503, body: { success: false, message: 'Unable to load the next course question. Please try again.' } };
+        }
+        if (!nextQuestion) {
+            return { status: 503, body: { success: false, message: 'There are no more mastery units to question.' } };
+        }
+        combatQuestion = nextQuestion;
         phase = 'question';
-        return { status: 200, body: { success: true, enemyHP, playerHP } };
+        return { status: 200, body: { success: true, enemyHP, playerHP, question: getPublicQuestion(combatQuestion) } };
     }
+
     function canResolve(requestedCombatId, requestedConversationId) {
         const id = Number(requestedCombatId);
         const requestedConversation = Number(requestedConversationId) || null;
@@ -147,16 +164,19 @@ function createCombatService({ gameState, enemies }) {
             && (phase === 'won' || phase === 'lost')
             && requestedConversation === conversationId;
     }
+
     function beginResolution(requestedCombatId, requestedConversationId) {
         if (resolvingCombatId !== null || !canResolve(requestedCombatId, requestedConversationId)) return null;
         resolvingCombatId = Number(requestedCombatId);
         return getSnapshot();
     }
+
     function cancelResolution(requestedCombatId) {
         if (resolvingCombatId !== Number(requestedCombatId)) return false;
         resolvingCombatId = null;
         return true;
     }
+
     function close(requestedCombatId, responseText) {
         if (Number(requestedCombatId) !== combatId || resolvingCombatId !== combatId || (phase !== 'won' && phase !== 'lost')) return false;
         completedResolutions.set(combatId, { conversationId, responseText });
@@ -167,11 +187,13 @@ function createCombatService({ gameState, enemies }) {
         resolvingCombatId = null;
         return true;
     }
+
     function getCompletedResolution(requestedCombatId, requestedConversationId) {
         const completed = completedResolutions.get(Number(requestedCombatId));
         if (!completed || completed.conversationId !== (Number(requestedConversationId) || null)) return null;
         return completed.responseText;
     }
+
     function getSnapshot() {
         return {
             enemy: enemy || enemies[0],
@@ -181,10 +203,24 @@ function createCombatService({ gameState, enemies }) {
             active: Boolean(enemy),
             combatId,
             conversationId,
-            question: combatQuestion
+            question: getPublicQuestion(combatQuestion)
         };
     }
-    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, start };
+
+    function getPublicQuestion(question) {
+        if (!question) return { prompt: '', answers: [] };
+        return {
+            id: question.id,
+            prompt: question.prompt,
+            answers: question.answers,
+            courseId: question.courseId,
+            courseName: question.courseName,
+            unitId: question.unitId,
+            unitName: question.unitName
+        };
+    }
+
+    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, prepareQuestion, start };
 }
 
 module.exports = { createCombatService };

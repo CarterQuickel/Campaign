@@ -70,7 +70,7 @@ module.exports = {
             }
         },
         {
-            name: "Fallen_King",
+            name: "Fallen King",
             image: "/enemies/enemy_images/story1/Fallen_King.jpg",
             HP: 27,
             AC: 13,

@@ -29,7 +29,12 @@ const io = new Server(server);
 const port = Number(process.env.PORT) || 3000;
 const serverAddress = process.env.IP_ADDRESS || 'http://localhost';
 const ai = createAiService();
-const combat = createCombatService({ gameState: state.gameState, enemies });
+const combat = createCombatService({
+    gameState: state.gameState,
+    enemies,
+    questionProvider: state.fetchQuestionForCurrentCourse,
+    recordCorrectAnswer: state.recordCorrectMasteryAnswer
+});
 
 // app.set
 app.set('view engine', 'ejs');
@@ -60,7 +65,13 @@ io.on('connection', socket => {
 
 // Database
 initializeDatabase()
-    .then(database => {
+    .then(async database => {
+        try {
+            const courses = await state.initializeMasteryCourseSets();
+            console.log('Loaded Quizbank mastery courses:', courses.map(({ id, name }) => ({ id, name })));
+        } catch (error) {
+            console.error('Unable to load Quizbank mastery courses:', error.message);
+        }
         const conversations = createConversationRepository(database);
         const actions = createGameActionService({
             gameState: state.gameState,
@@ -73,7 +84,9 @@ initializeDatabase()
         app.use('/', createPagesRouter({ state, viewData, conversations }));
         app.use('/ask', createAskRouter({ state, conversations, ai, actions, viewData }));
         app.use('/api/combat', createCombatRouter({ combat, ai, conversations, actions }));
-        server.listen(port, () => console.log(`Server running on ${serverAddress}:${port}`));
+        server.listen(port, () => {
+            console.log(`Server running on ${serverAddress}:${port}`);
+        });
     })
     .catch(error => {
         console.error('Database initialization failed:', error.message);

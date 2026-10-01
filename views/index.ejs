@@ -358,21 +358,22 @@
                             <% mastery.forEach((courseSet)=> { %>
                                 <% (courseSet.sections || []).forEach((section)=> { %>
                                     <% if (section.current) { %>
-                                        <div class="header">
+                                        <div class="header currentUnitTitle">
                                             <%= section.name %>
                                         </div>
                                         <div class="completionCont" style="margin-top: -10px;">
-                                            <div class="fillCircle" role="progressbar" aria-valuemin="0"
+                                            <div class="fillCircle currentUnitProgress" role="progressbar" aria-valuemin="0"
                                                 aria-valuemax="100"
                                                 style="--progress: <%= section.completion %>%; --color: <%= section.color %>">
                                             </div>
-                                            <div class="fillTxt">
+                                            <div class="fillTxt currentUnitCompletion">
                                                 <%= section.completion %>%
                                             </div>
                                         </div>
                                         <div class="header">Milestones</div>
                                         <div class="sectionsKey mainPage milestone"
                                             data-course-progress="<%= section.completion %>"
+                                            data-current-unit-id="<%= section.id %>"
                                             style="width: 100%; margin-top: -10px;">
                                             <div class="section" data-xp="500"
                                                 data-claimed="<%= claimedMilestones.includes(5) %>">
@@ -445,12 +446,14 @@
                             <div class="sectionsKey mainPage">
                                 <% mastery.forEach((courseSet)=> { %>
                                     <% (courseSet.sections || []).forEach((section, index)=> { %>
-                                        <div class="section" data-course-index="<%= index %>">
+                                        <div class="section mastery-unit" data-course-index="<%= index %>"
+                                            data-course-id="<%= courseSet.id %>" data-unit-id="<%= section.id %>"
+                                            data-completion="<%= section.completion %>">
                                             <div class="secContLeft">
                                                 <div class="secColor" style="--color: <%= section.color %>;"></div>
                                                 <div class="secName">
                                                     <%= section.name %>
-                                                        <strong>
+                                                        <strong class="mastery-current-mark">
                                                             <%= (section.current ? ' (CURRENT)' : '' ) %>
                                                         </strong>
                                                 </div>

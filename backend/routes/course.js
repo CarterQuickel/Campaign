@@ -1,18 +1,46 @@
 const express = require('express');
+const QUIZBANK_API = 'https://quizbank.yorktechapps.com/api';
+
+async function fetchQuizbankCourse(courseId) {
+    const response = await fetch(`${QUIZBANK_API}/course/${courseId}`, {
+        headers: { Accept: 'application/json' }
+    });
+    const text = await response.text();
+    let data = null;
+    if (response.ok) {
+        try {
+            data = JSON.parse(text);
+        } catch (error) {
+            throw new Error(`Quizbank returned invalid JSON: ${error.message}`);
+        }
+    }
+    return { response, text, data };
+}
 
 // Course Progress
 function createCourseRouter(state) {
     const router = express.Router();
+    router.post('/mastery/current', (req, res) => {
+        const selected = state.setCurrentMasteryUnit(req.body?.courseId, req.body?.unitId);
+        if (!selected) {
+            return res.status(404).json({ success: false, message: 'That mastery unit was not found.' });
+        }
+        return res.json({
+            success: true,
+            courseId: selected.course.id,
+            courseName: selected.course.name,
+            unitId: selected.section.id,
+            unitName: selected.section.name,
+            completion: selected.section.completion
+        });
+    });
     router.get('/:id', async (req, res) => {
         const courseId = req.params.id;
         try {
-            const upstreamResponse = await fetch(`https://quizbank.yorktechapps.com/api/course/${courseId}`);
-            const text = await upstreamResponse.text();
-            if (!upstreamResponse.ok) return res.status(upstreamResponse.status).send(text || 'Failed to fetch course data');
-            const data = JSON.parse(text);
-            if (!Array.isArray(data.units)) return res.status(404).json({ error: 'No units found for this course', courseId });
-            console.log(data.units, data.tasks);
-            return res.json(data.units);
+            const { response, text, data } = await fetchQuizbankCourse(courseId);
+            if (!response.ok) return res.status(response.status).send(text || 'Failed to fetch course data');
+            console.log(`Full Quizbank course ${courseId}:\n${JSON.stringify(data, null, 2)}`);
+            return res.json(data);
         } catch (error) {
             console.error('Course fetch error:', error);
             return res.status(500).json({ error: 'Failed to load course data', details: error.message });
