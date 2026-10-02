@@ -30,6 +30,123 @@ async function renderAIResponse(text) {
     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+function appendChatMessage(role, text, animate = false) {
+    const container = document.getElementById('text-scroll');
+    if (!container) return null;
+    const wrapper = document.createElement('div');
+    wrapper.className = `message ${role}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    wrapper.appendChild(bubble);
+    container.appendChild(wrapper);
+    if (animate) {
+        return typeAIResponseIntoElement(String(text), bubble).then(() => {
+            container.scrollTop = container.scrollHeight;
+            return wrapper;
+        });
+    }
+    bubble.textContent = String(text);
+    container.scrollTop = container.scrollHeight;
+    return wrapper;
+}
+
+function setActiveConversation(conversationId) {
+    const idInput = document.getElementById('conversation-id');
+    if (idInput) idInput.value = conversationId;
+    localStorage.setItem('charmaConversationId', String(conversationId));
+    const url = new URL(window.location.href);
+    url.searchParams.set('conversationId', conversationId);
+    window.history.replaceState({}, '', url);
+}
+
+async function createConversation(title) {
+    const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Unable to start a conversation.');
+    setActiveConversation(data.conversationId);
+    return data.conversationId;
+}
+
+async function resumePendingConversation(conversationId, pendingBubble) {
+    const container = document.getElementById('text-scroll');
+    for (let attempt = 0; attempt < 120; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const response = await fetch(`/api/conversations/${encodeURIComponent(conversationId)}`);
+            if (!response.ok) break;
+            const data = await response.json();
+            const messages = data.messages || [];
+            const lastMessage = messages[messages.length - 1];
+            const precedingMessage = messages[messages.length - 2];
+            const isCurrentReply = lastMessage?.role === 'assistant'
+                && precedingMessage?.role === 'user'
+                && (!data.pendingPrompt || precedingMessage.content === data.pendingPrompt);
+            if (isCurrentReply) {
+                pendingBubble?.remove();
+                await appendChatMessage('assistant', lastMessage.content, true);
+                return;
+            }
+            if (!data.pending) break;
+        } catch (error) {
+            console.error('Unable to resume the pending response:', error);
+            break;
+        }
+    }
+    pendingBubble?.remove();
+    if (container) container.scrollTop = container.scrollHeight;
+}
+
+const chatForm = document.getElementById('txtform');
+if (chatForm) {
+    const chatboxInput = document.getElementById('chatbox');
+    const submitButton = document.getElementById('submit-btn');
+    const originalSubmitButton = submitButton?.innerHTML || '';
+    const chatContainer = document.getElementById('text-scroll');
+    if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    const activeConversationId = document.getElementById('conversation-id')?.value;
+    const lastMessage = chatContainer?.lastElementChild;
+    if (activeConversationId && chatContainer?.dataset.responsePending === 'true') {
+        const pending = appendChatMessage('assistant', 'Charma is thinking…');
+        resumePendingConversation(activeConversationId, pending);
+    }
+
+    chatForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        const prompt = chatboxInput.value.trim();
+        if (!prompt || submitButton.disabled) return;
+
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="bounce">.</span><span class="bounce">.</span><span class="bounce">.</span>';
+        try {
+            let conversationId = document.getElementById('conversation-id').value;
+            if (!conversationId) conversationId = await createConversation(prompt);
+            appendChatMessage('user', prompt);
+            chatboxInput.value = '';
+
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ prompt, conversationId })
+            });
+            const data = await response.json();
+            if (data.conversationId) setActiveConversation(data.conversationId);
+            if (data.response) await appendChatMessage('assistant', data.response, true);
+            else if (!response.ok) throw new Error(data.message || 'The response could not be loaded.');
+        } catch (error) {
+            appendChatMessage('assistant', `Unable to send your message: ${error.message}`);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalSubmitButton;
+            chatboxInput.focus();
+        }
+    });
+}
+
 const responseElement = document.getElementById('ai-response');
 if (responseElement) {
     renderAIResponse(responseElement.textContent);
@@ -97,7 +214,6 @@ async function applyGameActionFromText(text) {
 //update chat boxes
 function typeAIResponseIntoElement(text, element, speed = 15) {
     let index = 0;
-    document.getElementById("chatbox").value = "";
     return new Promise((resolve) => {
         function nextCharacter() {
             if (index >= text.length) {

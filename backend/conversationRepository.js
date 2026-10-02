@@ -1,4 +1,16 @@
 function createConversationRepository(database) {
+    const pendingResponses = new Map();
+
+    function getMessages(conversationId) {
+        return new Promise((resolve, reject) => {
+            database.all(
+                'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id ASC',
+                [conversationId],
+                (error, rows) => error ? reject(error) : resolve(rows)
+            );
+        });
+    }
+
     // Fetch Convo (should be removed later)
     function getRecentMessages(conversationId, limit = 20) {
         return new Promise((resolve, reject) => {
@@ -29,6 +41,19 @@ function createConversationRepository(database) {
         });
     }
 
+    function setResponsePending(conversationId, pending, prompt = null) {
+        if (pending) pendingResponses.set(Number(conversationId), prompt);
+        else pendingResponses.delete(Number(conversationId));
+    }
+
+    function isResponsePending(conversationId) {
+        return pendingResponses.has(Number(conversationId));
+    }
+
+    function getPendingPrompt(conversationId) {
+        return pendingResponses.get(Number(conversationId)) || null;
+    }
+
     //Create Convo
     function createConversation(title) {
         return new Promise((resolve, reject) => {
@@ -37,7 +62,16 @@ function createConversationRepository(database) {
             });
         });
     }
-    return { createConversation, getConversations, getRecentMessages, saveMessage };
+    return {
+        createConversation,
+        getConversations,
+        getMessages,
+        getPendingPrompt,
+        getRecentMessages,
+        isResponsePending,
+        saveMessage,
+        setResponsePending
+    };
 }
 
 module.exports = { createConversationRepository };

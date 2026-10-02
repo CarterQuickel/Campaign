@@ -1,6 +1,6 @@
 // This is used for site pages so when they render these are initiated
 function createViewData({ state, combat, conversations, ai }) {
-    async function buildIndexData({ req, response = null, prompt = null, conversationId = null, messages = [] }) {
+    async function buildIndexData({ req, response = null, prompt = null, conversationId = null, messages = [], responsePending = false }) {
         await combat.prepareQuestion();
         const snapshot = combat.getSnapshot();
         const progression = state.getProgression();
@@ -10,6 +10,7 @@ function createViewData({ state, combat, conversations, ai }) {
             conversations: await conversations.getConversations(),
             conversationId: conversationId || snapshot.conversationId,
             messages,
+            responsePending,
             online: await ai.checkStatus(),
             stats: state.stats,
             tools: state.gameState.tools,

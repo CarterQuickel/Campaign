@@ -9,15 +9,18 @@ const { enemies } = require('../../enemies/enemyStats');
 function createAskRouter({ state, conversations, ai, actions, viewData }) {
     const router = express.Router();
     router.post('/', async (req, res, next) => {
-        const userPrompt = req.body.prompt;
+        const userPrompt = String(req.body.prompt || '').trim();
         let conversationId = Number(req.body.conversationId) || null;
+        let userMessageSaved = false;
+        if (!userPrompt) return res.status(400).json({ message: 'Enter a message first.' });
         try {
             if (!conversationId) {
-                const title = await ai.createTitle(userPrompt);
-                conversationId = await conversations.createConversation(title);
+                conversationId = await conversations.createConversation(userPrompt.slice(0, 80));
             }
+            conversations.setResponsePending(conversationId, true, userPrompt);
             const history = await conversations.getRecentMessages(conversationId);
             await conversations.saveMessage(conversationId, 'user', userPrompt);
+            userMessageSaved = true;
             const storyContext = {
                 stories,
                 landmarks,
@@ -28,31 +31,20 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             const finalResponse = (actions.apply(responseText, { conversationId }) || responseText).trim();
             await conversations.saveMessage(conversationId, 'assistant', finalResponse);
-            const messages = await conversations.getRecentMessages(conversationId);
-            messages.unshift({
-                role: 'assistant',
-                content: `Welcome, adventurer ${state.gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
-            });
-            res.render('index', await viewData.buildIndexData({
-                req, response: finalResponse, prompt: userPrompt, conversationId, messages
-            }));
+            conversations.setResponsePending(conversationId, false);
+            return res.json({ conversationId, response: finalResponse });
         } catch (error) {
             console.error('Ollama Error:', error);
             try {
-                const messages = conversationId ? await conversations.getRecentMessages(conversationId) : [];
-                messages.unshift({
-                    role: 'assistant',
-                    content: `Welcome, adventurer ${state.gameState.charName}. I am Charma, your personal AI dungeon master. How would you like to begin your journey?`
-                });
-                res.render('index', await viewData.buildIndexData({
-                    req,
-                    response: `AI request failed: ${error.message}`,
-                    prompt: userPrompt,
-                    conversationId,
-                    messages
-                }));
-            } catch (renderError) {
-                next(renderError);
+                const failureMessage = `AI request failed: ${error.message}`;
+                if (conversationId && userMessageSaved) {
+                    await conversations.saveMessage(conversationId, 'assistant', failureMessage);
+                }
+                return res.status(503).json({ conversationId, response: failureMessage });
+            } catch (saveError) {
+                return next(saveError);
+            } finally {
+                if (conversationId) conversations.setResponsePending(conversationId, false);
             }
         }
     });
