@@ -183,6 +183,34 @@
     flex: 0 0 auto;
     margin-left: 12px;
 }
+.masteryUnitActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;
+}
+.setMasteryBtn {
+    min-width: 112px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--background-color);
+    color: var(--primary-color);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.setMasteryBtn:hover:not(:disabled) {
+    color: var(--text-color);
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+.setMasteryBtn:disabled {
+    color: var(--text-color);
+    opacity: 0.75;
+    cursor: default;
+}
 #mobileBack {
     display: none;
 }

@@ -1,0 +1,103 @@
+.questionCont {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    gap: 50px;
+    position: relative;
+    overflow: hidden;
+}
+#questionPanel {
+    display: none;
+}
+body.combat-active #questionPanel {
+    display: flex;
+}
+body.combat-active #chat {
+    display: none;
+}
+.questionCont img {
+    position: absolute;
+    height: 100%;
+    z-index: -1;
+    right: -200px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #0000001a 55%);
+    mask-image: linear-gradient(to right, transparent 0%, #0000001a 55%);
+}
+.question {
+    font-size: 30px;
+    padding: 0px 60px 0px 60px;
+    color: var(--text-color);
+    font-weight: 700;
+}
+.answerCont {
+    padding: 0px 60px 60px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.answerOption {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    height: 30px;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--primary-color);
+    font-size: 16px;
+    transition: all 0.1s ease;
+    background: var(--background-color);
+    resize: none;
+    border: 1px solid var(--border-color);
+}
+.answerOption:hover {
+    background: var(--background-color);
+    cursor: pointer;
+    color: var(--text-color);
+    outline: none;
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+.answerOption.correct.active {
+    border: 1px solid rgb(165, 255, 91);
+    background-color: rgba(58, 90, 28, 0.705);
+    color: rgb(157, 255, 91);
+}
+.answerOption.incorrect.active {
+    border: 1px solid rgb(255, 91, 91);
+    background-color: rgba(90, 28, 28, 0.705);
+    color: rgb(255, 91, 91);
+}
+.enemCont {
+    display: flex;
+    justify-content: space-between;
+}
+.enemyHP {
+    display: flex;
+    flex-direction: column;
+    padding: 30px 60px 0px 60px;
+    gap: 5px;
+}
+.HPTxt {
+    font-size: 12px;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+.enemyHP progress {
+    width: 100%;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.185);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.enemyHP progress::-webkit-progress-bar {
+    background-color: rgba(0, 0, 0, 0.185);
+}
+.enemyHP progress::-webkit-progress-value {
+    background-color: rgb(163, 16, 16);
+}
