@@ -38,7 +38,9 @@
     border: 1px solid var(--user-border);
     border-bottom-right-radius: 4px;
 }
-
+.encounterPrompt {
+    margin-top: 12px;
+}
 .bubble,
 .bubble p,
 .bubble div {

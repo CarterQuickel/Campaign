@@ -8,7 +8,9 @@ function createViewData({ state, combat, conversations, ai }) {
             response,
             prompt,
             conversations: await conversations.getConversations(),
-            conversationId: conversationId || snapshot.conversationId,
+            conversationId: snapshot.active && snapshot.conversationId
+                ? snapshot.conversationId
+                : conversationId || snapshot.conversationId,
             messages,
             responsePending,
             online: await ai.checkStatus(),

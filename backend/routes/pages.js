@@ -1,7 +1,7 @@
 const express = require('express');
 
 // Pages
-function createPagesRouter({ state, viewData, conversations }) {
+function createPagesRouter({ state, viewData, conversations, combat }) {
     const router = express.Router();
     router.post('/api/conversations', async (req, res, next) => {
         try {
@@ -22,11 +22,27 @@ function createPagesRouter({ state, viewData, conversations }) {
             if (!available.some(conversation => conversation.id === conversationId)) {
                 return res.status(404).json({ message: 'Conversation not found.' });
             }
+            const snapshot = combat.getSnapshot();
+            const activeCombat = snapshot.active && snapshot.conversationId === conversationId
+                ? {
+                    combatId: snapshot.combatId,
+                    phase: snapshot.phase,
+                    enemy: {
+                        name: snapshot.enemy.name,
+                        HP: snapshot.enemy.HP,
+                        image: snapshot.enemy.image
+                    },
+                    enemyHP: snapshot.enemyHP,
+                    playerHP: snapshot.playerHP,
+                    question: snapshot.question
+                }
+                : null;
             return res.json({
                 conversationId,
                 messages: await conversations.getMessages(conversationId),
                 pending: conversations.isResponsePending(conversationId),
-                pendingPrompt: conversations.getPendingPrompt(conversationId)
+                pendingPrompt: conversations.getPendingPrompt(conversationId),
+                combat: activeCombat
             });
         } catch (error) {
             return next(error);
@@ -35,10 +51,14 @@ function createPagesRouter({ state, viewData, conversations }) {
     router.get('/', async (req, res, next) => {
         try {
             const allConversations = await conversations.getConversations();
+            const snapshot = combat.getSnapshot();
             const requestedId = Number(req.query.conversationId) || null;
-            const conversationId = requestedId && allConversations.some(item => item.id === requestedId)
+            const requestedConversationId = requestedId && allConversations.some(item => item.id === requestedId)
                 ? requestedId
                 : allConversations[0]?.id || null;
+            const conversationId = snapshot.active && snapshot.conversationId
+                ? snapshot.conversationId
+                : requestedConversationId;
             const messages = conversationId ? await conversations.getMessages(conversationId) : [];
             messages.unshift({
                 role: 'assistant',

@@ -182,6 +182,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         completedResolutions.set(combatId, { conversationId, responseText });
         enemy = null;
         enemyHP = 0;
+        playerHP = Math.max(0, Math.floor(gameState.HP));
         phase = 'inactive';
         conversationId = null;
         resolvingCombatId = null;

@@ -81,8 +81,8 @@ initializeDatabase()
             emitInventoryUpdate: tools => io.emit('inventory:update', { tools })
         });
         const viewData = createViewData({ state, combat, conversations, ai });
-        app.use('/', createPagesRouter({ state, viewData, conversations }));
-        app.use('/ask', createAskRouter({ state, conversations, ai, actions, viewData }));
+        app.use('/', createPagesRouter({ state, viewData, conversations, combat }));
+        app.use('/ask', createAskRouter({ state, conversations, ai, actions, viewData, combat }));
         app.use('/api/combat', createCombatRouter({ combat, ai, conversations, actions }));
         server.listen(port, () => {
             console.log(`Server running on ${serverAddress}:${port}`);

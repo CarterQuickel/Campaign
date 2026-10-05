@@ -6,7 +6,7 @@ const { storySpecRewards } = require('../../StoryAPI/storySpecRewards');
 const { enemies } = require('../../enemies/enemyStats');
 
 // Initial root directory
-function createAskRouter({ state, conversations, ai, actions, viewData }) {
+function createAskRouter({ state, conversations, ai, actions, viewData, combat }) {
     const router = express.Router();
     router.post('/', async (req, res, next) => {
         const userPrompt = String(req.body.prompt || '').trim();
@@ -29,10 +29,31 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
                 enemies: enemies.map(enemy => enemy.name)
             };
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
-            const finalResponse = (actions.apply(responseText, { conversationId }) || responseText).trim();
+            let startedCombat = null;
+            const finalResponse = (actions.apply(responseText, {
+                conversationId,
+                onCombatStarted: result => { startedCombat = result; }
+            }) || responseText).trim();
             await conversations.saveMessage(conversationId, 'assistant', finalResponse);
+            let combatPrompt = null;
+            if (startedCombat) {
+                await combat.prepareQuestion();
+                const snapshot = combat.getSnapshot();
+                combatPrompt = {
+                    combatId: snapshot.combatId,
+                    phase: snapshot.phase,
+                    enemy: {
+                        name: snapshot.enemy.name,
+                        HP: snapshot.enemy.HP,
+                        image: snapshot.enemy.image
+                    },
+                    enemyHP: snapshot.enemyHP,
+                    playerHP: snapshot.playerHP,
+                    question: snapshot.question
+                };
+            }
             conversations.setResponsePending(conversationId, false);
-            return res.json({ conversationId, response: finalResponse });
+            return res.json({ conversationId, response: finalResponse, combat: combatPrompt });
         } catch (error) {
             console.error('Ollama Error:', error);
             try {
