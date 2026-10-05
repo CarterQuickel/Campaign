@@ -215,4 +215,17 @@
     .fullMast {
         overflow-y: auto;
     }
+
+    /* QUESTIONS ================================================================== */
+    .questionCont {
+        gap: 15px !important;
+        justify-content: center;
+    }
+    .question {
+        font-size: 22px !important;
+        padding: 10px 60px 0px 60px !important;
+    }
+    .answerCont {
+        padding: 0px 60px 60px 60px !important;
+    }
 }
