@@ -24,11 +24,11 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum">3</div>
+                    <div class="statNum"><%= level %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
-                    <div class="statNum">+2</div>
+                    <div class="statNum">+<%= Math.floor(level / 4) + 2 %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">AC</div>
@@ -52,7 +52,7 @@
             <div class="horiz"></div>
             <div class="stat">
                 <div class="statType">HP</div>
-                <div class="statNum"><%= charData.HP %>/<%= charData.HP %></div>
+                <div class="statNum"><%= playerHP %>/<%= charData.HP %></div>
             </div>
             <div class="horiz"></div>
             <div class="status">
@@ -84,7 +84,7 @@
                     <% sections.forEach((section, sectionIndex) => { %>
                         <% const start = (sectionIndex / sections.length) * 100; %>
                         <% const end = ((sectionIndex + 1) / sections.length) * 100; %>
-                        <div class="slice" data-course-index="<%= courseIndex %>" data-section-index="<%= sectionIndex %>" data-base-color="<%= section.color %>" style="--color: <%= section.color %>; --start: <%= start %>%; --end: <%= end %>%; --radius: <%= section.completion %>%;"></div>
+                        <div class="slice" data-course-index="<%= courseIndex %>" data-section-index="<%= sectionIndex %>" data-unit-id="<%= section.id %>" data-base-color="<%= section.color %>" style="--color: <%= section.color %>; --start: <%= start %>%; --end: <%= end %>%; --radius: <%= section.completion %>%;"></div>
                     <% }); %>
                     <div class="overallCont">
                         <div class="overallScore"><%= courseAverage %>%</div>
@@ -92,14 +92,19 @@
                 </div>
                 <div class="sectionsKey">
                     <% sections.forEach((section, index) => { %>
-                        <div class="section" data-course-index="<%= courseIndex %>" data-section-index="<%= index %>">
+                        <div class="section mastery-unit" data-course-index="<%= courseIndex %>" data-section-index="<%= index %>" data-course-id="<%= courseSet.id %>" data-unit-id="<%= section.id %>" data-completion="<%= section.completion %>">
                             <div class="secContLeft">
                                 <div class="secColor" style="--color: <%= section.color %>;"></div>
                                 <div class="secName">
-                                    <span class="secNameText"><%= section.name %><% if (section.current) { %> <strong>(CURRENT)</strong><% } %></span>
+                                    <span class="secNameText"><%= section.name %> <strong class="mastery-current-mark"><%= section.current ? '(CURRENT)' : '' %></strong></span>
                                 </div>
                             </div>
-                            <div class="secPercent"><%= section.completion %>%</div>
+                            <div class="masteryUnitActions">
+                                <div class="secPercent"><%= section.completion %>%</div>
+                                <button type="button" class="setMasteryBtn" data-course-id="<%= courseSet.id %>" data-unit-id="<%= section.id %>" <%= section.current ? 'disabled' : '' %>>
+                                    <%= section.current ? 'Current' : 'Make current' %>
+                                </button>
+                            </div>
                         </div>
                     <% }); %>
                 </div>
@@ -144,6 +149,56 @@
             document.querySelectorAll(`.slice[data-course-index="${courseIndex}"][data-section-index="${sectionIndex}"]`).forEach((slice) => {
                 slice.style.setProperty('--color', slice.dataset.baseColor || '#ffffff');
             });
+        });
+    });
+
+    document.querySelectorAll('.setMasteryBtn').forEach(button => {
+        button.addEventListener('click', async () => {
+            button.disabled = true;
+            try {
+                const response = await fetch('/api/course/mastery/current', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        courseId: button.dataset.courseId,
+                        unitId: button.dataset.unitId
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Unable to change current mastery.');
+                }
+
+                document.querySelectorAll('.setMasteryBtn').forEach(otherButton => {
+                    const isCurrent = Number(otherButton.dataset.courseId) === Number(result.courseId)
+                        && Number(otherButton.dataset.unitId) === Number(result.unitId);
+                    otherButton.disabled = isCurrent;
+                    otherButton.textContent = isCurrent ? 'Current' : 'Make current';
+                });
+                document.querySelectorAll('.mastery-current-mark').forEach(mark => {
+                    const unit = mark.closest('.mastery-unit');
+                    const isCurrent = Number(unit?.dataset.courseId) === Number(result.courseId)
+                        && Number(unit?.dataset.unitId) === Number(result.unitId);
+                    mark.textContent = isCurrent ? '(CURRENT)' : '';
+                });
+                document.querySelectorAll('.course-group').forEach(group => {
+                    const selectedUnit = group.querySelector(`.mastery-unit[data-course-id="${result.courseId}"][data-unit-id="${result.unitId}"]`);
+                    if (selectedUnit) {
+                        const groupIndex = group.dataset.group;
+                        courseGroups.forEach((item, index) => {
+                            const active = String(index) === groupIndex;
+                            item.classList.toggle('active', active);
+                            item.style.display = active ? 'flex' : 'none';
+                            courseButtons[index]?.classList.toggle('active', active);
+                        });
+                        group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            } catch (error) {
+                console.error('Unable to set current mastery unit:', error);
+                button.disabled = false;
+                button.textContent = 'Try again';
+            }
         });
     });
 </script>

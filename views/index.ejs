@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="<%= combatActive ? 'combat-active' : '' %>">
     <div id="banner">
         <div id="leftBan">
             <div id="title">
@@ -34,7 +34,7 @@
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
-                    <div class="statNum">+2</div>
+                    <div class="statNum">+<%= Math.floor(level / 4) + 2 %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">AC</div>
@@ -64,8 +64,8 @@
                 <div class="horiz"></div>
                 <div class="stat">
                     <div class="statType">HP</div>
-                    <div class="statNum">
-                        <%= charData.HP %>/<%= charData.HP %>
+                    <div class="statNum" id="playerHPDisplay">
+                        <%= playerHP %>/<%= charData.HP %>
                     </div>
                 </div>
                 <div class="horiz mobileHidden"></div>
@@ -79,18 +79,49 @@
                 </div>
         </div>
     </div>
+    <div class="darkOverlay" id="combatOverlay">
+        <div class="atkActionPanel">
+            <div class="winStatus header" id="combatStatus"></div>
+            <div class="combatMessage header" id="combatMessage">Choose a weapon to attack with</div>
+            <div class="correctPanel" id="attackChoices">
+                <div class="attackGrid" id="attackItems">
+                    <% tools.filter(tool => tool.class !== 'Armor' && tool.unlocked && tool.damage !== '0').forEach(tool => { %>
+                        <button class="tool selectable <%= tool.unlocked ? '' : 'locked' %> <%= tool.class.toLowerCase() %>"
+                            data-name="<%= tool.name %>" data-class="<%= tool.class %>" data-unlocked="<%= tool.unlocked %>"
+                            data-damage="<%= tool.damage %>">
+                            <div class="left-tool">
+                                <div class="tool-icon <%= tool.class.toLowerCase() %>">
+                                    <%= tool.class==='Weapon' ? '⚔️' : tool.class==='Armor' ? '🛡️' : tool.class==='Potion'
+                                        ? '🧪' : tool.class==='Spell' ? '🔮' : '💎' %>
+                                </div>
+                                <div class="tool-cont">
+                                    <div class="tool-name">
+                                        <%= tool.name %>
+                                    </div>
+                                    <div class="tool-damage">
+                                        <%= tool.damage %> dg
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                        <% }); %>
+                </div>
+                <button type="button" id="combatContinue" hidden>Continue</button>
+            </div>
+        </div>
+    </div>
     <div id="SuperCont">
         <div id="inventoryCont">
             <div class="contBan">
                 <div class="header">INVENTORY</div>
                 <div class="gold" id="goldDisplay" data-gold="<%= gold %>">◈ <%= gold %>gp</div>
             </div>
-            <div class="encumCont" id="encumCont" data-current-weight="0">
+            <div class="encumCont" id="encumCont" data-current-weight="<%= charData.weight %>" data-max-weight="<%= charData.Mweight %>">
                 <div class="contBan">
                     <div class="label">Encumbrance</div>
-                    <div class="weight" id="weightTxt">50/100 lb</div>
+                    <div class="weight" id="weightTxt"><%= charData.weight %>/<%= charData.Mweight %> lb</div>
                 </div>
-                <progress class="encumBar" id="encumbar" value="50" max="100"></progress>
+                <progress class="encumBar" id="encumbar" value="<%= charData.weight %>" max="<%= charData.Mweight %>"></progress>
             </div>
             <div class="categoryCont">
                 <button class="cate active" data-category='all'>
@@ -132,7 +163,7 @@
                             </div>
                         </div>
                         <button class="tool-equip-btn">
-                            Equip
+                            <%= tool.equipped ? 'Unequip' : 'Equip' %>
                         </button>
                     </div>
                     <% }); %>
@@ -154,8 +185,12 @@
                                 <div>Notifications</div>
                             </button>
                             <button class="setting" data-setting="character">
-                                <div class="emoji">🙋</div>
+                                <div class="emoji">📜</div>
                                 <div>Character Sheet</div>
+                            </button>
+                            <button class="setting" data-setting="account">
+                                <div class="emoji">👤</div>
+                                <div>Account</div>
                             </button>
                             <button class="setting" data-setting="data">
                                 <div class="emoji">💿</div>
@@ -224,6 +259,9 @@
                             </div>
                             <button class="saveBtn">Save</button>
                         </form>
+                        <div class="settingCate disabled" data-setting="account">
+                            <div class="header">Account</div>
+                        </div>
                         <div class="settingCate disabled" data-setting="data">
                             <div class="header">Danger Zone</div>
                             <button class="new-conversation" type="button" onclick="window.location.href='/'"
@@ -233,37 +271,27 @@
                         </div>
                     </div>
                 </div>
-                <div class="questionCont">
+                <div class="questionCont" id="questionPanel">
                     <div class="enemyHP">
                         <div class="enemCont">
                             <label class="enemyTxt"><%= enemies.name %></label>
-                            <div class="HPTxt"><%= enemies.HP %>/<%= enemies.HP %> HP</div>
+                            <div class="HPTxt" id="enemyHPText"><%= enemyHP %>/<%= enemies.HP %> HP</div>
                         </div>
-                        <progress value="<%= enemies.HP %>" max="<%= enemies.HP %>"></progress>
+                        <progress id="enemyHPBar" value="<%= enemyHP %>" max="<%= enemies.HP %>"></progress>
                     </div>
-                    <div class="question">Which task is JavaScript BEST suited to perform on a web page?</div>
+                    <div class="question"><%= combatQuestion.prompt %></div>
                     <div class="answerCont">
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Creating the HTML page layout</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption correct">
-                            <div class="optionTxt">Validating form input before submission</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Defining CSS color schemes</div>
-                            <div class="selectedAns"></div>
-                        </div>
-                        <div class="answerOption incorrect">
-                            <div class="optionTxt">Registering a domain name</div>
-                            <div class="selectedAns"></div>
-                        </div>
+                        <% combatQuestion.answers.forEach(answer => { %>
+                            <button type="button" class="answerOption" data-answer-id="<%= answer.id %>">
+                                <span class="optionTxt"><%= answer.text %></span>
+                                <span class="selectedAns" aria-hidden="true"></span>
+                            </button>
+                        <% }); %>
                     </div>
                     <img class="monsterIMG" src="<%= enemies.image %>" alt="<%= enemies.name %>">
                 </div>
                 <div class="response-box" id="chat">
-                    <div id="text-scroll" class="chat-container">
+                    <div id="text-scroll" class="chat-container" data-response-pending="<%= responsePending ? 'true' : 'false' %>">
                         <% if (typeof messages !=='undefined' && messages && messages.length) { %>
                             <% let omitLastAssistant=false; %>
                                 <% if (response && messages[messages.length - 1] && messages[messages.length -
@@ -287,16 +315,20 @@
                         <% } %>
                             <div class="chat-form">
                                 <!-- Form links directly to the /ask route in app.js -->
-                                <form action="/ask" method="POST" onsubmit="showLoading()" id="txtform">
+                                <form action="/ask" method="POST" id="txtform">
                                     <div class="userTypeCont">
                                         <div class="preCont">
-                                            <button class="preResponse">Where am I?</button>
-                                            <button class="preResponse">What's happened so far?</button>
+                                            <button type="button" class="preResponse">Where am I?</button>
+                                            <button type="button" class="preResponse">What's happened so far?</button>
+                                            <button type="button" class="preResponse">TEST: Make a random encounter</button>
+                                            <button type="button" class="preResponse">TEST: Give me a random tool</button>
+                                            <button type="button" class="preResponse">TEST: Give me a random amount of gold</button>
                                         </div>
                                         <textarea name="prompt" placeholder="Describe your action or ask the DM..."
                                             id="chatbox" required><%= prompt || '' %></textarea>
                                         <input type="hidden" name="conversationId" id="conversation-id"
                                             value="<%= conversationId || '' %>">
+                                        <input type="hidden" id="active-combat-id" value="<%= combatId %>">
                                     </div>
                                     <button type="submit" id="submit-btn">
                                         <img src="/icons/send.png" width="30" height="30">
@@ -333,21 +365,22 @@
                             <% mastery.forEach((courseSet)=> { %>
                                 <% (courseSet.sections || []).forEach((section)=> { %>
                                     <% if (section.current) { %>
-                                        <div class="header">
+                                        <div class="header currentUnitTitle">
                                             <%= section.name %>
                                         </div>
                                         <div class="completionCont" style="margin-top: -10px;">
-                                            <div class="fillCircle" role="progressbar" aria-valuemin="0"
+                                            <div class="fillCircle currentUnitProgress" role="progressbar" aria-valuemin="0"
                                                 aria-valuemax="100"
                                                 style="--progress: <%= section.completion %>%; --color: <%= section.color %>">
                                             </div>
-                                            <div class="fillTxt">
+                                            <div class="fillTxt currentUnitCompletion">
                                                 <%= section.completion %>%
                                             </div>
                                         </div>
                                         <div class="header">Milestones</div>
                                         <div class="sectionsKey mainPage milestone"
                                             data-course-progress="<%= section.completion %>"
+                                            data-current-unit-id="<%= section.id %>"
                                             style="width: 100%; margin-top: -10px;">
                                             <div class="section" data-xp="500"
                                                 data-claimed="<%= claimedMilestones.includes(5) %>">
@@ -420,12 +453,14 @@
                             <div class="sectionsKey mainPage">
                                 <% mastery.forEach((courseSet)=> { %>
                                     <% (courseSet.sections || []).forEach((section, index)=> { %>
-                                        <div class="section" data-course-index="<%= index %>">
+                                        <div class="section mastery-unit" data-course-index="<%= index %>"
+                                            data-course-id="<%= courseSet.id %>" data-unit-id="<%= section.id %>"
+                                            data-completion="<%= section.completion %>">
                                             <div class="secContLeft">
                                                 <div class="secColor" style="--color: <%= section.color %>;"></div>
                                                 <div class="secName">
                                                     <%= section.name %>
-                                                        <strong>
+                                                        <strong class="mastery-current-mark">
                                                             <%= (section.current ? ' (CURRENT)' : '' ) %>
                                                         </strong>
                                                 </div>
@@ -495,7 +530,7 @@
         </div>
     </div>
 
-    <script src="/chat.js"></script>
+    <script src="/index.js"></script>
     <script>
         async function refreshAiStatus() {
             try {
@@ -581,7 +616,7 @@
         preResponses.forEach(button => {
             button.addEventListener('click', () => {
                 chatbox.value = button.textContent.trim();
-                chatbox.form.submit();
+                chatbox.form.requestSubmit();
             });
         });
 

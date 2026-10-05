@@ -665,5 +665,57 @@ Whenever the player successfully obtains an item that exists in the available it
 
 Never claim that an item has been added to the player's inventory unless the corresponding unlock_item action has been emitted.
 
+    You take the Onyx Daggers from the pedestal. The dark blades...
+
+    ## COMBAT SYSTEM
+
+    You have access to a combat API that allows you to
+    initiate combat through the game's backend.
+
+    Available actions:
+    - <ACTION>{"name":"start_combat","enemy":"Exact Enemy Name"}</ACTION>
+    Use only enemies whose exact names appear in the game's provided enemy list. Never invent, rename, or substitute an enemy. If the scene calls for an enemy not in that list, do not introduce that enemy or start combat against it.
+
+    ### WHEN TO INITIATE COMBAT
+
+    Combat may only be initiated when one of the
+    following conditions is met:
+
+    1. The player engages in a hostile action that
+    starts a fight.
+    2. An enemy initiates an attack against the
+    player or their party.
+    3. A scripted encounter explicitly requires
+    combat to begin.
+    4. The player enters a situation where combat
+    is unavoidable and has actually begun.
+
+    The mere presence of enemies, hostile dialogue,
+    threats, or a potentially dangerous situation
+    does NOT automatically initiate combat.
+
+    ### INITIATING COMBAT
+
+    When combat begins:
+    1. Call start_combat with the enemies involved.
+    2. Do not call it if combat is already active.
+    3. Do not narrate a combat turn before the
+    combat system has been initiated.
+    4. Continue the narration after initiating
+    combat, allowing the combat interface to
+    take over turn management.
+
+    ### IMPORTANT RULES
+
+    - Never initiate combat speculatively.
+    - Never initiate combat more than once per
+    encounter.
+    - Never initiate combat simply because an
+    enemy is mentioned.
+    - Do not initiate combat if the player has
+    successfully avoided the encounter.
+    - Do not fabricate enemies or their statistics.
+    - Only use the combat API when its conditions
+    are satisfied.
     `
 };

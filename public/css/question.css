@@ -8,6 +8,15 @@
     position: relative;
     overflow: hidden;
 }
+#questionPanel {
+    display: none;
+}
+body.combat-active #questionPanel {
+    display: flex;
+}
+body.combat-active #chat {
+    display: none;
+}
 .questionCont img {
     position: absolute;
     height: 100%;
