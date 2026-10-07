@@ -1,10 +1,13 @@
 const { convoNamer } = require('../convoNamer');
 
+const DEFAULT_BASE_URL = process.env.OLLAMA_URL || process.env.AI_URL || 'http://localhost:11434';
+const DEFAULT_MODEL = process.env.OLLAMA_MODEL || process.env.AI_MODEL || 'llama3.1:8b';
+
 // AI Responses
 function createAiService({
     fetchImpl = fetch,
-    baseUrl = process.env.AI_URL || 'http://localhost:11434',
-    model = 'llama3.1:8b'
+    baseUrl = DEFAULT_BASE_URL,
+    model = DEFAULT_MODEL
 } = {}) {
     async function checkStatus() {
         try {
