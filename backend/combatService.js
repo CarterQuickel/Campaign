@@ -79,6 +79,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             enemyHP,
             playerHP,
             canAttack: correct,
+            phase: correct ? 'attack' : 'result',
             mastery: correct ? recordCorrectAnswer() : null
         };
         if (correct) {

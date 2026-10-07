@@ -150,6 +150,14 @@ function recordCorrectMasteryAnswer() {
 const campaignClass = 'Barbarian';
 const initialConstitutionModifier = (stats[2] - 10) / 2;
 const initialClassStats = classHP.find(characterClass => characterClass.name === campaignClass);
+
+function getMaxHPForLevel(targetLevel = level, className = campaignClass) {
+    const selectedClass = classHP.find(item => item.name === className) || initialClassStats;
+    if (!selectedClass) return 0;
+    return Math.floor((selectedClass.default + initialConstitutionModifier)
+        + ((targetLevel - 1) * (initialConstitutionModifier + selectedClass.perLevel)));
+}
+
 const gameState = {
     gold: 0,
     tools: Tools.map(tool => ({ ...tool, equipped: Boolean(tool.equipped) })),
@@ -159,8 +167,7 @@ const gameState = {
     charOrigin: '',
     weight: 0,
     maxWeight: 100,
-    HP: (initialClassStats?.default + initialConstitutionModifier)
-        + (((level - 1) * initialConstitutionModifier) + ((level - 1) * initialClassStats?.perLevel))
+    HP: getMaxHPForLevel()
 };
 
 // +XP
@@ -170,6 +177,7 @@ function addExperience(experience) {
         XP -= MAXXP;
         level += 1;
         MAXXP *= 2;
+        gameState.HP = getMaxHPForLevel();
     }
 }
 function getProgression() {
@@ -184,7 +192,7 @@ function updateCharacter({ name, origin, race, characterClass }) {
     gameState.charOrigin = origin;
     gameState.charRace = race;
     gameState.charClass = characterClass;
-    gameState.HP = classStats.default + ((level - 1) * classStats.perLevel);
+    gameState.HP = getMaxHPForLevel(level, characterClass);
     return true;
 }
 
