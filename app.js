@@ -28,7 +28,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 const port = Number(process.env.PORT) || 3000;
 const serverAddress = process.env.IP_ADDRESS || 'http://localhost';
-const ai = createAiService();
+const ai = createAiService({ baseUrl: process.env.AI_URL || 'http://localhost:11434' });
 const combat = createCombatService({
     gameState: state.gameState,
     enemies,

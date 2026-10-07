@@ -1,7 +1,11 @@
 const { convoNamer } = require('../convoNamer');
 
 // AI Responses
-function createAiService({ fetchImpl = fetch, baseUrl = 'http://localhost:11434', model = 'llama3.2' } = {}) {
+function createAiService({
+    fetchImpl = fetch,
+    baseUrl = process.env.AI_URL || 'http://localhost:11434',
+    model = 'llama3.1:8b'
+} = {}) {
     async function checkStatus() {
         try {
             const response = await fetchImpl(`${baseUrl}/api/tags`);
