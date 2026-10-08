@@ -6,7 +6,7 @@ module.exports = {
             summary: `
                         The king went rogue when the Alternate X escaped from its containment.
                         Alternate X was a powerful supersoldier that had been carefully crafted by extensive research in the dungeons.
-                        Alernate X's purpose was to stop the Forthcoming, which was predicted by the Oracle long ago.
+                        Alternate X's purpose was to stop the Forthcoming, which was predicted by the Oracle long ago.
                         The Forthcoming is an event that was told to bring the end of humanity, which terrified the king.
                         The king, after finding that Alternate X had escaped, threw everything away in hopes of stopping the end of the world.
                         He was unsuccessful.
