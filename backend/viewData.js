@@ -35,7 +35,7 @@ function createViewData({ state, combat, conversations, ai }) {
         return {
             response,
             prompt,
-            conversations: await conversations.getConversations(),
+            conversations: accountConversations,
             conversationId: snapshot.active && snapshot.conversationId
                 ? snapshot.conversationId
                 : conversationId || snapshot.conversationId,

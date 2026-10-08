@@ -298,21 +298,6 @@
                                             <div class="accountEmpty">No items equipped.</div>
                                         <% } %>
                                     </div>
-                                    <div class="accountSummaryTitle">SAVED CHATS</div>
-                                    <div class="accountChats">
-                                        <% if (accountSummary.savedChats.length) { %>
-                                            <% accountSummary.savedChats.forEach(chat => { %>
-                                                <div class="accountChat">
-                                                    <strong><%= chat.title %></strong>
-                                                    <% chat.messages.forEach(message => { %>
-                                                        <div class="accountChatMessage"><span><%= message.role === 'user' ? 'You' : 'Charma' %>:</span> <%= message.content %></div>
-                                                    <% }); %>
-                                                </div>
-                                            <% }); %>
-                                        <% } else { %>
-                                            <div class="accountEmpty">No saved chats.</div>
-                                        <% } %>
-                                    </div>
                                 </div>
                             <% } else { %>
                                 <div class="loginPanel">
@@ -350,6 +335,17 @@
                     <img class="monsterIMG" src="<%= enemies.image %>" alt="<%= enemies.name %>">
                 </div>
                 <div class="response-box" id="chat">
+                    <% if (conversations && conversations.length) { %>
+                        <div class="savedChatsPanel">
+                            <div class="savedChatsTitle">SAVED CHATS</div>
+                            <div class="savedChatsList">
+                                <% conversations.forEach(chat => { %>
+                                    <a class="savedChatLink <%= Number(conversationId) === Number(chat.id) ? 'active' : '' %>"
+                                        href="/?conversationId=<%= chat.id %>"><%= chat.title %></a>
+                                <% }); %>
+                            </div>
+                        </div>
+                    <% } %>
                     <div id="text-scroll" class="chat-container" data-response-pending="<%= responsePending ? 'true' : 'false' %>">
                         <% if (typeof messages !=='undefined' && messages && messages.length) { %>
                             <% let omitLastAssistant=false; %>
