@@ -1,7 +1,14 @@
 const { convoNamer } = require('../convoNamer');
 
+const DEFAULT_BASE_URL = process.env.OLLAMA_URL || process.env.AI_URL || 'http://localhost:11434';
+const DEFAULT_MODEL = process.env.OLLAMA_MODEL || process.env.AI_MODEL || 'llama3.1:8b';
+
 // AI Responses
-function createAiService({ fetchImpl = fetch, baseUrl = 'http://localhost:11434', model = 'llama3.2' } = {}) {
+function createAiService({
+    fetchImpl = fetch,
+    baseUrl = DEFAULT_BASE_URL,
+    model = DEFAULT_MODEL
+} = {}) {
     async function checkStatus() {
         try {
             const response = await fetchImpl(`${baseUrl}/api/tags`);
@@ -35,12 +42,13 @@ function createAiService({ fetchImpl = fetch, baseUrl = 'http://localhost:11434'
             body: JSON.stringify({
                 model,
                 prompt: [
-                    `You are a helpful assistant. Use the conversation history when it is relevant.\nENEMY LIST RULE: You may only introduce, describe as present, or initiate combat with enemies whose exact names appear in the enemies list in the provided StoryAPI data. Never invent, rename, substitute, or imply any other enemy. If the story suggests an enemy not on that list, use an allowed listed enemy only when it fits naturally; otherwise describe the threat without introducing an enemy or starting combat.\nCRITICAL COMBAT ACTION RULE: When an encounter with a listed enemy actually becomes combat, you MUST include this exact machine-readable action in your reply, with the enemy field exactly matching one name from the enemies list: <ACTION>{"name":"start_combat","enemy":"Exact Enemy Name"}</ACTION>. Do not only narrate the start of combat; the action is required to open the combat question panel.\nUse the following StoryAPI data as the source of truth for the adventure:\n${JSON.stringify(storyContext, null, 2)}\n\nIf a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.`,
+                    `You are a helpful assistant. Use the conversation history when it is relevant. Be concise: normal gameplay replies should always be 2-4 short sentences. Finish every response cleanly; do not stop mid-sentence or leave a thought unfinished.\nENEMY LIST RULE: You may only introduce, describe as present, or initiate combat with enemies whose exact names appear in the enemies list in the provided StoryAPI data. Never invent, rename, substitute, or imply any other enemy. If the story suggests an enemy not on that list, use an allowed listed enemy only when it fits naturally; otherwise describe the threat without introducing an enemy or starting combat.\nCRITICAL COMBAT ACTION RULE: When an encounter with a listed enemy actually becomes combat, include this exact machine-readable action with the enemy field exactly matching one name from the enemies list: <ACTION>{"name":"start_combat","enemy":"Exact Enemy Name"}</ACTION>. Include at most one brief setup sentence with the action, or just the action. Do not narrate any combat turn, attack, injury, damage, hit, miss, victory, or defeat; do not say the player takes damage or describe the player's actions. The combat interface handles combat. Never start combat merely because an enemy is mentioned.\nUse the following StoryAPI data as the source of truth for the adventure:\n${JSON.stringify(storyContext, null, 2)}\n\nIf a story, landmark, reward, or story hook matches the current scene, incorporate it naturally and keep the world consistent with the provided data.`,
                     ...history.map(message => `${message.role === 'user' ? 'User' : 'Assistant'}: ${message.content}`),
                     `User: ${userPrompt}`,
                     'Assistant:'
-                ].join('\n\n'),
+                ].join(`\n\n`),
                 system,
+                options: { num_predict: 512 },
                 stream: false
             })
         });

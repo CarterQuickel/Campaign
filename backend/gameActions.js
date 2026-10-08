@@ -57,7 +57,11 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
         }
         if (action.name === 'start_combat' && context.allowCombatStart !== false) {
             const result = startCombat(action.enemy, context.conversationId);
-            if (!result?.success) console.log('COMBAT NOT STARTED:', result?.message || action.enemy);
+            if (!result?.success) {
+                console.log('COMBAT NOT STARTED:', result?.message || action.enemy);
+            } else {
+                context.onCombatStarted?.(result);
+            }
         }
         if (action.name === 'unlock_item') {
             const reward = (Array.isArray(rewards) ? rewards : [])

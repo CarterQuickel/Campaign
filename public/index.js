@@ -30,7 +30,7 @@ async function renderAIResponse(text) {
     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function appendChatMessage(role, text, animate = false) {
+function appendChatMessage(role, text, animate = false, combatPrompt = null) {
     const container = document.getElementById('text-scroll');
     if (!container) return null;
     const wrapper = document.createElement('div');
@@ -39,13 +39,23 @@ function appendChatMessage(role, text, animate = false) {
     bubble.className = 'bubble';
     wrapper.appendChild(bubble);
     container.appendChild(wrapper);
+    const addCombatPrompt = () => {
+        if (role !== 'assistant' || !combatPrompt) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'encounterPrompt';
+        button.textContent = 'Enter Encounter';
+        bubble.appendChild(button);
+    };
     if (animate) {
         return typeAIResponseIntoElement(String(text), bubble).then(() => {
+            addCombatPrompt();
             container.scrollTop = container.scrollHeight;
             return wrapper;
         });
     }
     bubble.textContent = String(text);
+    addCombatPrompt();
     container.scrollTop = container.scrollHeight;
     return wrapper;
 }
@@ -87,7 +97,8 @@ async function resumePendingConversation(conversationId, pendingBubble) {
                 && (!data.pendingPrompt || precedingMessage.content === data.pendingPrompt);
             if (isCurrentReply) {
                 pendingBubble?.remove();
-                await appendChatMessage('assistant', lastMessage.content, true);
+                if (data.combat) updateCombatSnapshot(data.combat);
+                await appendChatMessage('assistant', lastMessage.content, true, data.combat);
                 return;
             }
             if (!data.pending) break;
@@ -135,7 +146,10 @@ if (chatForm) {
             });
             const data = await response.json();
             if (data.conversationId) setActiveConversation(data.conversationId);
-            if (data.response) await appendChatMessage('assistant', data.response, true);
+            if (data.response) {
+                if (data.combat) updateCombatSnapshot(data.combat);
+                await appendChatMessage('assistant', data.response, true, data.combat);
+            }
             else if (!response.ok) throw new Error(data.message || 'The response could not be loaded.');
         } catch (error) {
             appendChatMessage('assistant', `Unable to send your message: ${error.message}`);
@@ -612,6 +626,59 @@ function returnToChatAfterCombat() {
     }
 }
 
+function restoreCombatUI() {
+    if (!document.body.classList.contains('combat-active') || !combatOverlay) return;
+    const phase = combatOverlay.dataset.phase;
+    if (phase === 'attack') {
+        showCombatPanel({ correct: true, message: 'Choose a weapon to attack with.', showAttacks: true, phase });
+    } else if (phase === 'result') {
+        showCombatPanel({ correct: false, message: 'Continue when you are ready for the next question.', phase });
+    } else if (phase === 'won' || phase === 'lost') {
+        showCombatPanel({
+            correct: phase === 'won',
+            message: phase === 'won' ? 'Victory! Continue to see what happens next.' : 'Continue to see what happens next.',
+            phase
+        });
+    }
+}
+
+function updateCombatSnapshot(snapshot) {
+    if (!snapshot || !combatOverlay) return;
+    combatOverlay.dataset.phase = snapshot.phase || 'question';
+    combatOverlay.dataset.combatId = snapshot.combatId || '';
+    const combatIdInput = document.getElementById('active-combat-id');
+    if (combatIdInput) combatIdInput.value = snapshot.combatId || '';
+    const enemyName = document.querySelector('.enemyTxt');
+    const enemyImage = document.querySelector('.monsterIMG');
+    const enemyHPBar = document.getElementById('enemyHPBar');
+    if (enemyName && snapshot.enemy?.name) enemyName.textContent = snapshot.enemy.name;
+    if (enemyImage && snapshot.enemy?.image) {
+        enemyImage.src = snapshot.enemy.image;
+        enemyImage.alt = snapshot.enemy.name || '';
+    }
+    if (enemyHPBar && Number.isFinite(Number(snapshot.enemy?.HP))) enemyHPBar.max = snapshot.enemy.HP;
+    renderCombatQuestion(snapshot.question);
+    updateCombatVitals(snapshot);
+}
+
+document.getElementById('text-scroll')?.addEventListener('click', event => {
+    const prompt = event.target.closest('.encounterPrompt');
+    if (!prompt) return;
+    document.body.classList.add('combat-active');
+    const questionPanel = document.getElementById('questionPanel');
+    const chatPanel = document.getElementById('chat');
+    const centerPanel = document.querySelector('.centerCont');
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        if (centerPanel) centerPanel.style.display = 'flex';
+        if (questionPanel) questionPanel.style.display = 'flex';
+        if (chatPanel) chatPanel.style.display = 'none';
+    } else {
+        if (questionPanel) questionPanel.style.removeProperty('display');
+        if (chatPanel) chatPanel.style.removeProperty('display');
+    }
+    restoreCombatUI();
+});
+
 answerContainer?.addEventListener('click', async event => {
         const button = event.target.closest('.answerOption');
         if (!button || button.disabled) return;
@@ -674,8 +741,10 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
 
 combatContinue?.addEventListener('click', async () => {
     let continuationBubble = null;
+    let endingPhase = null;
     try {
         const phase = combatOverlay.dataset.phase;
+        endingPhase = phase;
         if (phase === 'result') {
             const response = await fetch('/api/combat/continue', { method: 'POST' });
             const result = await response.json();
@@ -707,11 +776,13 @@ combatContinue?.addEventListener('click', async () => {
             });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to continue the story.');
+            updateCombatVitals(result);
             continuationBubble.textContent = '';
             const fallbackText = phase === 'won'
                 ? `${enemyName} has fallen. What happens next is yours to decide.`
                 : `${enemyName} has overcome you, but this is not necessarily the end. What do you do next?`;
             await typeAIResponseIntoElement(result.response || fallbackText, continuationBubble);
+            document.querySelectorAll('.encounterPrompt').forEach(button => button.remove());
         }
         if (phase !== 'won' && phase !== 'lost') {
             combatOverlay.classList.remove('open');
@@ -727,13 +798,23 @@ combatContinue?.addEventListener('click', async () => {
     } catch (error) {
         console.error('Unable to continue combat:', error);
         if (continuationBubble) {
-            continuationBubble.textContent = `The story could not continue right now: ${error.message}. Refresh the page to retry.`;
+            continuationBubble.textContent = `The story could not continue right now: ${error.message}.`;
+            if (endingPhase === 'won' || endingPhase === 'lost') {
+                document.body.classList.add('combat-active');
+                showCombatPanel({
+                    correct: endingPhase === 'won',
+                    message: `${error.message} Select Continue Story to retry.`,
+                    phase: endingPhase
+                });
+            }
         } else if (combatContinue) {
             combatContinue.disabled = false;
             combatMessage.textContent = error.message;
         }
     }
 });
+
+restoreCombatUI();
 
 //backend-authoritative equipment weight
 const encumCont = document.getElementById('encumCont');

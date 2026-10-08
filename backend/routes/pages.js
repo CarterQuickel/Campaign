@@ -1,7 +1,7 @@
 const express = require('express');
 
 // Pages
-function createPagesRouter({ state, viewData, conversations, isAuthenticated, getUserName }) {
+function createPagesRouter({ state, viewData, conversations, combat, isAuthenticated, getUserName }) {
     const router = express.Router();
     router.post('/api/conversations', async (req, res, next) => {
         if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
@@ -24,11 +24,27 @@ function createPagesRouter({ state, viewData, conversations, isAuthenticated, ge
             if (!available.some(conversation => conversation.id === conversationId)) {
                 return res.status(404).json({ message: 'Conversation not found.' });
             }
+            const snapshot = combat.getSnapshot();
+            const activeCombat = snapshot.active && snapshot.conversationId === conversationId
+                ? {
+                    combatId: snapshot.combatId,
+                    phase: snapshot.phase,
+                    enemy: {
+                        name: snapshot.enemy.name,
+                        HP: snapshot.enemy.HP,
+                        image: snapshot.enemy.image
+                    },
+                    enemyHP: snapshot.enemyHP,
+                    playerHP: snapshot.playerHP,
+                    question: snapshot.question
+                }
+                : null;
             return res.json({
                 conversationId,
                 messages: await conversations.getMessages(req.accountId, conversationId),
                 pending: conversations.isResponsePending(conversationId),
-                pendingPrompt: conversations.getPendingPrompt(conversationId)
+                pendingPrompt: conversations.getPendingPrompt(conversationId),
+                combat: activeCombat
             });
         } catch (error) {
             return next(error);
@@ -44,11 +60,15 @@ function createPagesRouter({ state, viewData, conversations, isAuthenticated, ge
     });
     router.get('/', async (req, res, next) => {
         try {
+            const snapshot = combat.getSnapshot();
             const allConversations = isAuthenticated(req) ? await conversations.getConversations(req.accountId) : [];
             const requestedId = Number(req.query.conversationId) || null;
-            const conversationId = requestedId && allConversations.some(item => item.id === requestedId)
+            const requestedConversationId = requestedId && allConversations.some(item => item.id === requestedId)
                 ? requestedId
                 : allConversations[0]?.id || null;
+            const conversationId = snapshot.active && snapshot.conversationId
+                ? snapshot.conversationId
+                : requestedConversationId;
             const messages = conversationId ? await conversations.getMessages(req.accountId, conversationId) : [];
             messages.unshift({
                 role: 'assistant',

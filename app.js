@@ -30,10 +30,12 @@ const server = http.createServer(app);
 const io = new Server(server);
 const port = Number(process.env.PORT) || 3000;
 const serverAddress = process.env.IP_ADDRESS || 'http://localhost';
+const ai = createAiService({
+    baseUrl: process.env.OLLAMA_URL || process.env.AI_URL || 'http://localhost:11434',
+    model: process.env.OLLAMA_MODEL || process.env.AI_MODEL || 'llama3.1:8b'
 const configuredBaseUrl = process.env.THIS_URL || serverAddress;
 const publicBaseUrl = new URL(configuredBaseUrl);
 if (!publicBaseUrl.port) publicBaseUrl.port = String(port);
-const ai = createAiService();
 const auth = createAuth({
     authUrl: process.env.AUTH_URL || 'https://formbar.yorktechapps.com',
     callbackBaseUrl: publicBaseUrl.origin,
@@ -139,7 +141,7 @@ initializeDatabase()
             isAuthenticated: auth.isAuthenticated,
             getUserName: auth.getUserName
         }));
-        app.use('/ask', auth.requireAuth, createAskRouter({ state, conversations, ai, actions, viewData }));
+        app.use('/ask', auth.requireAuth, createAskRouter({ state, conversations, ai, actions, viewData, combat }));
         app.use('/api/combat', auth.requireAuth, createCombatRouter({ combat, ai, conversations, actions }));
         server.listen(port, () => {
             console.log(`Server running on ${serverAddress}:${port}`);

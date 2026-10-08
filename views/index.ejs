@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
 
-<body class="<%= combatActive ? 'combat-active' : '' %>">
+<body>
     <div id="banner">
         <div id="leftBan">
             <div id="title">
@@ -79,7 +79,7 @@
                 </div>
         </div>
     </div>
-    <div class="darkOverlay" id="combatOverlay">
+    <div class="darkOverlay" id="combatOverlay" data-phase="<%= combatPhase %>" data-combat-id="<%= combatId %>">
         <div class="atkActionPanel">
             <div class="winStatus header" id="combatStatus"></div>
             <div class="combatMessage header" id="combatMessage">Choose a weapon to attack with</div>
@@ -180,7 +180,7 @@
                                 <div class="emoji">🖌️</div>
                                 <div>Appearance</div>
                             </button>
-                            <button class="setting" data-setting="campaign">
+                            <button class="setting" data-setting="campaign" style="display: none;">
                                 <div class="emoji">🔔</div>
                                 <div>Notifications</div>
                             </button>
@@ -353,6 +353,12 @@
                     <div id="text-scroll" class="chat-container" data-response-pending="<%= responsePending ? 'true' : 'false' %>">
                         <% if (typeof messages !=='undefined' && messages && messages.length) { %>
                             <% let omitLastAssistant=false; %>
+                                <% let activeEncounterMessageIndex=-1; %>
+                                <% if (combatActive) { %>
+                                    <% for (let i=messages.length - 1; i >= 0; i--) { %>
+                                        <% if (messages[i].role !== 'user') { activeEncounterMessageIndex=i; break; } %>
+                                    <% } %>
+                                <% } %>
                                 <% if (response && messages[messages.length - 1] && messages[messages.length -
                                     1].role==='assistant' && messages[messages.length - 1].content===response) {
                                     omitLastAssistant=true; } %>
@@ -362,6 +368,9 @@
                                                 <div class="message <%= msg.role === 'user' ? 'user' : 'assistant' %>">
                                                     <div class="bubble">
                                                         <%= msg.content %>
+                                                        <% if (combatActive && !responsePending && i===activeEncounterMessageIndex) { %>
+                                                            <button type="button" class="encounterPrompt"><%= combatPhase === 'won' || combatPhase === 'lost' ? 'Continue Story' : 'Enter Encounter' %></button>
+                                                        <% } %>
                                                     </div>
                                                 </div>
                                                 <% } %>
@@ -380,7 +389,7 @@
                                         <div class="preCont">
                                             <button type="button" class="preResponse">Where am I?</button>
                                             <button type="button" class="preResponse">What's happened so far?</button>
-                                            <button type="button" class="preResponse">TEST: Make a random encounter</button>
+                                            <button type="button" class="preResponse">TEST: Make a random enemy fight</button>
                                             <button type="button" class="preResponse">TEST: Give me a random tool</button>
                                             <button type="button" class="preResponse">TEST: Give me a random amount of gold</button>
                                         </div>

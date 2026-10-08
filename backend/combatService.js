@@ -79,6 +79,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             enemyHP,
             playerHP,
             canAttack: correct,
+            phase: correct ? 'attack' : 'result',
             mastery: correct ? recordCorrectAnswer() : null
         };
         if (correct) {
@@ -182,6 +183,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         completedResolutions.set(combatId, { conversationId, responseText });
         enemy = null;
         enemyHP = 0;
+        playerHP = Math.max(0, Math.floor(gameState.HP));
         phase = 'inactive';
         conversationId = null;
         resolvingCombatId = null;
