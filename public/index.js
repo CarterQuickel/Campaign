@@ -314,9 +314,6 @@ async function refreshAccountPanel() {
         const list = items => items.length
             ? items.map(item => `<div class="accountItem">${escapeHtml(item)}</div>`).join('')
             : '<div class="accountEmpty">None saved.</div>';
-        const chats = accountSummary.savedChats.length
-            ? accountSummary.savedChats.map(chat => `<div class="accountChat"><strong>${escapeHtml(chat.title)}</strong>${chat.messages.map(message => `<div class="accountChatMessage"><span>${message.role === 'user' ? 'You' : 'Charma'}:</span> ${escapeHtml(message.content)}</div>`).join('')}</div>`).join('')
-            : '<div class="accountEmpty">No saved chats.</div>';
         accountPanel.querySelector('.accountStatus').innerHTML = `Formbar name: <strong>${escapeHtml(formbarName || 'Unknown')}</strong>`;
         accountPanel.querySelector('.accountSummary').innerHTML = `
             <div class="accountSummaryTitle">CHARACTER</div>
@@ -334,8 +331,7 @@ async function refreshAccountPanel() {
                 <div><span>Weight</span><strong>${accountSummary.weight}/${accountSummary.maxWeight} lb</strong></div>
             </div>
             <div class="accountSummaryTitle">INVENTORY</div><div class="accountItemList">${list(accountSummary.inventoryItems)}</div>
-            <div class="accountSummaryTitle">EQUIPPED</div><div class="accountItemList">${list(accountSummary.equippedItems)}</div>
-            <div class="accountSummaryTitle">SAVED CHATS</div><div class="accountChats">${chats}</div>`;
+            <div class="accountSummaryTitle">EQUIPPED</div><div class="accountItemList">${list(accountSummary.equippedItems)}</div>`;
     } catch (error) {
         console.error('Unable to refresh account summary:', error);
     }

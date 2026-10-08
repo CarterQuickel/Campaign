@@ -182,7 +182,7 @@ function addExperience(experience) {
         MAXXP *= 2;
         gameState.HP = getMaxHPForLevel();
     }
-    gameState.HP = calculateMaxHP(gameState.charClass);
+    gameState.HP = getMaxHPForLevel(level, gameState.charClass);
 }
 function getProgression() {
     return { level, XP, MAXXP };
@@ -262,7 +262,7 @@ function loadSnapshot(snapshot) {
     level = Number(snapshot.level) || 1;
     XP = Number(snapshot.XP) || 0;
     MAXXP = Number(snapshot.MAXXP) || 800;
-    gameState.HP = calculateMaxHP(gameState.charClass);
+    gameState.HP = getMaxHPForLevel(level, gameState.charClass);
     claimedMilestones.clear();
     (snapshot.claimedMilestones || []).forEach(milestone => claimedMilestones.add(Number(milestone)));
     if (Array.isArray(snapshot.masteryCourseSets) && snapshot.masteryCourseSets.length) {
