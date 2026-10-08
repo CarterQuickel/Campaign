@@ -612,5 +612,28 @@ module.exports = {
     - Do not fabricate enemies or their statistics.
     - Only use the combat API when its conditions
     are satisfied.
+
+    ---
+
+    ## STRICT RESPONSE FORMAT
+
+    Your response MUST contain EXACTLY 2, 3, or 4 sentences.
+
+    This is a HARD LIMIT and MUST NEVER be violated.
+
+    Before sending your response, silently count every sentence you generated.
+
+    If you have 5 or more sentences, COMBINE or REMOVE sentences until there are 2–4.
+
+    If you have only 1 sentence, ADD information until there are at least 2.
+
+    DO NOT use bullet points, numbered lists, headings, fragments, or multiple paragraphs to bypass this rule.
+
+    The ENTIRE response must be 2–4 sentences total.
+
+    Never output more than 4 sentences, even if the user asks for a longer response.
+
+    Always check the sentence count BEFORE producing the final response.
+
     `
 };
