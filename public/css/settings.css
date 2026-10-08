@@ -72,6 +72,99 @@ button.setting:hover:not(.active) {
 .settingCate .header {
     margin: 10px 10px -10px 10px;
 }
+.loginPanel {
+    height: 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 20px 10px;
+}
+.chatLoginPanel {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.formbarLoginBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    background: var(--active-color);
+    color: var(--text-color);
+    font-weight: 700;
+    text-decoration: none;
+}
+.formbarLoginBtn:hover {
+    background: var(--user-background);
+}
+.accountStatus {
+    margin: 20px 10px;
+    color: var(--accent-color);
+}
+.accountSummary {
+    margin: 0 10px 20px;
+    max-width: 620px;
+}
+.accountSummaryTitle {
+    margin: 18px 0 8px;
+    color: var(--accent-color);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+.accountSummaryGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+.accountSummaryGrid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    border: 1px solid var(--site-border);
+    border-radius: 6px;
+}
+.accountSummaryGrid span {
+    color: #ffffff;
+    font-size: 12px;
+}
+.accountSummaryGrid strong {
+    overflow-wrap: anywhere;
+}
+.accountItemList,
+.accountChats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.accountItem,
+.accountEmpty,
+.accountChat {
+    padding: 9px 10px;
+    border: 1px solid var(--site-border);
+    border-radius: 6px;
+}
+.accountEmpty {
+    color: #ffffff;
+}
+.accountChat {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.accountChatMessage {
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+.accountChatMessage span {
+    color: #ffffff;
+    font-weight: 700;
+}
 .accentCont {
     display: flex;
     flex-direction: row;
@@ -187,4 +280,14 @@ input:checked + .slider:before {
 #origin {
     resize: none;
     min-height: 300px;
+}
+.accountCharacterInfoText {
+    color: lightgray;
+    font-weight: 700;
+    font-size: 16px;
+}
+.accountSavedInfoText {
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
 }

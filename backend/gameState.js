@@ -15,6 +15,7 @@ const masteryColors = [
     '#7a6f6f', '#635050', '#614b4b', '#746767', '#615252', '#4b3d3d'
 ];
 const masteryCourseSets = [];
+const defaultMasteryCourseSets = [];
 
 // Fetch Quizbank JSON Data
 async function fetchQuizbankJson(path) {
@@ -61,6 +62,7 @@ async function initializeMasteryCourseSets() {
         };
     }));
     masteryCourseSets.splice(0, masteryCourseSets.length, ...courseSets);
+    defaultMasteryCourseSets.splice(0, defaultMasteryCourseSets.length, ...JSON.parse(JSON.stringify(courseSets)));
     return masteryCourseSets;
 }
 
@@ -169,6 +171,7 @@ const gameState = {
     maxWeight: 100,
     HP: getMaxHPForLevel()
 };
+    const initialGameState = JSON.parse(JSON.stringify(gameState));
 
 // +XP
 function addExperience(experience) {
@@ -179,6 +182,7 @@ function addExperience(experience) {
         MAXXP *= 2;
         gameState.HP = getMaxHPForLevel();
     }
+    gameState.HP = calculateMaxHP(gameState.charClass);
 }
 function getProgression() {
     return { level, XP, MAXXP };
@@ -228,14 +232,54 @@ function toggleToolEquipped(name) {
     };
 }
 
+function getSnapshot() {
+    return {
+        gameState: {
+            ...gameState,
+            tools: gameState.tools.map(tool => ({ ...tool }))
+        },
+        level,
+        XP,
+        MAXXP,
+        claimedMilestones: [...claimedMilestones],
+        masteryCourseSets: JSON.parse(JSON.stringify(masteryCourseSets))
+    };
+}
+
+function loadSnapshot(snapshot) {
+    if (!snapshot) {
+        Object.assign(gameState, JSON.parse(JSON.stringify(initialGameState)));
+        gameState.tools = initialGameState.tools.map(tool => ({ ...tool }));
+        level = 1;
+        XP = 0;
+        MAXXP = 800;
+        claimedMilestones.clear();
+        masteryCourseSets.splice(0, masteryCourseSets.length, ...JSON.parse(JSON.stringify(defaultMasteryCourseSets)));
+        return;
+    }
+    Object.assign(gameState, snapshot.gameState || {});
+    if (Array.isArray(snapshot.gameState?.tools)) gameState.tools = snapshot.gameState.tools;
+    level = Number(snapshot.level) || 1;
+    XP = Number(snapshot.XP) || 0;
+    MAXXP = Number(snapshot.MAXXP) || 800;
+    gameState.HP = calculateMaxHP(gameState.charClass);
+    claimedMilestones.clear();
+    (snapshot.claimedMilestones || []).forEach(milestone => claimedMilestones.add(Number(milestone)));
+    if (Array.isArray(snapshot.masteryCourseSets) && snapshot.masteryCourseSets.length) {
+        masteryCourseSets.splice(0, masteryCourseSets.length, ...snapshot.masteryCourseSets);
+    }
+}
+
 module.exports = {
     addExperience,
     claimedMilestones,
     gameState,
     fetchQuestionForCurrentCourse,
+    getSnapshot,
     getProgression,
     getCurrentMasteryUnit,
     initializeMasteryCourseSets,
+    loadSnapshot,
     masteryCourseSets,
     recordCorrectMasteryAnswer,
     setCurrentMasteryUnit,

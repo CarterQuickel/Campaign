@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS claimed_rewards (
 
 CREATE TABLE IF NOT EXISTS game_state (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL UNIQUE,
+    state_json TEXT,
     gold INTEGER DEFAULT 0,
     tools TEXT,
     charName TEXT,
@@ -34,6 +35,8 @@ CREATE TABLE IF NOT EXISTS game_state (
 
 CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
         title TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+

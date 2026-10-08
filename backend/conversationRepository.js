@@ -1,42 +1,47 @@
 function createConversationRepository(database) {
     const pendingResponses = new Map();
 
-    function getMessages(conversationId) {
+    function getMessages(userId, conversationId) {
         return new Promise((resolve, reject) => {
             database.all(
-                'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id ASC',
-                [conversationId],
+                `SELECT messages.role, messages.content FROM messages
+                 JOIN conversations ON conversations.id = messages.conversation_id
+                 WHERE conversations.user_id = ? AND conversations.id = ? ORDER BY messages.id ASC`,
+                [userId, conversationId],
                 (error, rows) => error ? reject(error) : resolve(rows)
             );
         });
     }
 
     // Fetch Convo (should be removed later)
-    function getRecentMessages(conversationId, limit = 20) {
+    function getRecentMessages(userId, conversationId, limit = 20) {
         return new Promise((resolve, reject) => {
             database.all(
-                'SELECT role, content FROM messages WHERE conversation_id = ? ORDER BY id DESC LIMIT ?',
-                [conversationId, limit],
+                `SELECT messages.role, messages.content FROM messages
+                 JOIN conversations ON conversations.id = messages.conversation_id
+                 WHERE conversations.user_id = ? AND conversations.id = ? ORDER BY messages.id DESC LIMIT ?`,
+                [userId, conversationId, limit],
                 (error, rows) => error ? reject(error) : resolve(rows.reverse())
             );
         });
     }
 
     // Save Convo
-    function saveMessage(conversationId, role, content) {
+    function saveMessage(userId, conversationId, role, content) {
         return new Promise((resolve, reject) => {
             database.run(
-                'INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)',
-                [conversationId, role, content],
+                `INSERT INTO messages (conversation_id, role, content)
+                 SELECT id, ?, ? FROM conversations WHERE id = ? AND user_id = ?`,
+                [role, content, conversationId, userId],
                 error => error ? reject(error) : resolve()
             );
         });
     }
 
     // Get Convo
-    function getConversations() {
+    function getConversations(userId) {
         return new Promise((resolve, reject) => {
-            database.all('SELECT id, title FROM conversations ORDER BY id DESC',
+            database.all('SELECT id, title FROM conversations WHERE user_id = ? ORDER BY id DESC', [userId],
                 (error, rows) => error ? reject(error) : resolve(rows));
         });
     }
@@ -55,9 +60,9 @@ function createConversationRepository(database) {
     }
 
     //Create Convo
-    function createConversation(title) {
+    function createConversation(userId, title) {
         return new Promise((resolve, reject) => {
-            database.run('INSERT INTO conversations (title) VALUES (?)', [title], function (error) {
+            database.run('INSERT INTO conversations (user_id, title) VALUES (?, ?)', [userId, title], function (error) {
                 error ? reject(error) : resolve(this.lastID);
             });
         });

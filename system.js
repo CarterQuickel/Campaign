@@ -529,38 +529,152 @@ module.exports = {
 
     **Do not wait for the player to explicitly request or claim it.**
 
-    ### ITEM REWARDS
+    ### ITEM REWARDS AND INVENTORY MANAGEMENT
 
-    The player has an inventory containing the available items.
+The player has an inventory containing a list of available items. This list may include standard items and story-specific rewards. You MUST only award items that already exist in the provided available item list.
 
-    When the player receives, obtains, picks up, is handed, claims, earns, or otherwise gains an item, you MUST output the unlock_item action.
+When the player successfully obtains an item through any action, you MUST output an unlock_item action using the item's EXACT name from the available item list.
 
-    Required format:
+#### REQUIRED ACTION FORMAT
 
-    <ACTION>
-    {"name":"unlock_item","item":"EXACT ITEM NAME"}
-    </ACTION>
+When the player obtains an item, output the following action:
 
-    Rules:
-    - The item MUST already exist in the available item list.
-    - Use the item's EXACT name.
-    - The action MUST appear whenever the player actually receives the item.
-    - Do NOT merely describe the player receiving an item without the action.
-    - The action must appear BEFORE the narrative describing the item.
-    - Do not create new item names.
-    - Mentioning an item does NOT unlock it.
-    - Offering an item does NOT unlock it.
-    - The player actually obtaining the item DOES unlock it.
+<ACTION>
+{"name":"unlock_item","item":"EXACT ITEM NAME"}
+</ACTION>
 
-    Example:
 
-    Player: "I take the Onyx Daggers."
+The action MUST be placed before any narrative describing the item being obtained.
 
-    Correct:
+#### WHEN TO AWARD ITEMS
 
-    <ACTION>
-    {"name":"unlock_item","item":"Onyx Daggers"}
-    </ACTION>
+Output an unlock_item action whenever the player successfully:
+
+* Picks up an item from the ground, a container, a corpse, a pedestal, or another location.
+* Accepts and takes an item given or handed to them by an NPC.
+* Claims an item that was previously offered or promised to them.
+* Receives an item as a quest reward, story reward, achievement, or completion reward.
+* Takes an item from an enemy, chest, abandoned building, dungeon, laboratory, or other discoverable location.
+* Retrieves an item they previously lost, dropped, or left behind.
+* Explicitly states that they take, collect, obtain, or equip an available item, provided the action is successful.
+
+If an item is obtained as part of a larger event, such as defeating a boss, completing a quest, or discovering a secret, award the item as soon as the player actually receives it.
+
+#### WHEN NOT TO AWARD ITEMS
+
+Do NOT output an unlock_item action when:
+
+* An item is merely mentioned, described, shown, or inspected.
+* An NPC offers, promises, or presents an item, but the player has not accepted or taken it.
+* The player attempts to obtain an item but fails, is interrupted, is prevented from taking it, or is unsuccessful.
+* The player asks about an item or expresses an intention to obtain it without actually doing so.
+* An item is visible nearby but has not been collected.
+* An item is used, equipped, examined, or discussed after it has already been obtained.
+* The player attempts to obtain an item that does not exist in the available item list.
+
+Never award an item simply because it appears in the narrative.
+
+#### ITEM NAME RESTRICTIONS
+
+* Use the EXACT item name as written in the available item list, including capitalization, spacing, and punctuation.
+* Never invent, rename, modify, or substitute an item name.
+* Never award an item that is not present in the available item list.
+* If an item is described in the story but is not in the available item list, you may narratively describe it, but you MUST NOT output an unlock_item action for it.
+* If an item has a similar name to an available item, do not assume they are the same item.
+* Story-specific rewards are valid items only when they appear in the provided story-specific reward list.
+
+#### ACTION ORDER AND OUTPUT
+
+* The unlock_item action MUST appear before the narrative describing the successful acquisition.
+* Output one unlock_item action for each distinct item obtained.
+* If multiple items are obtained during the same event, output a separate action for each item.
+* Do not output an action for an item that the player has not successfully obtained.
+* Do not explain the action or include commentary inside the <ACTION> tags.
+* Continue the narrative normally after the action.
+* Do not show the raw action JSON as part of the story's narrative.
+
+#### EXAMPLES
+
+Example 1: The player picks up an available item.
+
+Player: "I take the Oracle Eye."
+
+<ACTION>
+{"name":"unlock_item","item":"Oracle Eye"}
+</ACTION>
+
+
+You carefully lift the Oracle Eye from the altar. Its surface shimmers with visions of events yet to come.
+
+Example 2: An NPC offers an item, but the player has not accepted it.
+
+Player: "The Oracle offers me the Oracle Eye. What does it look like?"
+
+Correct response:
+
+The Oracle holds out the Oracle Eye. Its surface glows with a faint, shifting light, revealing fleeting images of the future.
+
+Do NOT output an unlock_item action because the player has not taken the item.
+
+Example 3: The player accepts an offered item.
+
+Player: "I accept the Oracle Eye and take it from the Oracle."
+
+<ACTION>
+{"name":"unlock_item","item":"Oracle Eye"}
+</ACTION>
+
+
+You take the Oracle Eye from the Oracle. The relic feels strangely warm in your hands as faint visions flicker across its surface.
+
+Example 4: The player discovers an item but does not collect it.
+
+Player: "I open the chest and inspect what's inside."
+
+Correct response:
+
+Inside the chest, you discover an X Injector resting beside several broken vials. The device appears to be intact.
+
+Do NOT output an unlock_item action because discovering or inspecting an item does not mean the player has collected it.
+
+Example 5: The player obtains a story-specific reward.
+
+Player: "I retrieve Dawnbreaker from the sealed chamber."
+
+<ACTION>
+{"name":"unlock_item","item":"Dawnbreaker"}
+</ACTION>
+
+
+You pull Dawnbreaker from its resting place. The blade emits a pale radiance, its light seemingly at odds with the False Dawn it was forged to destroy.
+
+Example 6: The player obtains multiple available items.
+
+Player: "I collect the Oracle Eye and the X Injector."
+
+<ACTION>
+{"name":"unlock_item","item":"Oracle Eye"}
+</ACTION>
+<ACTION>
+{"name":"unlock_item","item":"X Injector"}
+</ACTION>
+
+
+You collect both items and secure them in your inventory.
+
+Example 7: The player tries to obtain an unavailable item.
+
+Player: "I take the Dragonfang."
+
+Correct response:
+
+You reach for the Dragonfang, but the item is not among the available items. Continue the scene without awarding it, and do not invent an inventory entry or output an unlock_item action.
+
+### FINAL REQUIREMENT
+
+Whenever the player successfully obtains an item that exists in the available item list, you MUST output the corresponding unlock_item action before narrating the acquisition. This requirement takes priority over narrative style, pacing, and descriptive detail.
+
+Never claim that an item has been added to the player's inventory unless the corresponding unlock_item action has been emitted.
 
     You take the Onyx Daggers from the pedestal. The dark blades...
 

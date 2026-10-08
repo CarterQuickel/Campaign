@@ -38,6 +38,13 @@ async function initializeDatabase() {
                         return reject(new Error(`Database initialization failed: ${schemaErr.message}`));
                     }
 
+                    db.serialize(() => {
+                        db.run('ALTER TABLE game_state ADD COLUMN state_json TEXT', () => {});
+                        db.run('ALTER TABLE conversations ADD COLUMN user_id INTEGER', () => {});
+                        db.run('CREATE UNIQUE INDEX IF NOT EXISTS game_state_user_id ON game_state(user_id)', () => {});
+                        db.run('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations(user_id)', () => {});
+                    });
+
                     console.log('SQLite schema verified with foreign key constraints enabled.');
                     resolve(db);
                 });

@@ -1,9 +1,37 @@
 // This is used for site pages so when they render these are initiated
 function createViewData({ state, combat, conversations, ai }) {
-    async function buildIndexData({ req, response = null, prompt = null, conversationId = null, messages = [], responsePending = false }) {
+    async function buildAccountSummary(accountId) {
+        const accountConversations = await conversations.getConversations(accountId);
+        const unlockedTools = state.gameState.tools.filter(tool => tool.unlocked);
+        const equippedTools = state.gameState.tools.filter(tool => tool.equipped);
+        const savedChats = await Promise.all(accountConversations.map(async conversation => ({
+            ...conversation,
+            messages: await conversations.getMessages(accountId, conversation.id)
+        })));
+        const progression = state.getProgression();
+        return {
+            characterName: state.gameState.charName,
+            characterClass: state.gameState.charClass,
+            characterRace: state.gameState.charRace,
+            level: progression.level,
+            xp: progression.XP,
+            maxXp: progression.MAXXP,
+            hp: state.gameState.HP,
+            gold: state.gameState.gold,
+            weight: state.gameState.weight,
+            maxWeight: state.gameState.maxWeight,
+            inventoryItems: unlockedTools.map(tool => tool.name),
+            equippedItems: equippedTools.map(tool => tool.name),
+            savedChats
+        };
+    }
+
+    async function buildIndexData({ req, isAuthenticated = false, formbarName = null, response = null, prompt = null, conversationId = null, messages = [], responsePending = false }) {
         await combat.prepareQuestion();
         const snapshot = combat.getSnapshot();
         const progression = state.getProgression();
+        const accountConversations = await conversations.getConversations(req?.accountId);
+        const accountSummary = await buildAccountSummary(req?.accountId);
         return {
             response,
             prompt,
@@ -11,8 +39,11 @@ function createViewData({ state, combat, conversations, ai }) {
             conversationId: snapshot.active && snapshot.conversationId
                 ? snapshot.conversationId
                 : conversationId || snapshot.conversationId,
+            accountSummary,
             messages,
             responsePending,
+            isAuthenticated,
+            formbarName,
             online: await ai.checkStatus(),
             stats: state.stats,
             tools: state.gameState.tools,
@@ -70,7 +101,7 @@ function createViewData({ state, combat, conversations, ai }) {
         };
     }
 
-    return { buildIndexData, buildMasteryData };
+    return { buildAccountSummary, buildIndexData, buildMasteryData };
 }
 
 module.exports = { createViewData };

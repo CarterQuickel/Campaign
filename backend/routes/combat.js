@@ -56,7 +56,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
             return { status: 409, body: { success: false, message: 'This combat cannot be resolved.' } };
         }
         try {
-            const history = await conversations.getRecentMessages(conversationId);
+            const history = await conversations.getRecentMessages(req.accountId, conversationId);
             const storyContext = {
                 stories,
                 landmarks,
@@ -84,7 +84,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
                 conversationId,
                 allowCombatStart: false
             }) || responseText).trim();
-            await conversations.saveMessage(conversationId, 'assistant', finalResponse);
+            await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
             if (!combat.close(combatId, finalResponse)) {
                 return { status: 409, body: { success: false, message: 'Combat has already changed.' } };
             }
