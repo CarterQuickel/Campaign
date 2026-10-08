@@ -290,10 +290,50 @@ if (courseTabs.length && coursePanels.length) {
 //settings panel select
 const settingsTabs = document.querySelectorAll('.setting');
 const settingsPanels = document.querySelectorAll('.settingCate');
+async function refreshAccountPanel() {
+    const accountPanel = document.querySelector('.settingCate[data-setting="account"]');
+    if (!accountPanel) return;
+    try {
+        const response = await fetch('/api/account-summary');
+        if (!response.ok) return;
+        const { formbarName, accountSummary } = await response.json();
+        const list = items => items.length
+            ? items.map(item => `<div class="accountItem">${escapeHtml(item)}</div>`).join('')
+            : '<div class="accountEmpty">None saved.</div>';
+        const chats = accountSummary.savedChats.length
+            ? accountSummary.savedChats.map(chat => `<div class="accountChat"><strong>${escapeHtml(chat.title)}</strong>${chat.messages.map(message => `<div class="accountChatMessage"><span>${message.role === 'user' ? 'You' : 'Charma'}:</span> ${escapeHtml(message.content)}</div>`).join('')}</div>`).join('')
+            : '<div class="accountEmpty">No saved chats.</div>';
+        accountPanel.querySelector('.accountStatus').innerHTML = `Formbar name: <strong>${escapeHtml(formbarName || 'Unknown')}</strong>`;
+        accountPanel.querySelector('.accountSummary').innerHTML = `
+            <div class="accountSummaryTitle">CHARACTER</div>
+            <div class="accountSummaryGrid">
+                <div><span>Name</span><strong>${escapeHtml(accountSummary.characterName)}</strong></div>
+                <div><span>Class</span><strong>${escapeHtml(accountSummary.characterClass)}</strong></div>
+                <div><span>Race</span><strong>${escapeHtml(accountSummary.characterRace)}</strong></div>
+                <div><span>Level</span><strong>${accountSummary.level}</strong></div>
+                <div><span>HP</span><strong>${accountSummary.hp}</strong></div>
+                <div><span>XP</span><strong>${accountSummary.xp}/${accountSummary.maxXp}</strong></div>
+            </div>
+            <div class="accountSummaryTitle">SAVED PROGRESS</div>
+            <div class="accountSummaryGrid">
+                <div><span>Gold</span><strong>${accountSummary.gold}gp</strong></div>
+                <div><span>Weight</span><strong>${accountSummary.weight}/${accountSummary.maxWeight} lb</strong></div>
+            </div>
+            <div class="accountSummaryTitle">INVENTORY</div><div class="accountItemList">${list(accountSummary.inventoryItems)}</div>
+            <div class="accountSummaryTitle">EQUIPPED</div><div class="accountItemList">${list(accountSummary.equippedItems)}</div>
+            <div class="accountSummaryTitle">SAVED CHATS</div><div class="accountChats">${chats}</div>`;
+    } catch (error) {
+        console.error('Unable to refresh account summary:', error);
+    }
+}
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+}
 if (settingsTabs.length && settingsPanels.length) {
     settingsTabs.forEach(button => {
         button.addEventListener('click', () => {
             const selectedCategory = button.getAttribute('data-setting');
+            if (selectedCategory === 'account') refreshAccountPanel();
             settingsTabs.forEach(tab => {
                 tab.classList.toggle('active', tab === button);
             });
@@ -698,12 +738,18 @@ combatContinue?.addEventListener('click', async () => {
 //backend-authoritative equipment weight
 const encumCont = document.getElementById('encumCont');
 const maxWeight = Number(encumCont?.dataset.maxWeight);
-function updateWeightDisplay(weight) {
+function updateWeightDisplay(weight, updatedMaxWeight = maxWeight) {
     const weightTxt = document.getElementById('weightTxt');
     const encumbar = document.getElementById('encumbar');
-    if (weightTxt) weightTxt.textContent = `${weight}/${maxWeight} lb`;
-    if (encumbar) encumbar.value = weight;
-    if (encumCont) encumCont.dataset.currentWeight = weight;
+    if (weightTxt) weightTxt.textContent = `${weight}/${updatedMaxWeight} lb`;
+    if (encumbar) {
+        encumbar.value = weight;
+        encumbar.max = updatedMaxWeight;
+    }
+    if (encumCont) {
+        encumCont.dataset.currentWeight = weight;
+        encumCont.dataset.maxWeight = updatedMaxWeight;
+    }
 }
 document.querySelectorAll('.toolsContainer .tool').forEach(card => {
     const button = card.querySelector('.tool-equip-btn');

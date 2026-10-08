@@ -15,11 +15,11 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
         if (!userPrompt) return res.status(400).json({ message: 'Enter a message first.' });
         try {
             if (!conversationId) {
-                conversationId = await conversations.createConversation(userPrompt.slice(0, 80));
+                conversationId = await conversations.createConversation(req.accountId, userPrompt.slice(0, 80));
             }
             conversations.setResponsePending(conversationId, true, userPrompt);
-            const history = await conversations.getRecentMessages(conversationId);
-            await conversations.saveMessage(conversationId, 'user', userPrompt);
+            const history = await conversations.getRecentMessages(req.accountId, conversationId);
+            await conversations.saveMessage(req.accountId, conversationId, 'user', userPrompt);
             userMessageSaved = true;
             const storyContext = {
                 stories,
@@ -30,7 +30,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
             };
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             const finalResponse = (actions.apply(responseText, { conversationId }) || responseText).trim();
-            await conversations.saveMessage(conversationId, 'assistant', finalResponse);
+            await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
             conversations.setResponsePending(conversationId, false);
             return res.json({ conversationId, response: finalResponse });
         } catch (error) {
@@ -38,7 +38,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData }) {
             try {
                 const failureMessage = `AI request failed: ${error.message}`;
                 if (conversationId && userMessageSaved) {
-                    await conversations.saveMessage(conversationId, 'assistant', failureMessage);
+                    await conversations.saveMessage(req.accountId, conversationId, 'assistant', failureMessage);
                 }
                 return res.status(503).json({ conversationId, response: failureMessage });
             } catch (saveError) {

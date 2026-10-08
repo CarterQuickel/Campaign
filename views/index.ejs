@@ -261,6 +261,65 @@
                         </form>
                         <div class="settingCate disabled" data-setting="account">
                             <div class="header">Account</div>
+                            <% if (isAuthenticated) { %>
+                                <div class="accountStatus">Formbar name: <strong><%= formbarName || 'Unknown' %></strong></div>
+                                <div class="accountSummary">
+                                    <div class="accountSummaryTitle">CHARACTER</div>
+                                    <div class="accountSummaryGrid">
+                                        <div><span class="accountCharacterInfoText">Name</span><strong><%= accountSummary.characterName %></strong></div>
+                                        <div><span class="accountCharacterInfoText">Class</span><strong><%= accountSummary.characterClass %></strong></div>
+                                        <div><span class="accountCharacterInfoText">Race</span><strong><%= accountSummary.characterRace %></strong></div>
+                                        <div><span class="accountCharacterInfoText">Level</span><strong><%= accountSummary.level %></strong></div>
+                                        <div><span class="accountCharacterInfoText">HP</span><strong><%= accountSummary.hp %></strong></div>
+                                        <div><span class="accountCharacterInfoText">XP</span><strong><%= accountSummary.xp %>/<%= accountSummary.maxXp %></strong></div>
+                                    </div>
+                                    <div class="accountSummaryTitle">SAVED PROGRESS</div>
+                                    <div class="accountSummaryGrid">
+                                        <div><span class="accountSavedInfoText">Gold</span><strong><%= accountSummary.gold %>gp</strong></div>
+                                        <div><span class="accountSavedInfoText">Weight</span><strong><%= accountSummary.weight %>/<%= accountSummary.maxWeight %> lb</strong></div>
+                                    </div>
+                                    <div class="accountSummaryTitle">INVENTORY</div>
+                                    <div class="accountItemList">
+                                        <% if (accountSummary.inventoryItems.length) { %>
+                                            <% accountSummary.inventoryItems.forEach(item => { %>
+                                                <div class="accountItem"><%= item %></div>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div class="accountEmpty">No inventory items saved.</div>
+                                        <% } %>
+                                    </div>
+                                    <div class="accountSummaryTitle">EQUIPPED</div>
+                                    <div class="accountItemList">
+                                        <% if (accountSummary.equippedItems.length) { %>
+                                            <% accountSummary.equippedItems.forEach(item => { %>
+                                                <div class="accountItem"><%= item %></div>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div class="accountEmpty">No items equipped.</div>
+                                        <% } %>
+                                    </div>
+                                    <div class="accountSummaryTitle">SAVED CHATS</div>
+                                    <div class="accountChats">
+                                        <% if (accountSummary.savedChats.length) { %>
+                                            <% accountSummary.savedChats.forEach(chat => { %>
+                                                <div class="accountChat">
+                                                    <strong><%= chat.title %></strong>
+                                                    <% chat.messages.forEach(message => { %>
+                                                        <div class="accountChatMessage"><span><%= message.role === 'user' ? 'You' : 'Charma' %>:</span> <%= message.content %></div>
+                                                    <% }); %>
+                                                </div>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <div class="accountEmpty">No saved chats.</div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% } else { %>
+                                <div class="loginPanel">
+                                    <div>Log in with Formbar to use your account.</div>
+                                    <a class="formbarLoginBtn" href="/auth/formbar">LOG IN WITH FORMBAR</a>
+                                </div>
+                            <% } %>
                         </div>
                         <div class="settingCate disabled" data-setting="data">
                             <div class="header">Danger Zone</div>
@@ -313,6 +372,7 @@
                             <%= response %>
                         </div>
                         <% } %>
+                            <% if (isAuthenticated) { %>
                             <div class="chat-form">
                                 <!-- Form links directly to the /ask route in app.js -->
                                 <form action="/ask" method="POST" id="txtform">
@@ -335,6 +395,12 @@
                                     </button>
                                 </form>
                             </div>
+                            <% } else { %>
+                            <div class="loginPanel chatLoginPanel">
+                                <div>Log in with Formbar to chat with Charma.</div>
+                                <a class="formbarLoginBtn" href="/auth/formbar">LOG IN WITH FORMBAR</a>
+                            </div>
+                            <% } %>
                 </div>
             </div>
         </div>
@@ -679,6 +745,8 @@
                 if (!item) return;
                 card.dataset.unlocked = String(item.unlocked);
                 card.classList.toggle('locked', !item.unlocked);
+                const equipButton = card.querySelector('.tool-equip-btn');
+                if (equipButton) equipButton.textContent = item.equipped ? 'Unequip' : 'Equip';
             });
             console.log('Inventory display updated');
         }
@@ -687,6 +755,17 @@
             if (data && Array.isArray(data.tools)) {
                 updateInventory(data.tools);
             }
+        });
+        socket.on('account:update', (data) => {
+            if (!data) return;
+            if (Array.isArray(data.tools)) updateInventory(data.tools);
+            if (Number.isFinite(Number(data.weight)) && typeof updateWeightDisplay === 'function') {
+                updateWeightDisplay(Number(data.weight), Number(data.maxWeight));
+            }
+            if (Number.isFinite(Number(data.gold)) && typeof updateGoldDisplay === 'function') {
+                updateGoldDisplay(Number(data.gold));
+            }
+            if (typeof refreshAccountPanel === 'function') refreshAccountPanel();
         });
     </script>
 </body>

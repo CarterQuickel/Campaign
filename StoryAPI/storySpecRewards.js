@@ -53,7 +53,7 @@ module.exports = {
                     class: "Misc",
                     damage: "0",
                     AC: 0,
-                    desc: "A scroll containing prophecies of the Forthcoming, left by the Oracle.",
+                    desc: "A scroll containing prophecies of the Forthcoming, provided by the Oracle. Can also be used to communicate with the oracle",
                     weight: 0,
                     unlocked: false
                 },

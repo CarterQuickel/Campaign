@@ -578,7 +578,7 @@ Never award an item simply because it appears in the narrative.
 * Output one unlock_item action for each distinct item obtained.
 * If multiple items are obtained during the same event, output a separate action for each item.
 * Do not output an action for an item that the player has not successfully obtained.
-* Do not explain the action or include commentary inside the `<ACTION>` tags.
+* Do not explain the action or include commentary inside the <ACTION> tags.
 * Continue the narrative normally after the action.
 * Do not show the raw action JSON as part of the story's narrative.
 

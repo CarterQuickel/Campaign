@@ -15,6 +15,7 @@ const masteryColors = [
     '#7a6f6f', '#635050', '#614b4b', '#746767', '#615252', '#4b3d3d'
 ];
 const masteryCourseSets = [];
+const defaultMasteryCourseSets = [];
 
 // Fetch Quizbank JSON Data
 async function fetchQuizbankJson(path) {
@@ -61,6 +62,7 @@ async function initializeMasteryCourseSets() {
         };
     }));
     masteryCourseSets.splice(0, masteryCourseSets.length, ...courseSets);
+    defaultMasteryCourseSets.splice(0, defaultMasteryCourseSets.length, ...JSON.parse(JSON.stringify(courseSets)));
     return masteryCourseSets;
 }
 
@@ -150,6 +152,13 @@ function recordCorrectMasteryAnswer() {
 const campaignClass = 'Barbarian';
 const initialConstitutionModifier = (stats[2] - 10) / 2;
 const initialClassStats = classHP.find(characterClass => characterClass.name === campaignClass);
+function calculateMaxHP(characterClass, characterLevel = level) {
+    const classStats = classHP.find(item => item.name === characterClass);
+    if (!classStats) return 0;
+    return classStats.default + initialConstitutionModifier
+        + ((Math.max(1, Number(characterLevel) || 1) - 1)
+            * (classStats.perLevel + initialConstitutionModifier));
+}
 const gameState = {
     gold: 0,
     tools: Tools.map(tool => ({ ...tool, equipped: Boolean(tool.equipped) })),
@@ -159,9 +168,9 @@ const gameState = {
     charOrigin: '',
     weight: 0,
     maxWeight: 100,
-    HP: (initialClassStats?.default + initialConstitutionModifier)
-        + (((level - 1) * initialConstitutionModifier) + ((level - 1) * initialClassStats?.perLevel))
+    HP: calculateMaxHP(campaignClass)
 };
+    const initialGameState = JSON.parse(JSON.stringify(gameState));
 
 // +XP
 function addExperience(experience) {
@@ -171,6 +180,7 @@ function addExperience(experience) {
         level += 1;
         MAXXP *= 2;
     }
+    gameState.HP = calculateMaxHP(gameState.charClass);
 }
 function getProgression() {
     return { level, XP, MAXXP };
@@ -184,7 +194,7 @@ function updateCharacter({ name, origin, race, characterClass }) {
     gameState.charOrigin = origin;
     gameState.charRace = race;
     gameState.charClass = characterClass;
-    gameState.HP = classStats.default + ((level - 1) * classStats.perLevel);
+    gameState.HP = calculateMaxHP(characterClass);
     return true;
 }
 
@@ -220,14 +230,54 @@ function toggleToolEquipped(name) {
     };
 }
 
+function getSnapshot() {
+    return {
+        gameState: {
+            ...gameState,
+            tools: gameState.tools.map(tool => ({ ...tool }))
+        },
+        level,
+        XP,
+        MAXXP,
+        claimedMilestones: [...claimedMilestones],
+        masteryCourseSets: JSON.parse(JSON.stringify(masteryCourseSets))
+    };
+}
+
+function loadSnapshot(snapshot) {
+    if (!snapshot) {
+        Object.assign(gameState, JSON.parse(JSON.stringify(initialGameState)));
+        gameState.tools = initialGameState.tools.map(tool => ({ ...tool }));
+        level = 1;
+        XP = 0;
+        MAXXP = 800;
+        claimedMilestones.clear();
+        masteryCourseSets.splice(0, masteryCourseSets.length, ...JSON.parse(JSON.stringify(defaultMasteryCourseSets)));
+        return;
+    }
+    Object.assign(gameState, snapshot.gameState || {});
+    if (Array.isArray(snapshot.gameState?.tools)) gameState.tools = snapshot.gameState.tools;
+    level = Number(snapshot.level) || 1;
+    XP = Number(snapshot.XP) || 0;
+    MAXXP = Number(snapshot.MAXXP) || 800;
+    gameState.HP = calculateMaxHP(gameState.charClass);
+    claimedMilestones.clear();
+    (snapshot.claimedMilestones || []).forEach(milestone => claimedMilestones.add(Number(milestone)));
+    if (Array.isArray(snapshot.masteryCourseSets) && snapshot.masteryCourseSets.length) {
+        masteryCourseSets.splice(0, masteryCourseSets.length, ...snapshot.masteryCourseSets);
+    }
+}
+
 module.exports = {
     addExperience,
     claimedMilestones,
     gameState,
     fetchQuestionForCurrentCourse,
+    getSnapshot,
     getProgression,
     getCurrentMasteryUnit,
     initializeMasteryCourseSets,
+    loadSnapshot,
     masteryCourseSets,
     recordCorrectMasteryAnswer,
     setCurrentMasteryUnit,
