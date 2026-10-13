@@ -104,8 +104,6 @@ initializeDatabase()
                         if (changed) {
                             io.to(`account:${account.id}`).emit('account:update', {
                                 tools: state.gameState.tools,
-                                weight: state.gameState.weight,
-                                maxWeight: state.gameState.maxWeight,
                                 gold: state.gameState.gold,
                                 hp: state.gameState.HP,
                                 level: state.getProgression().level,
