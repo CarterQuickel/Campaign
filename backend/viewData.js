@@ -55,7 +55,7 @@ function createViewData({ state, combat, conversations, ai }) {
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP,
+                HP: state.gameState.HP
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
@@ -83,7 +83,7 @@ function createViewData({ state, combat, conversations, ai }) {
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP,
+                HP: state.gameState.HP
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
