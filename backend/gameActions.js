@@ -69,6 +69,10 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
                 .find(item => item.name?.trim().toLowerCase() === action.item?.trim().toLowerCase());
             if (!reward) {
                 console.log('ITEM NOT FOUND:', action.item);
+            } else if (reward.CharacterClass !== 'Any'
+                && reward.CharacterClass !== gameState.charClass) {
+                console.log('ITEM CLASS RESTRICTION:', action.item, reward.CharacterClass, gameState.charClass);
+                action.classRestriction = reward.CharacterClass;
             } else {
                 let item = gameState.tools.find(tool => tool.name?.trim().toLowerCase() === reward.name.trim().toLowerCase());
                 if (!item) {
@@ -88,6 +92,9 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
             .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
             .replace(/\s+/g, ' ')
             .trim();
+        if (action.classRestriction) {
+            return `The ${action.item} can only be unlocked by a ${action.classRestriction}.`;
+        }
         if (cleanedText) return cleanedText;
         if (action.name === 'give_gold') return `You receive ${action.amount} gold.`;
         if (action.name === 'unlock_item') return `You have unlocked the ${action.item}.`;

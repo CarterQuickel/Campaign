@@ -25,6 +25,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat }
                 stories,
                 landmarks,
                 storySpecRewards,
+                characterClass: state.gameState.charClass,
                 availableItems: state.gameState.tools.map(item => item.name),
                 enemies: enemies.map(enemy => enemy.name)
             };

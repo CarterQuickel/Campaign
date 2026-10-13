@@ -27,7 +27,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
         const key = `${combatId}:${conversationId || ''}`;
         let resolution = pendingResolutions.get(key);
         if (!resolution) {
-            resolution = resolveCombat({ combatId, conversationId })
+            resolution = resolveCombat({ combatId, conversationId, accountId: req.accountId })
                 .finally(() => pendingResolutions.delete(key));
             pendingResolutions.set(key, resolution);
         }
@@ -35,7 +35,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
         return res.status(result.status).json(result.body);
     });
 
-    async function resolveCombat({ combatId, conversationId }) {
+    async function resolveCombat({ combatId, conversationId, accountId }) {
         const cachedResponse = combat.getCompletedResolution(combatId, conversationId);
         if (cachedResponse !== null) {
             return {
@@ -56,7 +56,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
             return { status: 409, body: { success: false, message: 'This combat cannot be resolved.' } };
         }
         try {
-            const history = await conversations.getRecentMessages(req.accountId, conversationId);
+            const history = await conversations.getRecentMessages(accountId, conversationId);
             const storyContext = {
                 stories,
                 landmarks,
@@ -84,7 +84,7 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
                 conversationId,
                 allowCombatStart: false
             }) || responseText).trim();
-            await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
+            await conversations.saveMessage(accountId, conversationId, 'assistant', finalResponse);
             if (!combat.close(combatId, finalResponse)) {
                 return { status: 409, body: { success: false, message: 'Combat has already changed.' } };
             }
