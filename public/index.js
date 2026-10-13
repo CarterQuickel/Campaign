@@ -326,12 +326,7 @@ async function refreshAccountPanel() {
                 <div><span>XP</span><strong>${accountSummary.xp}/${accountSummary.maxXp}</strong></div>
             </div>
             <div class="accountSummaryTitle">SAVED PROGRESS</div>
-            <div class="accountSummaryGrid">
-                <div><span>Gold</span><strong>${accountSummary.gold}gp</strong></div>
-                <div><span>Weight</span><strong>${accountSummary.weight}/${accountSummary.maxWeight} lb</strong></div>
-            </div>
-            <div class="accountSummaryTitle">INVENTORY</div><div class="accountItemList">${list(accountSummary.inventoryItems)}</div>
-            <div class="accountSummaryTitle">EQUIPPED</div><div class="accountItemList">${list(accountSummary.equippedItems)}</div>`;
+            <div class="accountSummaryTitle">INVENTORY</div><div class="accountItemList">${list(accountSummary.inventoryItems)}</div>`
     } catch (error) {
         console.error('Unable to refresh account summary:', error);
     }
@@ -477,11 +472,11 @@ document.querySelectorAll('.milestone .section').forEach(milestone => {
             milestone.classList.remove('claimable');
             milestone.classList.add('claimed');
             milestone.querySelector('.secPercent').textContent = 'CLAIMED';
-            const weightTxt = document.getElementById('xpTxt');
+            const xpTxt = document.getElementById('xpTxt');
             const encumbar = document.getElementById('xpprogress');
             const levelTxt = document.getElementById('levelTxt');
             const levelBannerTxt = document.getElementById('level');
-            if (weightTxt) weightTxt.textContent = `${result.xp}/${result.maxXp} XP`;
+            if (xpTxt) xpTxt.textContent = `${result.xp}/${result.maxXp} XP`;
             if (encumbar) encumbar.value = result.xp;
             if (levelTxt) levelTxt.textContent = `Level ${result.level}`;
             if (levelBannerTxt) levelBannerTxt.textContent = result.level;
@@ -811,53 +806,3 @@ combatContinue?.addEventListener('click', async () => {
 });
 
 restoreCombatUI();
-
-//backend-authoritative equipment weight
-const encumCont = document.getElementById('encumCont');
-const maxWeight = Number(encumCont?.dataset.maxWeight);
-function updateWeightDisplay(weight, updatedMaxWeight = maxWeight) {
-    const weightTxt = document.getElementById('weightTxt');
-    const encumbar = document.getElementById('encumbar');
-    if (weightTxt) weightTxt.textContent = `${weight}/${updatedMaxWeight} lb`;
-    if (encumbar) {
-        encumbar.value = weight;
-        encumbar.max = updatedMaxWeight;
-    }
-    if (encumCont) {
-        encumCont.dataset.currentWeight = weight;
-        encumCont.dataset.maxWeight = updatedMaxWeight;
-    }
-}
-document.querySelectorAll('.toolsContainer .tool').forEach(card => {
-    const button = card.querySelector('.tool-equip-btn');
-    if (!button) return;
-    button.addEventListener('click', async () => {
-        button.disabled = true;
-        try {
-            const response = await fetch('/api/inventory/equip', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: card.dataset.name })
-            });
-            const result = await response.json();
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || 'Unable to equip item.');
-            }
-            updateWeightDisplay(result.weight);
-            result.tools.forEach(item => {
-                const itemCard = [...document.querySelectorAll('.toolsContainer .tool')]
-                    .find(candidate => candidate.dataset.name === item.name);
-                if (!itemCard) return;
-
-                itemCard.dataset.equipped = String(item.equipped);
-                itemCard.classList.toggle('equipped', item.equipped);
-                const itemButton = itemCard.querySelector('.tool-equip-btn');
-                if (itemButton) itemButton.textContent = item.equipped ? 'Unequip' : 'Equip';
-            });
-        } catch (error) {
-            console.error('Unable to equip item:', error);
-        } finally {
-            button.disabled = false;
-        }
-    });
-});
