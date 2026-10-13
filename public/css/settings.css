@@ -130,7 +130,7 @@ button.setting:hover:not(.active) {
     border-radius: 6px;
 }
 .accountSummaryGrid span {
-    color: #ffffff;
+    color: var(--text-color);
     font-size: 12px;
 }
 .accountSummaryGrid strong {
