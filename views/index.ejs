@@ -116,13 +116,6 @@
                 <div class="header">INVENTORY</div>
                 <div class="gold" id="goldDisplay" data-gold="<%= gold %>">◈ <%= gold %>gp</div>
             </div>
-            <div class="encumCont" id="encumCont" data-current-weight="<%= charData.weight %>" data-max-weight="<%= charData.Mweight %>">
-                <div class="contBan">
-                    <div class="label">Encumbrance</div>
-                    <div class="weight" id="weightTxt"><%= charData.weight %>/<%= charData.Mweight %> lb</div>
-                </div>
-                <progress class="encumBar" id="encumbar" value="<%= charData.weight %>" max="<%= charData.Mweight %>"></progress>
-            </div>
             <div class="categoryCont">
                 <button class="cate active" data-category='all'>
                     All
@@ -157,14 +150,11 @@
                                 <div class="tool-name">
                                     <%= tool.name %>
                                 </div>
-                                <div class="tool-weight" style="display: <%= tool.weight > 0 ? 'flex' : 'none' %>">
-                                    <%= tool.weight %> lb
+                                <div class="tool-damage" style="display: <%= tool.damage === '0' ? 'none' : 'flex' %>">
+                                    <%= tool.damage %> dg
                                 </div>
                             </div>
                         </div>
-                        <button class="tool-equip-btn">
-                            <%= tool.equipped ? 'Unequip' : 'Equip' %>
-                        </button>
                     </div>
                     <% }); %>
             </div>
@@ -276,7 +266,6 @@
                                     <div class="accountSummaryTitle">SAVED PROGRESS</div>
                                     <div class="accountSummaryGrid">
                                         <div><span class="accountSavedInfoText">Gold</span><strong><%= accountSummary.gold %>gp</strong></div>
-                                        <div><span class="accountSavedInfoText">Weight</span><strong><%= accountSummary.weight %>/<%= accountSummary.maxWeight %> lb</strong></div>
                                     </div>
                                     <div class="accountSummaryTitle">INVENTORY</div>
                                     <div class="accountItemList">
@@ -286,16 +275,6 @@
                                             <% }); %>
                                         <% } else { %>
                                             <div class="accountEmpty">No inventory items saved.</div>
-                                        <% } %>
-                                    </div>
-                                    <div class="accountSummaryTitle">EQUIPPED</div>
-                                    <div class="accountItemList">
-                                        <% if (accountSummary.equippedItems.length) { %>
-                                            <% accountSummary.equippedItems.forEach(item => { %>
-                                                <div class="accountItem"><%= item %></div>
-                                            <% }); %>
-                                        <% } else { %>
-                                            <div class="accountEmpty">No items equipped.</div>
                                         <% } %>
                                     </div>
                                 </div>
@@ -470,7 +449,7 @@
                                                     <div class="secName">Novice</div>
                                                 </div>
                                                 <div class="secPercent">
-                                                    <%= claimedMilestones.includes(15) ? 'CLAIMED' : '+800 XP' %>
+                                                    <%= claimedMilestones.includes(15) ? 'CLAIMED' : '+1500 XP' %>
                                                 </div>
                                             </div>
                                             <div class="section" data-xp="1200"
@@ -480,7 +459,7 @@
                                                     <div class="secName">Apprentice</div>
                                                 </div>
                                                 <div class="secPercent">
-                                                    <%= claimedMilestones.includes(30) ? 'CLAIMED' : '+1200 XP' %>
+                                                    <%= claimedMilestones.includes(30) ? 'CLAIMED' : '+3000 XP' %>
                                                 </div>
                                             </div>
                                             <div class="section" data-xp="1700"
@@ -490,7 +469,7 @@
                                                     <div class="secName">Experienced</div>
                                                 </div>
                                                 <div class="secPercent">
-                                                    <%= claimedMilestones.includes(50) ? 'CLAIMED' : '+1700 XP' %>
+                                                    <%= claimedMilestones.includes(50) ? 'CLAIMED' : '+5000 XP' %>
                                                 </div>
                                             </div>
                                             <div class="section" data-xp="2300"
@@ -500,7 +479,7 @@
                                                     <div class="secName">Expert</div>
                                                 </div>
                                                 <div class="secPercent">
-                                                    <%= claimedMilestones.includes(75) ? 'CLAIMED' : '+2300 XP' %>
+                                                    <%= claimedMilestones.includes(75) ? 'CLAIMED' : '+7500 XP' %>
                                                 </div>
                                             </div>
                                             <div class="section" data-xp="3000"
@@ -510,7 +489,7 @@
                                                     <div class="secName">Completionist</div>
                                                 </div>
                                                 <div class="secPercent">
-                                                    <%= claimedMilestones.includes(100) ? 'CLAIMED' : '+3000 XP' %>
+                                                    <%= claimedMilestones.includes(100) ? 'CLAIMED' : '+10000 XP' %>
                                                 </div>
                                             </div>
                                         </div>

@@ -50,7 +50,7 @@ function createCourseRouter(state) {
     router.post('/claim', (req, res) => {
         const requiredProgress = Number(req.body.requiredProgress);
         const experience = Number(req.body.experience);
-        const milestoneRewards = new Map([[5, 500], [15, 800], [30, 1200], [50, 1700], [75, 2300], [100, 3000]]);
+        const milestoneRewards = new Map([[5, 500], [15, 1500], [30, 3000], [50, 5000], [75, 7500], [100, 10000]]);
         const currentSection = state.masteryCourseSets
             .flatMap(courseSet => courseSet.sections)
             .find(section => section.current);

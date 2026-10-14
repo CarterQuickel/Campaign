@@ -18,8 +18,6 @@ function createViewData({ state, combat, conversations, ai }) {
             maxXp: progression.MAXXP,
             hp: state.gameState.HP,
             gold: state.gameState.gold,
-            weight: state.gameState.weight,
-            maxWeight: state.gameState.maxWeight,
             inventoryItems: unlockedTools.map(tool => tool.name),
             equippedItems: equippedTools.map(tool => tool.name),
             savedChats
@@ -58,8 +56,6 @@ function createViewData({ state, combat, conversations, ai }) {
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
                 HP: state.gameState.HP,
-                weight: state.gameState.weight,
-                Mweight: state.gameState.maxWeight
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
@@ -88,8 +84,6 @@ function createViewData({ state, combat, conversations, ai }) {
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
                 HP: state.gameState.HP,
-                weight: state.gameState.weight,
-                Mweight: state.gameState.maxWeight
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,

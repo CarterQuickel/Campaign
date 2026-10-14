@@ -61,7 +61,10 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
     }
 
     // Answer Question
-    function answer(answerId) {
+    function answer(answerId, requestedCombatId) {
+        if (Number(requestedCombatId) !== combatId) {
+            return { status: 409, body: { success: false, message: 'This combat is no longer active.' } };
+        }
         if (!enemy || phase === 'inactive' || phase === 'won' || phase === 'lost') {
             return { status: 409, body: { success: false, message: 'There is no active combat.' } };
         }
@@ -103,7 +106,10 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
     }
 
     // Attack
-    function attack(itemName) {
+    function attack(itemName, requestedCombatId) {
+        if (Number(requestedCombatId) !== combatId) {
+            return { status: 409, body: { success: false, message: 'This combat is no longer active.' } };
+        }
         if (!enemy || phase === 'inactive' || phase === 'won' || phase === 'lost') {
             return { status: 409, body: { success: false, message: 'There is no active combat.' } };
         }
@@ -138,7 +144,10 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         };
     }
     
-    async function continueCombat() {
+    async function continueCombat(requestedCombatId) {
+        if (Number(requestedCombatId) !== combatId) {
+            return { status: 409, body: { success: false, message: 'This combat is no longer active.' } };
+        }
         if (phase !== 'result') {
             return { status: 409, body: { success: false, message: 'Combat cannot continue yet.' } };
         }

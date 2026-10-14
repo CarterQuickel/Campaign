@@ -167,8 +167,6 @@ const gameState = {
     charClass: campaignClass,
     charRace: 'Elvish',
     charOrigin: '',
-    weight: 0,
-    maxWeight: 100,
     HP: getMaxHPForLevel()
 };
     const initialGameState = JSON.parse(JSON.stringify(gameState));
@@ -198,38 +196,6 @@ function updateCharacter({ name, origin, race, characterClass }) {
     gameState.charClass = characterClass;
     gameState.HP = getMaxHPForLevel(level, characterClass);
     return true;
-}
-
-// Equip Tool
-function toggleToolEquipped(name) {
-    const tool = gameState.tools.find(item => item.name === name);
-    if (!tool || !tool.unlocked) {
-        return { success: false, message: 'Item is unavailable.' };
-    }
-    const toolWeight = Math.max(0, Number(tool.weight) || 0);
-    if (tool.equipped) {
-        tool.equipped = false;
-        gameState.weight = Math.max(0, gameState.weight - toolWeight);
-    } else {
-        if (gameState.weight + toolWeight > gameState.maxWeight) {
-            return {
-                success: false,
-                message: 'You are carrying too much.',
-                weight: gameState.weight,
-                maxWeight: gameState.maxWeight
-            };
-        }
-        tool.equipped = true;
-        gameState.weight += toolWeight;
-    }
-    return {
-        success: true,
-        weight: gameState.weight,
-        maxWeight: gameState.maxWeight,
-        tools: gameState.tools.map(({ name, unlocked, equipped }) => ({
-            name, unlocked, equipped: Boolean(equipped)
-        }))
-    };
 }
 
 function getSnapshot() {
@@ -284,6 +250,5 @@ module.exports = {
     recordCorrectMasteryAnswer,
     setCurrentMasteryUnit,
     stats,
-    updateCharacter,
-    toggleToolEquipped
+    updateCharacter
 };
