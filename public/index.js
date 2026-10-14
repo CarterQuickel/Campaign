@@ -30,6 +30,37 @@ async function renderAIResponse(text) {
     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
+function splitMarkdownItalics(text) {
+    if (typeof text !== 'string') return [{ text: String(text), italic: false }];
+    const segments = [];
+    const regex = /\*\*(.+?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            segments.push({ text: text.slice(lastIndex, match.index), italic: false });
+        }
+        segments.push({ text: match[1], italic: true });
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+        segments.push({ text: text.slice(lastIndex), italic: false });
+    }
+    return segments.length ? segments : [{ text, italic: false }];
+}
+
+function renderFormattedText(element, text) {
+    const segments = splitMarkdownItalics(text);
+    for (const segment of segments) {
+        const span = document.createElement('span');
+        span.textContent = segment.text;
+        if (segment.italic) {
+            span.style.fontStyle = 'italic';
+        }
+        element.appendChild(span);
+    }
+}
+
 function appendChatMessage(role, text, animate = false, combatPrompt = null) {
     const container = document.getElementById('text-scroll');
     if (!container) return null;
@@ -54,7 +85,7 @@ function appendChatMessage(role, text, animate = false, combatPrompt = null) {
             return wrapper;
         });
     }
-    bubble.textContent = String(text);
+    renderFormattedText(bubble, String(text));
     addCombatPrompt();
     container.scrollTop = container.scrollHeight;
     return wrapper;
@@ -199,15 +230,33 @@ async function applyGameActionFromText(text) {
 
 //update chat boxes
 function typeAIResponseIntoElement(text, element, speed = 15) {
-    let index = 0;
+    const segments = splitMarkdownItalics(text);
+    let segmentIndex = 0;
+    let charIndex = 0;
+    let activeSegment = null;
     return new Promise((resolve) => {
         function nextCharacter() {
-            if (index >= text.length) {
+            if (segmentIndex >= segments.length) {
                 resolve();
                 return;
             }
-            element.textContent += text[index];
-            index++;
+            if (!activeSegment) {
+                activeSegment = document.createElement('span');
+                if (segments[segmentIndex].italic) {
+                    activeSegment.style.fontStyle = 'italic';
+                }
+                element.appendChild(activeSegment);
+            }
+            const current = segments[segmentIndex];
+            if (charIndex >= current.text.length) {
+                segmentIndex += 1;
+                charIndex = 0;
+                activeSegment = null;
+                setTimeout(nextCharacter, speed);
+                return;
+            }
+            activeSegment.textContent += current.text[charIndex];
+            charIndex += 1;
             setTimeout(nextCharacter, speed);
         }
         nextCharacter();
