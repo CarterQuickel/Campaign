@@ -31,7 +31,7 @@ const io = new Server(server);
 const port = Number(process.env.PORT) || 3000;
 const serverAddress = process.env.IP_ADDRESS || 'http://localhost';
 const ai = createAiService({
-    baseUrl: process.env.OLLAMA_URL || process.env.AI_URL || 'http://localhost:11434',
+    baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
     model: process.env.OLLAMA_MODEL || process.env.AI_MODEL || 'llama3.2:latest'
 });
 const configuredBaseUrl = process.env.THIS_URL || serverAddress;
@@ -104,7 +104,6 @@ initializeDatabase()
                         if (changed) {
                             io.to(`account:${account.id}`).emit('account:update', {
                                 tools: state.gameState.tools,
-                                gold: state.gameState.gold,
                                 hp: state.gameState.HP,
                                 level: state.getProgression().level,
                                 xp: state.getProgression().XP,

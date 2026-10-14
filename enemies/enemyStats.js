@@ -8,17 +8,14 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Necromancer Swirl",
-                    desc: "Death Possessor spins around the staff, a beam of light illuminating its tip as energy consumes you.",
                     damage: "1d4"
                 },
                 atk2: {
                     header: "Protection Blast",
-                    desc: "Death Possessor slams his staff into the ground, exploding a bubble that creates an AOE.",
                     damage: "2d4"
                 },
                 atk3: {
                     header: "Skull Imprint",
-                    desc: "Death Possessor casts a mark upon your body, making you feel burdened.",
                     damage: "1d8"
                 }
             }
@@ -31,17 +28,14 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Bull Ram",
-                    desc: "Bull Rider swings its vicious horns at you.",
                     damage: "1d10"
                 },
                 atk2: {
                     header: "Skeletal Stomp",
-                    desc: "The bones within the bull build up energy, which creates a large shockwave upon the earth.",
                     damage: "2d4"
                 },
                 atk3: {
                     header: "Matador Charge",
-                    desc: "A magic red banner appears over the bull's eyes, making him go mad as he charges fowards.",
                     damage: "3d6"
                 }
             }
@@ -54,17 +48,14 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Fire Scorch",
-                    desc: "Fire Goblin summons a homing projectile engulfed in magic flames.",
                     damage: "1d6"
                 },
                 atk2: {
                     header: "Impenetrable",
-                    desc: "Fire Goblin casts fire upon your body, which cannot be put out.",
                     damage: "1d10"
                 },
                 atk3: {
                     header: "Self-Destruct",
-                    desc: "Fire Goblin uses a detonation spell to create an explosion around him, which doesn't harm him.",
                     damage: "3d4"
                 }
             }
@@ -77,18 +68,155 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Great Slash",
-                    desc: "The King's Ruin slashes down upon you.",
                     damage: "1d8"
                 },
                 atk2: {
                     header: "Duplication Strike",
-                    desc: "The King splits into many souls, which all slash you at once.",
                     damage: "4d6"
                 },
                 atk3: {
                     header: "Rally Cry",
-                    desc: "A burden is evoked upon you, weighing down your soul.",
                     damage: "3d4"
+                }
+            }
+        },
+        {
+            name: "Death Blossom",
+            image: "/enemies/enemy_images/story1/Death_Blossom.jpg",
+            HP: 41,
+            AC: 15,
+            attacks: {
+                atk1: {
+                    header: "Acid Spew",
+                    damage: "1d4"
+                },
+                atk2: {
+                    header: "Thorns-o'-Plenty",
+                    damage: "1d8"
+                },
+                atk3: {
+                    header: "Fang of Thorns",
+                    damage: "2d4"
+                },
+                atk4: {
+                    header: "Great Claws",
+                    damage: "1d6+2"
+                },
+                atk5: {
+                    header: "Double Vine Whip",
+                    damage: "2d10"
+                }
+            }
+        },
+        {
+            name: "Gaping Serpent",
+            image: "/enemies/enemy_images/story1/Gaping_Serpent.jpg",
+            HP: 63,
+            AC: 13,
+            attacks: {
+                atk1: {
+                    header: "Head Slam",
+                    damage: "2d8"
+                },
+                atk2: {
+                    header: "Venom Projectile",
+                    damage: "3d4+3"
+                },
+                atk3: {
+                    header: "Tail Swing",
+                    damage: "4d4"
+                },
+                atk4: {
+                    header: "Gaping Jaw",
+                    damage: "8d4"
+                }
+            }
+        },
+        {
+            name: "Red-Maned Wolf",
+            image: "/enemies/enemy_images/story1/Red-Maned_Wolf.jpg",
+            HP: 39,
+            AC: 15,
+            attacks: {
+                atk1: {
+                    header: "Fire Bomb",
+                    damage: "2d4"
+                },
+                atk2: {
+                    header: "Lunge",
+                    damage: "1d6"
+                },
+                atk3: {
+                    header: "Pheonix Slam",
+                    damage: "2d6"
+                },
+                atk4: {
+                    header: "Sacred Seal of the Mountains",
+                    damage: "3d6+8"
+                }
+            }
+        },
+        {
+            name: "Supaida",
+            image: "/enemies/enemy_images/story1/Supaida.jpg",
+            HP: 28,
+            AC: 15,
+            attacks: {
+                atk1: {
+                    header: "Web Shot",
+                    damage: "1d8"
+                },
+                atk2: {
+                    header: "Wail Call",
+                    damage: "3d4"
+                },
+                atk3: {
+                    header: "Vicious Grab",
+                    damage: "5d4"
+                },
+                atk4: {
+                    header: "Death Web",
+                    damage: "3d6+3"
+                }
+            }
+        },
+        {
+            name: "Withstander",
+            image: "/enemies/enemy_images/story1/Withstander.jpg",
+            HP: 36,
+            AC: 15,
+            attacks: {
+                atk1: {
+                    header: "Mallet Toss",
+                    damage: "3d6"
+                },
+                atk2: {
+                    header: "Gong Pounder",
+                    damage: "2d10"
+                },
+                atk3: {
+                    header: "Gong Smash",
+                    damage: "3d6+5"
+                }
+            }
+        },
+        {
+            name: "The Oracle",
+            image: "/enemies/enemy_images/story1/The_Oracle.jpg",
+            HP: 101,
+            AC: 15,
+            attacks: {
+                atk1: {
+                    header: "See All",
+                    damage: "4d8"
+                },
+                atk2: {
+                    header: "Scared Explosion",
+                    damage: "10d4"
+                },
+                atk3: {
+                    header: "Golden Beam",
+                    damage: "8d6"
                 }
             }
         },
@@ -100,37 +228,30 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Brute Charge",
-                    desc: "Full of fury, Alternate X charges towards you, fire trailing behind him.",
                     damage: "5d10"
                 },
                 atk2: {
                     header: "Four-Weighted Fists",
-                    desc: "Alternate X grows 2 extra arms, which all strike at once.",
                     damage: "4d12"
                 },
                 atk3: {
                     header: "Vicious Bite",
-                    desc: "Alternate X snaps at you, his hardened jaw crushing down upon your body.",
                     damage: "4d20"
                 },
                 atk4: {
                     header: "Hardened Grab",
-                    desc: "Fist of stone, Alternate X grabs you and crushes you with a simple squeeze.",
                     damage: "8d20"
                 },
                 atk5: {
                     header: "Stomp of End Times",
-                    desc: "Jumping into the air, Alternate X slams down upon the earth.",
                     damage: "5d8"
                 },
                 atk6: {
                     header: "Destruction of the Forthcoming",
-                    desc: "Alternate X brings a fury of strikes and explosions upon you.",
                     damage: "10d20"
                 },
                 atk7: {
                     header: "Rock Solid",
-                    desc: "Alternate X turns to stone, which freezes the world in time. Any who dare attack him are heavily hindered.",
                     damage: "20d20+45"
                 }
             }
@@ -143,7 +264,6 @@ module.exports = {
             attacks: {
                 atk1: {
                     header: "Pulse of the Inevitable End",
-                    desc: "The world shakes and crumbles as your brain begins to collapse in on itself.",
                     damage: "10d3"
                 }
             }

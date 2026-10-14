@@ -42,11 +42,6 @@ label, .label {
     font-family: "Cinzel", serif;
     font-weight: 700;
 }
-.gold {
-    color: #FDC700;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
 .weight {
     font-size: 12px;
     letter-spacing: 1px;

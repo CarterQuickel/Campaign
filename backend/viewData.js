@@ -17,7 +17,6 @@ function createViewData({ state, combat, conversations, ai }) {
             xp: progression.XP,
             maxXp: progression.MAXXP,
             hp: state.gameState.HP,
-            gold: state.gameState.gold,
             inventoryItems: unlockedTools.map(tool => tool.name),
             equippedItems: equippedTools.map(tool => tool.name),
             savedChats
@@ -48,14 +47,13 @@ function createViewData({ state, combat, conversations, ai }) {
             mastery: state.masteryCourseSets,
             ...progression,
             claimedMilestones: [...state.claimedMilestones],
-            gold: state.gameState.gold,
             req: req?.session?.user || null,
             charData: {
                 name: state.gameState.charName,
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP,
+                HP: state.gameState.HP
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
@@ -75,7 +73,6 @@ function createViewData({ state, combat, conversations, ai }) {
             online: await ai.checkStatus(),
             tools: state.gameState.tools,
             mastery: state.masteryCourseSets,
-            gold: state.gameState.gold,
             ...progression,
             claimedMilestones: [...state.claimedMilestones],
             charData: {
@@ -83,7 +80,7 @@ function createViewData({ state, combat, conversations, ai }) {
                 class: state.gameState.charClass,
                 race: state.gameState.charRace,
                 origin: state.gameState.charOrigin,
-                HP: state.gameState.HP,
+                HP: state.gameState.HP
             },
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,

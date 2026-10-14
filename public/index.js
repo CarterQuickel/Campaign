@@ -166,16 +166,6 @@ if (responseElement) {
     renderAIResponse(responseElement.textContent);
 }
 
-// update gold
-function updateGoldDisplay(amount) {
-    const goldDisplay = document.getElementById('goldDisplay');
-    if (!goldDisplay) return;
-    const parsedAmount = Number(amount);
-    if (!Number.isFinite(parsedAmount)) return;
-    goldDisplay.dataset.gold = parsedAmount;
-    goldDisplay.textContent = `◈ ${parsedAmount}gp`;
-}
-
 // action
 function parseGameActionFromText(text) {
     if (typeof text !== 'string') return null;
@@ -183,24 +173,9 @@ function parseGameActionFromText(text) {
     if (tagMatch) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
-            if (parsed && parsed.name === 'give_gold') {
-                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
-            }
         } catch (error) {
             console.error('Unable to parse action tag:', error);
         }
-    }
-    const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
-    if (directJsonMatch) {
-        return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
-    }
-    const functionMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
-    if (functionMatch) {
-        return { name: 'give_gold', amount: Number(functionMatch[1]) };
-    }
-    const goldTextMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
-    if (goldTextMatch) {
-        return { name: 'give_gold', amount: Number(goldTextMatch[1]) };
     }
     return null;
 }
@@ -216,9 +191,6 @@ async function applyGameActionFromText(text) {
             body: JSON.stringify({ action: action.name, amount })
         });
         const result = await response.json();
-        if (response.ok && result && Number.isFinite(Number(result.gold))) {
-            updateGoldDisplay(result.gold);
-        }
     } catch (error) {
         console.error('Unable to apply the AI action:', error);
     }
