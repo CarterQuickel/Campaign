@@ -5,9 +5,6 @@ function parseGameActionFromText(responseText) {
     if (tagMatch) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
-            if (parsed?.name === 'give_gold') {
-                return { name: 'give_gold', amount: Number(parsed.amount ?? parsed.gold_amount ?? 0) };
-            }
             if (parsed?.name === 'unlock_item') {
                 return { name: 'unlock_item', item: String(parsed.item || '').trim(), storyReward: parsed.storyReward === true };
             }
@@ -51,10 +48,6 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
         if (!action) return responseText;
         console.log('GAME ACTION:', action);
 
-        if (action.name === 'give_gold') {
-            const amount = Number(action.amount ?? 0);
-            if (Number.isFinite(amount) && amount !== 0) gameState.gold = (Number(gameState.gold) || 0) + amount;
-        }
         if (action.name === 'start_combat' && context.allowCombatStart !== false) {
             const result = startCombat(action.enemy, context.conversationId);
             if (!result?.success) {
@@ -89,7 +82,6 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
             .replace(/\s+/g, ' ')
             .trim();
         if (cleanedText) return cleanedText;
-        if (action.name === 'give_gold') return `You receive ${action.amount} gold.`;
         if (action.name === 'unlock_item') return `You have unlocked the ${action.item}.`;
         if (action.name === 'start_combat') return `Combat begins against ${action.enemy}.`;
         return responseText.trim();

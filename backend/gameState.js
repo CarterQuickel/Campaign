@@ -161,7 +161,6 @@ function getMaxHPForLevel(targetLevel = level, className = campaignClass) {
 }
 
 const gameState = {
-    gold: 0,
     tools: Tools.map(tool => ({ ...tool, equipped: Boolean(tool.equipped) })),
     charName: 'Carter',
     charClass: campaignClass,

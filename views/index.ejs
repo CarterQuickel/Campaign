@@ -114,7 +114,6 @@
         <div id="inventoryCont">
             <div class="contBan">
                 <div class="header">INVENTORY</div>
-                <div class="gold" id="goldDisplay" data-gold="<%= gold %>">◈ <%= gold %>gp</div>
             </div>
             <div class="categoryCont">
                 <button class="cate active" data-category='all'>
@@ -264,9 +263,6 @@
                                         <div><span class="accountCharacterInfoText">XP</span><strong><%= accountSummary.xp %>/<%= accountSummary.maxXp %></strong></div>
                                     </div>
                                     <div class="accountSummaryTitle">SAVED PROGRESS</div>
-                                    <div class="accountSummaryGrid">
-                                        <div><span class="accountSavedInfoText">Gold</span><strong><%= accountSummary.gold %>gp</strong></div>
-                                    </div>
                                     <div class="accountSummaryTitle">INVENTORY</div>
                                     <div class="accountItemList">
                                         <% if (accountSummary.inventoryItems.length) { %>
@@ -366,7 +362,6 @@
                                             <button type="button" class="preResponse">What's happened so far?</button>
                                             <button type="button" class="preResponse">TEST: Make a random enemy fight</button>
                                             <button type="button" class="preResponse">TEST: Give me a random tool</button>
-                                            <button type="button" class="preResponse">TEST: Give me a random amount of gold</button>
                                         </div>
                                         <textarea name="prompt" placeholder="Describe your action or ask the DM..."
                                             id="chatbox" required><%= prompt || '' %></textarea>
@@ -743,12 +738,6 @@
         socket.on('account:update', (data) => {
             if (!data) return;
             if (Array.isArray(data.tools)) updateInventory(data.tools);
-            if (Number.isFinite(Number(data.weight)) && typeof updateWeightDisplay === 'function') {
-                updateWeightDisplay(Number(data.weight), Number(data.maxWeight));
-            }
-            if (Number.isFinite(Number(data.gold)) && typeof updateGoldDisplay === 'function') {
-                updateGoldDisplay(Number(data.gold));
-            }
             if (typeof refreshAccountPanel === 'function') refreshAccountPanel();
         });
     </script>

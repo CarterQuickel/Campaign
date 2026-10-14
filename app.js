@@ -104,7 +104,6 @@ initializeDatabase()
                         if (changed) {
                             io.to(`account:${account.id}`).emit('account:update', {
                                 tools: state.gameState.tools,
-                                gold: state.gameState.gold,
                                 hp: state.gameState.HP,
                                 level: state.getProgression().level,
                                 xp: state.getProgression().XP,
