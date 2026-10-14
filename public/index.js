@@ -608,7 +608,10 @@ function returnToChatAfterCombat() {
         combatOverlay.classList.remove('open');
         combatOverlay.setAttribute('aria-hidden', 'true');
         combatOverlay.dataset.phase = 'inactive';
+        combatOverlay.dataset.combatId = '';
     }
+    const combatIdInput = document.getElementById('active-combat-id');
+    if (combatIdInput) combatIdInput.value = '';
     if (typeof viewMobilePage === 'function' && window.matchMedia('(max-width: 767px)').matches) {
         viewMobilePage('chat');
     } else {
@@ -655,6 +658,11 @@ function updateCombatSnapshot(snapshot) {
 document.getElementById('text-scroll')?.addEventListener('click', event => {
     const prompt = event.target.closest('.encounterPrompt');
     if (!prompt) return;
+    if (!document.getElementById('active-combat-id')?.value
+        || combatOverlay?.dataset.phase === 'inactive') {
+        prompt.remove();
+        return;
+    }
     document.body.classList.add('combat-active');
     const questionPanel = document.getElementById('questionPanel');
     const chatPanel = document.getElementById('chat');
@@ -679,7 +687,10 @@ answerContainer?.addEventListener('click', async event => {
             const response = await fetch('/api/combat/answer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ answerId: button.dataset.answerId })
+                body: JSON.stringify({
+                    answerId: button.dataset.answerId,
+                    combatId: document.getElementById('active-combat-id')?.value
+                })
             });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to submit answer.');
@@ -713,7 +724,10 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
             const response = await fetch('/api/combat/attack', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ itemName: button.dataset.name })
+                body: JSON.stringify({
+                    itemName: button.dataset.name,
+                    combatId: document.getElementById('active-combat-id')?.value
+                })
             });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to attack.');
@@ -737,13 +751,21 @@ combatContinue?.addEventListener('click', async () => {
         const phase = combatOverlay.dataset.phase;
         endingPhase = phase;
         if (phase === 'result') {
-            const response = await fetch('/api/combat/continue', { method: 'POST' });
+            const response = await fetch('/api/combat/continue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    combatId: document.getElementById('active-combat-id')?.value
+                })
+            });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to return to the question.');
             updateCombatVitals(result);
             renderCombatQuestion(result.question);
         } else if (phase === 'won' || phase === 'lost') {
             combatContinue.disabled = true;
+            const resolvedCombatId = document.getElementById('active-combat-id')?.value;
+            const resolvedConversationId = document.getElementById('conversation-id')?.value;
             returnToChatAfterCombat();
             const chatContainer = document.getElementById('text-scroll');
             const enemyName = document.querySelector('.enemyTxt')?.textContent.trim() || 'the enemy';
@@ -761,8 +783,8 @@ combatContinue?.addEventListener('click', async () => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    combatId: document.getElementById('active-combat-id')?.value,
-                    conversationId: document.getElementById('conversation-id')?.value
+                    combatId: resolvedCombatId,
+                    conversationId: resolvedConversationId
                 })
             });
             const result = await response.json();

@@ -35,7 +35,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat }
                 conversationId,
                 onCombatStarted: result => { startedCombat = result; }
             }) || responseText).trim();
-            await conversations.saveMessage(conversationId, 'assistant', finalResponse);
+            await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
             let combatPrompt = null;
             if (startedCombat) {
                 await combat.prepareQuestion();

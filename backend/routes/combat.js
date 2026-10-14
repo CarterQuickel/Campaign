@@ -10,15 +10,15 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
     const router = express.Router();
     const pendingResolutions = new Map();
     router.post('/answer', (req, res) => {
-        const result = combat.answer(String(req.body.answerId || ''));
+        const result = combat.answer(String(req.body.answerId || ''), req.body.combatId);
         return res.status(result.status).json(result.body);
     });
     router.post('/attack', (req, res) => {
-        const result = combat.attack(req.body.itemName);
+        const result = combat.attack(req.body.itemName, req.body.combatId);
         return res.status(result.status).json(result.body);
     });
     router.post('/continue', async (req, res) => {
-        const result = await combat.continueCombat();
+        const result = await combat.continueCombat(req.body.combatId);
         return res.status(result.status).json(result.body);
     });
     router.post('/resolve', async (req, res) => {
