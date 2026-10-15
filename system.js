@@ -383,6 +383,7 @@ You take the Oracle Eye from the Oracle. The relic feels strangely warm in your 
     - Only use the combat API when its conditions
     are satisfied.
     - ONLY USE THE LIST OF ENEMIES FROM THE API
+    - Do not list the stats of an enemy or their possible attacks. That should all be mysterious to the player.
 
     ---
 

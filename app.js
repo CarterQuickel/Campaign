@@ -46,7 +46,9 @@ const combat = createCombatService({
     gameState: state.gameState,
     enemies,
     questionProvider: state.fetchQuestionForCurrentCourse,
-    recordCorrectAnswer: state.recordCorrectMasteryAnswer
+    recordCorrectAnswer: state.recordCorrectMasteryAnswer,
+    awardExperience: state.addExperience,
+    getProgression: state.getProgression
 });
 
 // app.set
@@ -119,7 +121,32 @@ initializeDatabase()
         });
         app.use('/api/game', auth.requireAuth);
         registerGameActionEndpoint(app, state.gameState);
-        app.use('/api/course', auth.requireAuth, createCourseRouter(state));
+        app.post('/api/settings/appearance', auth.requireAuth, async (req, res, next) => {
+            try {
+                const updated = state.updateAppearance({
+                    theme: req.body?.theme,
+                    mode: req.body?.mode,
+                    panelsHidden: req.body?.panelsHidden
+                });
+                if (!updated) return res.status(400).json({ success: false, message: 'Invalid appearance setting.' });
+                await accounts.saveState(req.accountId, state.getSnapshot());
+                return res.json({ success: true, appearance: { ...state.appearance } });
+            } catch (error) {
+                return next(error);
+            }
+        });
+        app.post('/api/campaign/restart', auth.requireAuth, async (req, res, next) => {
+            try {
+                await conversations.resetCampaign(req.accountId);
+                state.loadSnapshot(null);
+                combat.reset();
+                await accounts.saveState(req.accountId, state.getSnapshot());
+                return res.json({ success: true });
+            } catch (error) {
+                return next(error);
+            }
+        });
+        app.use('/api/course', auth.requireAuth, createCourseRouter(state, combat));
         app.post('/api/inventory/equip', auth.requireAuth, (req, res) => {
             const result = state.toggleToolEquipped(req.body?.name);
             res.status(result.success ? 200 : 400).json(result);

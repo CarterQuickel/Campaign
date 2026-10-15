@@ -2,11 +2,16 @@ const { classHP } = require('../healthCalc');
 const { Tools } = require('../StoryAPI/tools');
 
 // Player Stats
-const stats = [10, 3, 20, 15, 7, 14];
+const baseStats = [10, 10, 10, 10, 10, 10];
+const stats = baseStats.map(() => Math.floor(Math.random() * 11) + 10);
+const initialStats = [...stats];
 let level = 1;
 let XP = 0;
-let MAXXP = 800;
+let MAXXP = 1500;
+const initialMAXXP = MAXXP;
 const claimedMilestones = new Set();
+const defaultAppearance = { theme: 'default', mode: 'default', panelsHidden: false };
+const appearance = { ...defaultAppearance };
 
 const QUIZBANK_API = 'https://quizbank.yorktechapps.com/api';
 const MASTERY_COURSE_IDS = [10, 2];
@@ -150,14 +155,14 @@ function recordCorrectMasteryAnswer() {
 
 // Initialize Character Data
 const campaignClass = 'Barbarian';
-const initialConstitutionModifier = (stats[2] - 10) / 2;
 const initialClassStats = classHP.find(characterClass => characterClass.name === campaignClass);
 
 function getMaxHPForLevel(targetLevel = level, className = campaignClass) {
     const selectedClass = classHP.find(item => item.name === className) || initialClassStats;
     if (!selectedClass) return 0;
-    return Math.floor((selectedClass.default + initialConstitutionModifier)
-        + ((targetLevel - 1) * (initialConstitutionModifier + selectedClass.perLevel)));
+    const constitutionModifier = (stats[2] - 10) / 2;
+    return Math.floor((selectedClass.default + constitutionModifier)
+        + ((targetLevel - 1) * (constitutionModifier + selectedClass.perLevel)));
 }
 
 const gameState = {
@@ -172,14 +177,15 @@ const gameState = {
 
 // +XP
 function addExperience(experience) {
+    const previousLevel = level;
     XP += experience;
     while (XP >= MAXXP) {
         XP -= MAXXP;
         level += 1;
-        MAXXP *= 2;
-        gameState.HP = getMaxHPForLevel();
     }
-    gameState.HP = getMaxHPForLevel(level, gameState.charClass);
+    if (level > previousLevel) {
+        gameState.HP = getMaxHPForLevel(level, gameState.charClass);
+    }
 }
 function getProgression() {
     return { level, XP, MAXXP };
@@ -197,6 +203,18 @@ function updateCharacter({ name, origin, race, characterClass }) {
     return true;
 }
 
+function updateAppearance({ theme, mode, panelsHidden } = {}) {
+    const validThemes = ['default', 'red', 'green', 'blue'];
+    const validModes = ['default', 'light'];
+    if (theme !== undefined && !validThemes.includes(theme)) return false;
+    if (mode !== undefined && !validModes.includes(mode)) return false;
+    if (panelsHidden !== undefined && typeof panelsHidden !== 'boolean') return false;
+    if (theme !== undefined) appearance.theme = theme;
+    if (mode !== undefined) appearance.mode = mode;
+    if (panelsHidden !== undefined) appearance.panelsHidden = panelsHidden;
+    return true;
+}
+
 function getSnapshot() {
     return {
         gameState: {
@@ -206,6 +224,8 @@ function getSnapshot() {
         level,
         XP,
         MAXXP,
+        stats: [...stats],
+        appearance: { ...appearance },
         claimedMilestones: [...claimedMilestones],
         masteryCourseSets: JSON.parse(JSON.stringify(masteryCourseSets))
     };
@@ -217,7 +237,9 @@ function loadSnapshot(snapshot) {
         gameState.tools = initialGameState.tools.map(tool => ({ ...tool }));
         level = 1;
         XP = 0;
-        MAXXP = 800;
+        MAXXP = initialMAXXP;
+        stats.splice(0, stats.length, ...initialStats);
+        Object.assign(appearance, defaultAppearance);
         claimedMilestones.clear();
         masteryCourseSets.splice(0, masteryCourseSets.length, ...JSON.parse(JSON.stringify(defaultMasteryCourseSets)));
         return;
@@ -226,7 +248,22 @@ function loadSnapshot(snapshot) {
     if (Array.isArray(snapshot.gameState?.tools)) gameState.tools = snapshot.gameState.tools;
     level = Number(snapshot.level) || 1;
     XP = Number(snapshot.XP) || 0;
-    MAXXP = Number(snapshot.MAXXP) || 800;
+    MAXXP = Number(snapshot.MAXXP) || 1500;
+    const savedStats = Array.isArray(snapshot.stats) && snapshot.stats.length === stats.length
+        ? snapshot.stats.map(Number)
+        : initialStats;
+    stats.splice(0, stats.length, ...savedStats.map((score, index) => (
+        Number.isInteger(score) && score >= 1 && score <= 30 ? score : initialStats[index]
+    )));
+    appearance.theme = ['default', 'red', 'green', 'blue'].includes(snapshot.appearance?.theme)
+        ? snapshot.appearance.theme
+        : defaultAppearance.theme;
+    appearance.mode = ['default', 'light'].includes(snapshot.appearance?.mode)
+        ? snapshot.appearance.mode
+        : defaultAppearance.mode;
+    appearance.panelsHidden = typeof snapshot.appearance?.panelsHidden === 'boolean'
+        ? snapshot.appearance.panelsHidden
+        : defaultAppearance.panelsHidden;
     gameState.HP = getMaxHPForLevel(level, gameState.charClass);
     claimedMilestones.clear();
     (snapshot.claimedMilestones || []).forEach(milestone => claimedMilestones.add(Number(milestone)));
@@ -238,6 +275,7 @@ function loadSnapshot(snapshot) {
 module.exports = {
     addExperience,
     claimedMilestones,
+    characterClasses: classHP.map(characterClass => characterClass.name),
     gameState,
     fetchQuestionForCurrentCourse,
     getSnapshot,
@@ -249,5 +287,7 @@ module.exports = {
     recordCorrectMasteryAnswer,
     setCurrentMasteryUnit,
     stats,
+    appearance,
+    updateAppearance,
     updateCharacter
 };

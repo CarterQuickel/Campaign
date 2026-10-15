@@ -145,7 +145,7 @@ textarea::placeholder, input::placeholder {
     color: var(--placeholder-color);
     font-weight: 400;
 }
-textarea:focus, input:focus {
+textarea:focus, input:focus, select:focus {
     outline: none;
     border-color: var(--focus-color);
     box-shadow: 0 0 0 3px var(--focus-shadow);
@@ -156,6 +156,19 @@ input {
     box-sizing: border-box;
     background-color: var(--background-color);
     resize: none;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    color: var(--text-color);
+    font-weight: 400;
+}
+select {
+    height: 55px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    background-color: var(--background-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;

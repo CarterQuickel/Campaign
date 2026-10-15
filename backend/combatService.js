@@ -14,7 +14,7 @@ function rollDamage(expression) {
 }
 
 // Initialize Combat
-function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null }) {
+function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null, awardExperience = () => {}, getProgression = () => null }) {
     let enemy = null;
     let enemyHP = 0;
     let playerHP = Math.max(0, Math.floor(gameState.HP));
@@ -58,6 +58,23 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         if (damage === null) return null;
         playerHP = Math.max(0, playerHP - damage);
         return { name: attack.header, damage, playerHP };
+    }
+
+    function healPlayerToMax() {
+        playerHP = Math.max(0, Math.floor(gameState.HP));
+        return playerHP;
+    }
+
+    function reset() {
+        enemy = null;
+        enemyHP = 0;
+        playerHP = Math.max(0, Math.floor(gameState.HP));
+        phase = 'inactive';
+        combatQuestion = null;
+        conversationId = null;
+        resolvingCombatId = null;
+        combatId += 1;
+        completedResolutions.clear();
     }
 
     // Answer Question
@@ -128,6 +145,12 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         enemyHP = Math.max(0, enemyHP - damage);
         const enemyAttack = enemyHP > 0 ? performEnemyAttack() : null;
         phase = enemyHP <= 0 ? 'won' : playerHP <= 0 ? 'lost' : 'result';
+        const xpAwarded = phase === 'won' ? Math.max(0, Math.floor(Number(enemy.xpReward) || 0)) : 0;
+        if (xpAwarded > 0) {
+            const previousMaxHP = gameState.HP;
+            awardExperience(xpAwarded);
+            if (gameState.HP > previousMaxHP) playerHP = Math.floor(gameState.HP);
+        }
         return {
             status: 200,
             body: {
@@ -136,9 +159,11 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
                 enemyHP,
                 playerHP,
                 enemyAttack,
+                xpAwarded,
+                progression: xpAwarded > 0 ? getProgression() : null,
                 phase,
                 message: enemyHP <= 0
-                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated!`
+                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated! You gain ${xpAwarded} XP.`
                     : `${item.name} deals ${damage} damage.${enemyAttack ? ` ${enemy.name} uses ${enemyAttack.name} for ${enemyAttack.damage} damage.` : ''}`
             }
         };
@@ -231,7 +256,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         };
     }
 
-    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, prepareQuestion, start };
+    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start };
 }
 
 module.exports = { createCombatService };
