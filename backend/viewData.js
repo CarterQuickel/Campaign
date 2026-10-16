@@ -43,6 +43,8 @@ function createViewData({ state, combat, conversations, ai }) {
             formbarName,
             online: await ai.checkStatus(),
             stats: state.stats,
+            appearance: state.appearance,
+            characterClasses: state.characterClasses,
             tools: state.gameState.tools,
             mastery: state.masteryCourseSets,
             ...progression,
@@ -70,6 +72,7 @@ function createViewData({ state, combat, conversations, ai }) {
         const snapshot = combat.getSnapshot();
         return {
             stats: state.stats,
+            appearance: state.appearance,
             online: await ai.checkStatus(),
             tools: state.gameState.tools,
             mastery: state.masteryCourseSets,

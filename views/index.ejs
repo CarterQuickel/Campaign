@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="default" data-mode="default">
+<html lang="en" data-theme="<%= appearance.theme %>" data-mode="<%= appearance.mode %>">
 
 <head>
     <meta charset="UTF-8">
@@ -60,13 +60,6 @@
                             </div>
                         </div>
                         <% }); %>
-                </div>
-                <div class="horiz"></div>
-                <div class="stat">
-                    <div class="statType">HP</div>
-                    <div class="statNum" id="playerHPDisplay">
-                        <%= playerHP %>/<%= charData.HP %>
-                    </div>
                 </div>
                 <div class="horiz mobileHidden"></div>
                 <div class="status">
@@ -208,10 +201,10 @@
                             <div class="toggleCont panels">
                                 <div class="desc">
                                     <div class="name">Hide Side Panels</div>
-                                    <div class="info">Temporarily hide inventory and course</div>
+                                    <div class="info">Hide inventory and course panels</div>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" onclick="hidePanels()">
+                                    <input type="checkbox" onchange="changePanelsVisibility(this)" <%= appearance.panelsHidden ? 'checked' : '' %>>
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -221,7 +214,7 @@
                                     <div class="info">Blind your eyes for a more retro feel</div>
                                 </div>
                                 <label class="switch">
-                                    <input type="checkbox" onclick="changeMode()">
+                                    <input type="checkbox" onchange="changeMode(this)" <%= appearance.mode === 'light' ? 'checked' : '' %>>
                                     <span class="slider round"></span>
                                 </label>
                             </div>
@@ -240,7 +233,11 @@
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Class</div>
-                                <textarea name="class" class="class"><%= charData.class %></textarea>
+                                <select name="class" class="class" aria-label="Character class">
+                                    <% characterClasses.forEach(characterClass => { %>
+                                        <option value="<%= characterClass %>" <%= characterClass === charData.class ? 'selected' : '' %>><%= characterClass %></option>
+                                    <% }); %>
+                                </select>
                             </div>
                             <div class="textareaCont">
                                 <div class="textTitle">Race</div>
@@ -262,7 +259,6 @@
                                         <div><span class="accountCharacterInfoText">HP</span><strong><%= accountSummary.hp %></strong></div>
                                         <div><span class="accountCharacterInfoText">XP</span><strong><%= accountSummary.xp %>/<%= accountSummary.maxXp %></strong></div>
                                     </div>
-                                    <div class="accountSummaryTitle">SAVED PROGRESS</div>
                                     <div class="accountSummaryTitle">INVENTORY</div>
                                     <div class="accountItemList">
                                         <% if (accountSummary.inventoryItems.length) { %>
@@ -283,7 +279,7 @@
                         </div>
                         <div class="settingCate disabled" data-setting="data">
                             <div class="header">Danger Zone</div>
-                            <button class="new-conversation" type="button" onclick="window.location.href='/'"
+                            <button class="new-conversation" type="button" id="restartCampaignBtn"
                                 style="margin-right: 10px;">
                                 RESTART CAMPAIGN
                             </button>
@@ -298,6 +294,13 @@
                         </div>
                         <progress id="enemyHPBar" value="<%= enemyHP %>" max="<%= enemies.HP %>"></progress>
                     </div>
+                    <div class="enemyHP" style="margin-top: -50px;">
+                        <div class="enemCont">
+                            <label class="enemyTxt">You</label>
+                            <div class="HPTxt" id="playerHPDisplay"><%= playerHP %>/<%= charData.HP %> HP</div>
+                        </div>
+                        <progress id="playerHPBar" class="playerPB" value="<%= playerHP %>" max="<%= charData.HP %>"></progress>
+                    </div>
                     <div class="question"><%= combatQuestion.prompt %></div>
                     <div class="answerCont">
                         <% combatQuestion.answers.forEach(answer => { %>
@@ -311,15 +314,6 @@
                 </div>
                 <div class="response-box" id="chat">
                     <% if (conversations && conversations.length) { %>
-                        <div class="savedChatsPanel">
-                            <div class="savedChatsTitle">SAVED CHATS</div>
-                            <div class="savedChatsList">
-                                <% conversations.forEach(chat => { %>
-                                    <a class="savedChatLink <%= Number(conversationId) === Number(chat.id) ? 'active' : '' %>"
-                                        href="/?conversationId=<%= chat.id %>"><%= chat.title %></a>
-                                <% }); %>
-                            </div>
-                        </div>
                     <% } %>
                     <div id="text-scroll" class="chat-container" data-response-pending="<%= responsePending ? 'true' : 'false' %>">
                         <% if (typeof messages !=='undefined' && messages && messages.length) { %>
@@ -613,32 +607,71 @@
         }
 
         // Change theme
-        function changeTheme(themeName) {
+        let appearanceSaveQueue = Promise.resolve();
+
+        function persistAppearance(settings) {
+            appearanceSaveQueue = appearanceSaveQueue.catch(() => {}).then(async () => {
+                const response = await fetch('/api/settings/appearance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to save appearance settings.');
+            });
+            return appearanceSaveQueue;
+        }
+
+        async function changeTheme(themeName) {
+            const root = document.documentElement;
+            const previousTheme = root.getAttribute('data-theme');
             document.documentElement.setAttribute('data-theme', themeName);
+            try {
+                await persistAppearance({ theme: themeName });
+            } catch (error) {
+                console.error('Unable to save theme:', error);
+                if (root.getAttribute('data-theme') === themeName) root.setAttribute('data-theme', previousTheme);
+            }
         }
 
         // Change mode
-        function changeMode() {
-            const attribute = document.documentElement.getAttribute('data-mode');
-            if (attribute === 'default') {
-                document.documentElement.setAttribute('data-mode', 'light');
-            } else {
-                document.documentElement.setAttribute('data-mode', 'default');
+        async function changeMode(input) {
+            const root = document.documentElement;
+            const previousMode = root.getAttribute('data-mode');
+            const nextMode = input.checked ? 'light' : 'default';
+            root.setAttribute('data-mode', nextMode);
+            try {
+                await persistAppearance({ mode: nextMode });
+            } catch (error) {
+                console.error('Unable to save color mode:', error);
+                if (root.getAttribute('data-mode') === nextMode) {
+                    root.setAttribute('data-mode', previousMode);
+                    input.checked = previousMode === 'light';
+                }
             }
         }
 
-        // Hide inventory and Courses
-        function hidePanels() {
-            const inventory = document.getElementById("inventoryCont");
-            const course = document.getElementById("combatCont");
-            const currentlyHidden = inventory.style.display === "none" || course.style.display === "none";
-            if (currentlyHidden) {
-                inventory.style.display = "flex";
-                course.style.display = "flex";
-            } else {
-                inventory.style.display = "none";
-                course.style.display = "none";
+        async function changePanelsVisibility(input) {
+            const inventory = document.getElementById('inventoryCont');
+            const course = document.getElementById('combatCont');
+            const previousValue = !input.checked;
+            const applyVisibility = hidden => {
+                inventory.style.display = hidden ? 'none' : 'flex';
+                course.style.display = hidden ? 'none' : 'flex';
+            };
+            applyVisibility(input.checked);
+            try {
+                await persistAppearance({ panelsHidden: input.checked });
+            } catch (error) {
+                console.error('Unable to save panel visibility:', error);
+                input.checked = previousValue;
+                applyVisibility(previousValue);
             }
+        }
+
+        if (document.querySelector('.toggleCont.panels input')?.checked) {
+            document.getElementById('inventoryCont').style.display = 'none';
+            document.getElementById('combatCont').style.display = 'none';
         }
 
         // Hide or show settings

@@ -14,7 +14,7 @@ function rollDamage(expression) {
 }
 
 // Initialize Combat
-function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null }) {
+function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null, awardExperience = () => {}, getProgression = () => null }) {
     let enemy = null;
     let enemyHP = 0;
     let playerHP = Math.max(0, Math.floor(gameState.HP));
@@ -60,6 +60,23 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         return { name: attack.header, damage, playerHP };
     }
 
+    function healPlayerToMax() {
+        playerHP = Math.max(0, Math.floor(gameState.HP));
+        return playerHP;
+    }
+
+    function reset() {
+        enemy = null;
+        enemyHP = 0;
+        playerHP = Math.max(0, Math.floor(gameState.HP));
+        phase = 'inactive';
+        combatQuestion = null;
+        conversationId = null;
+        resolvingCombatId = null;
+        combatId += 1;
+        completedResolutions.clear();
+    }
+
     // Answer Question
     function answer(answerId, requestedCombatId) {
         if (Number(requestedCombatId) !== combatId) {
@@ -81,6 +98,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             correctAnswerId: combatQuestion.correctAnswerId,
             enemyHP,
             playerHP,
+            playerMaxHP: gameState.HP,
             canAttack: correct,
             phase: correct ? 'attack' : 'result',
             mastery: correct ? recordCorrectAnswer() : null
@@ -126,8 +144,13 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             return { status: 400, body: { success: false, message: 'That item has an invalid damage roll.' } };
         }
         enemyHP = Math.max(0, enemyHP - damage);
-        const enemyAttack = enemyHP > 0 ? performEnemyAttack() : null;
-        phase = enemyHP <= 0 ? 'won' : playerHP <= 0 ? 'lost' : 'result';
+        phase = enemyHP <= 0 ? 'won' : 'result';
+        const xpAwarded = phase === 'won' ? Math.max(0, Math.floor(Number(enemy.xpReward) || 0)) : 0;
+        if (xpAwarded > 0) {
+            const previousMaxHP = gameState.HP;
+            awardExperience(xpAwarded);
+            if (gameState.HP > previousMaxHP) playerHP = Math.floor(gameState.HP);
+        }
         return {
             status: 200,
             body: {
@@ -135,11 +158,13 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
                 damage,
                 enemyHP,
                 playerHP,
-                enemyAttack,
+                playerMaxHP: gameState.HP,
+                xpAwarded,
+                progression: xpAwarded > 0 ? getProgression() : null,
                 phase,
                 message: enemyHP <= 0
-                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated!`
-                    : `${item.name} deals ${damage} damage.${enemyAttack ? ` ${enemy.name} uses ${enemyAttack.name} for ${enemyAttack.damage} damage.` : ''}`
+                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated! You gain ${xpAwarded} XP.`
+                    : `${item.name} deals ${damage} damage.`
             }
         };
     }
@@ -163,7 +188,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         }
         combatQuestion = nextQuestion;
         phase = 'question';
-        return { status: 200, body: { success: true, enemyHP, playerHP, question: getPublicQuestion(combatQuestion) } };
+        return { status: 200, body: { success: true, enemyHP, playerHP, playerMaxHP: gameState.HP, question: getPublicQuestion(combatQuestion) } };
     }
 
     function canResolve(requestedCombatId, requestedConversationId) {
@@ -210,6 +235,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             enemy: enemy || enemies[0],
             enemyHP,
             playerHP,
+            playerMaxHP: gameState.HP,
             phase,
             active: Boolean(enemy),
             combatId,
@@ -231,7 +257,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         };
     }
 
-    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, prepareQuestion, start };
+    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start };
 }
 
 module.exports = { createCombatService };

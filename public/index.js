@@ -469,6 +469,22 @@ function updateClaimableMilestones() {
 }
 updateClaimableMilestones();
 
+document.getElementById('restartCampaignBtn')?.addEventListener('click', async event => {
+    const button = event.currentTarget;
+    if (!window.confirm('Restart the campaign? This will erase your character progress and saved conversations.')) return;
+    button.disabled = true;
+    try {
+        const response = await fetch('/api/campaign/restart', { method: 'POST' });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Unable to restart the campaign.');
+        window.location.assign('/');
+    } catch (error) {
+        console.error('Unable to restart campaign:', error);
+        window.alert(error.message || 'Unable to restart the campaign.');
+        button.disabled = false;
+    }
+});
+
 // Click on milestone
 document.querySelectorAll('.milestone .section').forEach(milestone => {
     milestone.addEventListener('click', async () => {
@@ -594,12 +610,28 @@ function updateCombatVitals(result) {
         }
     }
     if (Number.isFinite(Number(result.playerHP))) {
+        const playerHPBar = document.getElementById('playerHPBar');
         const playerHPDisplay = document.getElementById('playerHPDisplay');
-        if (playerHPDisplay) {
-            const maxHP = playerHPDisplay.textContent.trim().split('/')[1];
-            playerHPDisplay.textContent = `${result.playerHP}/${maxHP}`;
+        if (playerHPBar) {
+            if (Number.isFinite(Number(result.playerMaxHP))) playerHPBar.max = Number(result.playerMaxHP);
+            playerHPBar.value = Number(result.playerHP);
+        }
+        if (playerHPDisplay && playerHPBar) {
+            playerHPDisplay.textContent = `${result.playerHP}/${playerHPBar.max} HP`;
         }
     }
+}
+
+function updateProgressionDisplay(progression) {
+    if (!progression) return;
+    const xpTxt = document.getElementById('xpTxt');
+    const xpProgress = document.getElementById('xpprogress');
+    const levelTxt = document.getElementById('levelTxt');
+    const levelBanner = document.getElementById('level');
+    if (xpTxt) xpTxt.textContent = `${progression.XP}/${progression.MAXXP} XP`;
+    if (xpProgress) xpProgress.value = progression.XP;
+    if (levelTxt) levelTxt.textContent = `Level ${progression.level}`;
+    if (levelBanner) levelBanner.textContent = progression.level;
 }
 
 function showCombatPanel({ correct, message = '', showAttacks = false, phase = 'result' }) {
@@ -753,6 +785,7 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to attack.');
             updateCombatVitals(result);
+            updateProgressionDisplay(result.progression);
             showCombatPanel({
                 correct: true,
                 message: result.message,

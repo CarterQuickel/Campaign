@@ -9,38 +9,6 @@
     scrollbar-color: var(--accent-color) transparent;
     scrollbar-width: thin;
 }
-.savedChatsPanel {
-    border-bottom: 1px solid var(--site-border);
-    padding: 10px;
-}
-.savedChatsTitle {
-    color: var(--accent-color);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-}
-.savedChatsList {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-}
-.savedChatLink {
-    border: 1px solid var(--site-border);
-    border-radius: 6px;
-    color: var(--text-color);
-    max-width: 220px;
-    overflow: hidden;
-    padding: 7px 10px;
-    text-decoration: none;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.savedChatLink:hover,
-.savedChatLink.active {
-    background: var(--active-color);
-    border-color: var(--accent-color);
-}
 .message {
     display: flex;
     width: 100%;

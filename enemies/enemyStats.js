@@ -4,6 +4,7 @@ module.exports = {
             name: "Death Possessor",
             image: "/enemies/enemy_images/Death_Possessor.jpg",
             HP: 19,
+            xpReward: 200,
             AC: 16,
             attacks: {
                 atk1: {
@@ -24,6 +25,7 @@ module.exports = {
             name: "Bull Rider",
             image: "/enemies/enemy_images/Bull_Rider.jpg",
             HP: 22,
+            xpReward: 250,
             AC: 14,
             attacks: {
                 atk1: {
@@ -44,6 +46,7 @@ module.exports = {
             name: "Fire Goblin",
             image: "/enemies/enemy_images/Fire_Goblin.jpg",
             HP: 8,
+            xpReward: 100,
             AC: 12,
             attacks: {
                 atk1: {
@@ -64,6 +67,7 @@ module.exports = {
             name: "Fallen King",
             image: "/enemies/enemy_images/story1/Fallen_King.jpg",
             HP: 27,
+            xpReward: 1000,
             AC: 13,
             attacks: {
                 atk1: {
@@ -84,6 +88,7 @@ module.exports = {
             name: "Death Blossom",
             image: "/enemies/enemy_images/story1/Death_Blossom.jpg",
             HP: 41,
+            xpReward: 1400,
             AC: 15,
             attacks: {
                 atk1: {
@@ -112,6 +117,7 @@ module.exports = {
             name: "Gaping Serpent",
             image: "/enemies/enemy_images/story1/Gaping_Serpent.jpg",
             HP: 63,
+            xpReward: 1900,
             AC: 13,
             attacks: {
                 atk1: {
@@ -136,6 +142,7 @@ module.exports = {
             name: "Red-Maned Wolf",
             image: "/enemies/enemy_images/story1/Red-Maned_Wolf.jpg",
             HP: 39,
+            xpReward: 1600,
             AC: 15,
             attacks: {
                 atk1: {
@@ -160,6 +167,7 @@ module.exports = {
             name: "Supaida",
             image: "/enemies/enemy_images/story1/Supaida.jpg",
             HP: 28,
+            xpReward: 900,
             AC: 15,
             attacks: {
                 atk1: {
@@ -184,6 +192,7 @@ module.exports = {
             name: "Withstander",
             image: "/enemies/enemy_images/story1/Withstander.jpg",
             HP: 36,
+            xpReward: 500,
             AC: 15,
             attacks: {
                 atk1: {
@@ -204,6 +213,7 @@ module.exports = {
             name: "The Oracle",
             image: "/enemies/enemy_images/story1/The_Oracle.jpg",
             HP: 101,
+            xpReward: 15000,
             AC: 15,
             attacks: {
                 atk1: {
@@ -224,6 +234,7 @@ module.exports = {
             name: "Alternate X",
             image: "/enemies/enemy_images/story1/Alternate_X.jpg",
             HP: 376,
+            xpReward: 20000,
             AC: 15,
             attacks: {
                 atk1: {
@@ -260,6 +271,7 @@ module.exports = {
             name: "The Forthcoming",
             image: "/enemies/enemy_images/story1/Forthcoming.jpg",
             HP: 908,
+            xpReward: 80000,
             AC: 17,
             attacks: {
                 atk1: {

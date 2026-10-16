@@ -46,6 +46,22 @@ function createConversationRepository(database) {
         });
     }
 
+    async function resetCampaign(userId) {
+        const conversations = await new Promise((resolve, reject) => {
+            database.all('SELECT id FROM conversations WHERE user_id = ?', [userId],
+                (error, rows) => error ? reject(error) : resolve(rows));
+        });
+        conversations.forEach(({ id }) => pendingResponses.delete(Number(id)));
+        await new Promise((resolve, reject) => {
+            database.run('DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE user_id = ?)', [userId],
+                error => error ? reject(error) : resolve());
+        });
+        await new Promise((resolve, reject) => {
+            database.run('DELETE FROM conversations WHERE user_id = ?', [userId],
+                error => error ? reject(error) : resolve());
+        });
+    }
+
     function setResponsePending(conversationId, pending, prompt = null) {
         if (pending) pendingResponses.set(Number(conversationId), prompt);
         else pendingResponses.delete(Number(conversationId));
@@ -74,6 +90,7 @@ function createConversationRepository(database) {
         getPendingPrompt,
         getRecentMessages,
         isResponsePending,
+        resetCampaign,
         saveMessage,
         setResponsePending
     };
