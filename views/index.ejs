@@ -61,13 +61,6 @@
                         </div>
                         <% }); %>
                 </div>
-                <div class="horiz"></div>
-                <div class="stat">
-                    <div class="statType">HP</div>
-                    <div class="statNum" id="playerHPDisplay">
-                        <%= playerHP %>/<%= charData.HP %>
-                    </div>
-                </div>
                 <div class="horiz mobileHidden"></div>
                 <div class="status">
                     <div class="dot <%= online ? 'online' : 'offline' %>"></div>
@@ -300,6 +293,13 @@
                             <div class="HPTxt" id="enemyHPText"><%= enemyHP %>/<%= enemies.HP %> HP</div>
                         </div>
                         <progress id="enemyHPBar" value="<%= enemyHP %>" max="<%= enemies.HP %>"></progress>
+                    </div>
+                    <div class="enemyHP" style="margin-top: -50px;">
+                        <div class="enemCont">
+                            <label class="enemyTxt">You</label>
+                            <div class="HPTxt" id="playerHPDisplay"><%= playerHP %>/<%= charData.HP %> HP</div>
+                        </div>
+                        <progress id="playerHPBar" class="playerPB" value="<%= playerHP %>" max="<%= charData.HP %>"></progress>
                     </div>
                     <div class="question"><%= combatQuestion.prompt %></div>
                     <div class="answerCont">

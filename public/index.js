@@ -610,10 +610,14 @@ function updateCombatVitals(result) {
         }
     }
     if (Number.isFinite(Number(result.playerHP))) {
+        const playerHPBar = document.getElementById('playerHPBar');
         const playerHPDisplay = document.getElementById('playerHPDisplay');
-        if (playerHPDisplay) {
-            const maxHP = playerHPDisplay.textContent.trim().split('/')[1];
-            playerHPDisplay.textContent = `${result.playerHP}/${maxHP}`;
+        if (playerHPBar) {
+            if (Number.isFinite(Number(result.playerMaxHP))) playerHPBar.max = Number(result.playerMaxHP);
+            playerHPBar.value = Number(result.playerHP);
+        }
+        if (playerHPDisplay && playerHPBar) {
+            playerHPDisplay.textContent = `${result.playerHP}/${playerHPBar.max} HP`;
         }
     }
 }

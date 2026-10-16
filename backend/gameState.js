@@ -181,6 +181,7 @@ function addExperience(experience) {
     XP += experience;
     while (XP >= MAXXP) {
         XP -= MAXXP;
+        MAXXP = Math.floor(MAXXP * 1.2);
         level += 1;
     }
     if (level > previousLevel) {
