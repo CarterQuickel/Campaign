@@ -242,7 +242,8 @@ input:checked + .slider:before {
     font-weight: 700;
     font-size: 16px;
 }
-.settingCate textarea {
+.settingCate textarea,
+.settingCate select {
     width: 75%;
     margin: 10px;
 }

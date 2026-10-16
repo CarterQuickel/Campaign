@@ -100,7 +100,8 @@
         flex-direction: column;
         position: relative;
     }
-    .settingCate textarea {
+    .settingCate textarea,
+    .settingCate select {
         width: 95%;
     }
     .toggleCont.panels {

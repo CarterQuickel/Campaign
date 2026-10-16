@@ -7,7 +7,7 @@ module.exports = {
             AC: 0,
             desc: "A sword that inflcts fear into the enemy, its laser blade glowing a deep crimson.",
             weight: 14,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Herectic Medallion",
@@ -16,7 +16,7 @@ module.exports = {
             AC: 0,
             desc: "A medallion that radiates a dark aura, granting the wearer resistance to psychic attacks.",
             weight: 2,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Dragonscale Armor",
@@ -25,7 +25,7 @@ module.exports = {
             AC: 7,
             desc: "An ancient aspect of armor that grants immunity to lightning attacks.",
             weight: 67,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Potion of Luck",
@@ -43,7 +43,7 @@ module.exports = {
             AC: 0,
             desc: "A magical wand that allows the user to alter the properties of objects.",
             weight: 4,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Holy Twin Blades",
@@ -52,7 +52,7 @@ module.exports = {
             AC: 0,
             desc: "A pair of enchanted blades that glow with holy light.",
             weight: 6,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Grand Alchemist's Temper",
@@ -70,7 +70,7 @@ module.exports = {
             AC: 0,
             desc: "A mysterious notebook that allows the user to kill anyone whose name is written in it, but only if they know the person's face, and they have a pen to write with.",
             weight: 1,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Death Note (with pen)",
@@ -79,7 +79,7 @@ module.exports = {
             AC: 0,
             desc: "A mysterious notebook that allows the user to kill anyone whose name is written in it, but only if they know the person's face.",
             weight: 2,
-            unlocked: true
+            unlocked: false
         },
         {
             name: "Onyx Daggers",

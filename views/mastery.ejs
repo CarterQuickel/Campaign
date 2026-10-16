@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="<%= appearance.theme %>" data-mode="<%= appearance.mode %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,11 +48,6 @@
                         </div>
                     </div>
                 <% }); %>
-            </div>
-            <div class="horiz"></div>
-            <div class="stat">
-                <div class="statType">HP</div>
-                <div class="statNum" data-realtime-hp><%= playerHP %>/<%= charData.HP %></div>
             </div>
             <div class="horiz"></div>
             <div class="status">

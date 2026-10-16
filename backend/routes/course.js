@@ -18,7 +18,7 @@ async function fetchQuizbankCourse(courseId) {
 }
 
 // Course Progress
-function createCourseRouter(state) {
+function createCourseRouter(state, combat = null) {
     const router = express.Router();
     router.post('/mastery/current', (req, res) => {
         const selected = state.setCurrentMasteryUnit(req.body?.courseId, req.body?.unitId);
@@ -65,8 +65,10 @@ function createCourseRouter(state) {
             return res.status(409).json({ success: false, message: 'Milestone has already been claimed.' });
         }
         state.claimedMilestones.add(requiredProgress);
-        state.addExperience(experience);
+        const previousLevel = state.getProgression().level;
+        state.addExperience(reward);
         const progression = state.getProgression();
+        if (progression.level > previousLevel) combat?.healPlayerToMax();
         return res.json({ success: true, xp: progression.XP, maxXp: progression.MAXXP, level: progression.level });
     });
     return router;
