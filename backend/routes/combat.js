@@ -3,10 +3,11 @@ const { system } = require('../../system');
 const { stories } = require('../../StoryAPI/stories');
 const { landmarks } = require('../../StoryAPI/landmarks');
 const { storySpecRewards } = require('../../StoryAPI/storySpecRewards');
+const { Tools } = require('../../StoryAPI/tools');
 const { enemies } = require('../../enemies/enemyStats');
 
 // Combat
-function createCombatRouter({ combat, ai, conversations, actions }) {
+function createCombatRouter({ combat, ai, conversations, actions, storyDocument }) {
     const router = express.Router();
     const pendingResolutions = new Map();
     router.post('/answer', (req, res) => {
@@ -45,7 +46,8 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
                     response: cachedResponse,
                     alreadyResolved: true,
                     playerHP: combat.getSnapshot().playerHP
-                }
+                },
+                storyDocument
             };
         }
         if (!conversationId) {
@@ -57,11 +59,27 @@ function createCombatRouter({ combat, ai, conversations, actions }) {
         }
         try {
             const history = await conversations.getRecentMessages(accountId, conversationId);
+            const storyRewardItems = storySpecRewards.flatMap(story => story.rewards || []);
+            const itemCatalog = [...Tools, ...storyRewardItems]
+                .filter((item, index, items) => items.findIndex(candidate => candidate.name === item.name) === index)
+                .map(({ name, CharacterClass, class: itemClass, damage, AC, desc, weight }) => ({
+                    name,
+                    CharacterClass: CharacterClass || 'Any',
+                    class: itemClass,
+                    damage,
+                    AC,
+                    desc,
+                    weight
+                }));
             const storyContext = {
                 stories,
                 landmarks,
                 storySpecRewards,
+                availableItems: itemCatalog.map(item => item.name),
+                itemCatalog,
+                enemyCatalog: enemies.map(({ name, HP, AC, attacks }) => ({ name, HP, AC, attacks })),
                 enemies: enemies.map(enemy => enemy.name),
+                storyDocument,
                 currentEncounter: {
                     enemy: snapshot.enemy.name,
                     outcome: snapshot.phase,

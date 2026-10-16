@@ -24,7 +24,7 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum"><%= level %></div>
+                    <div class="statNum" data-realtime-level><%= level %></div>
                 </div>
                 <div class="stat">
                     <div class="statType">PROF</div>
@@ -52,7 +52,7 @@
             <div class="horiz"></div>
             <div class="stat">
                 <div class="statType">HP</div>
-                <div class="statNum"><%= playerHP %>/<%= charData.HP %></div>
+                <div class="statNum" data-realtime-hp><%= playerHP %>/<%= charData.HP %></div>
             </div>
             <div class="horiz"></div>
             <div class="status">
@@ -202,4 +202,6 @@
         });
     });
 </script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/realtime.js"></script>
 </html>

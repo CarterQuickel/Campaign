@@ -49,12 +49,13 @@ function createCourseRouter(state) {
 
     router.post('/claim', (req, res) => {
         const requiredProgress = Number(req.body.requiredProgress);
+        const experience = Number(req.body.experience);
         const milestoneRewards = new Map([[5, 500], [15, 1500], [30, 3000], [50, 5000], [75, 7500], [100, 10000]]);
         const currentSection = state.masteryCourseSets
             .flatMap(courseSet => courseSet.sections)
             .find(section => section.current);
-        const reward = milestoneRewards.get(requiredProgress);
-        if (!currentSection || reward === undefined) {
+        const expectedExperience = milestoneRewards.get(requiredProgress);
+        if (!currentSection || expectedExperience !== experience) {
             return res.status(400).json({ success: false, message: 'Invalid milestone.' });
         }
         if (currentSection.completion < requiredProgress) {
@@ -64,7 +65,7 @@ function createCourseRouter(state) {
             return res.status(409).json({ success: false, message: 'Milestone has already been claimed.' });
         }
         state.claimedMilestones.add(requiredProgress);
-        state.addExperience(reward);
+        state.addExperience(experience);
         const progression = state.getProgression();
         return res.json({ success: true, xp: progression.XP, maxXp: progression.MAXXP, level: progression.level });
     });

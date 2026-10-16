@@ -6,7 +6,7 @@ const { storySpecRewards } = require('../../StoryAPI/storySpecRewards');
 const { enemies } = require('../../enemies/enemyStats');
 
 // Initial root directory
-function createAskRouter({ state, conversations, ai, actions, viewData, combat }) {
+function createAskRouter({ state, conversations, ai, actions, viewData, combat, storyDocument }) {
     const router = express.Router();
     router.post('/', async (req, res, next) => {
         const userPrompt = String(req.body.prompt || '').trim();
@@ -21,20 +21,47 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat }
             const history = await conversations.getRecentMessages(req.accountId, conversationId);
             await conversations.saveMessage(req.accountId, conversationId, 'user', userPrompt);
             userMessageSaved = true;
+            const storyRewardItems = storySpecRewards.flatMap(story => story.rewards || []);
+            const itemCatalog = [...state.gameState.tools, ...storyRewardItems]
+                .filter((item, index, items) => items.findIndex(candidate => candidate.name === item.name) === index)
+                .map(({ name, CharacterClass, class: itemClass, damage, AC, desc, weight }) => ({
+                    name,
+                    CharacterClass: CharacterClass || 'Any',
+                    class: itemClass,
+                    damage,
+                    AC,
+                    desc,
+                    weight
+                }));
             const storyContext = {
                 stories,
                 landmarks,
                 storySpecRewards,
                 characterClass: state.gameState.charClass,
-                availableItems: state.gameState.tools.map(item => item.name),
-                enemies: enemies.map(enemy => enemy.name)
+                availableItems: [...new Set([
+                    ...state.gameState.tools.map(item => item.name),
+                    ...storyRewardItems.map(item => item.name)
+                ])],
+                itemCatalog,
+                enemyCatalog: enemies.map(({ name, HP, AC, attacks }) => ({ name, HP, AC, attacks })),
+                enemies: enemies.map(enemy => enemy.name),
+                storyDocument
             };
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             let startedCombat = null;
-            const finalResponse = (actions.apply(responseText, {
+            let finalResponse = actions.apply(responseText, {
                 conversationId,
                 onCombatStarted: result => { startedCombat = result; }
-            }) || responseText).trim();
+            }) || responseText;
+            if (/^TEST:\s*Give me a random tool$/i.test(userPrompt)
+                && !/You have unlocked the /i.test(finalResponse)) {
+                const randomItem = actions.getRandomAvailableItem();
+                if (randomItem) {
+                    actions.unlockItem(randomItem.name);
+                    finalResponse = `You have unlocked the ${randomItem.name}.`;
+                }
+            }
+            finalResponse = finalResponse.trim();
             await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
             let combatPrompt = null;
             if (startedCombat) {

@@ -30,37 +30,6 @@ async function renderAIResponse(text) {
     if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function splitMarkdownItalics(text) {
-    if (typeof text !== 'string') return [{ text: String(text), italic: false }];
-    const segments = [];
-    const regex = /\*\*(.+?)\*\*/g;
-    let lastIndex = 0;
-    let match;
-    while ((match = regex.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-            segments.push({ text: text.slice(lastIndex, match.index), italic: false });
-        }
-        segments.push({ text: match[1], italic: true });
-        lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < text.length) {
-        segments.push({ text: text.slice(lastIndex), italic: false });
-    }
-    return segments.length ? segments : [{ text, italic: false }];
-}
-
-function renderFormattedText(element, text) {
-    const segments = splitMarkdownItalics(text);
-    for (const segment of segments) {
-        const span = document.createElement('span');
-        span.textContent = segment.text;
-        if (segment.italic) {
-            span.style.fontStyle = 'italic';
-        }
-        element.appendChild(span);
-    }
-}
-
 function appendChatMessage(role, text, animate = false, combatPrompt = null) {
     const container = document.getElementById('text-scroll');
     if (!container) return null;
@@ -85,7 +54,7 @@ function appendChatMessage(role, text, animate = false, combatPrompt = null) {
             return wrapper;
         });
     }
-    renderFormattedText(bubble, String(text));
+    bubble.textContent = String(text);
     addCombatPrompt();
     container.scrollTop = container.scrollHeight;
     return wrapper;
@@ -204,6 +173,12 @@ function parseGameActionFromText(text) {
     if (tagMatch) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
+            if (parsed?.name === 'unlock_item') {
+                return { name: 'unlock_item', item: String(parsed.item || '').trim() };
+            }
+            if (parsed?.name === 'start_combat') {
+                return { name: 'start_combat', enemy: String(parsed.enemy || '').trim() };
+            }
         } catch (error) {
             console.error('Unable to parse action tag:', error);
         }
@@ -212,16 +187,18 @@ function parseGameActionFromText(text) {
 }
 async function applyGameActionFromText(text) {
     const action = parseGameActionFromText(text);
-    if (!action || action.name !== 'give_gold') return false;
+    if (!action || !['give_gold', 'unlock_item'].includes(action.name)) return false;
     const amount = Number(action.amount ?? 0);
-    if (!Number.isFinite(amount) || amount === 0) return false;
+    if (action.name === 'give_gold' && (!Number.isFinite(amount) || amount === 0)) return false;
+    if (action.name === 'unlock_item' && !action.item) return false;
     try {
         const response = await fetch('/api/game/action', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: action.name, amount })
+            body: JSON.stringify({ action: action.name, amount, item: action.item })
         });
         const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'The game action failed.');
     } catch (error) {
         console.error('Unable to apply the AI action:', error);
     }
@@ -230,33 +207,15 @@ async function applyGameActionFromText(text) {
 
 //update chat boxes
 function typeAIResponseIntoElement(text, element, speed = 15) {
-    const segments = splitMarkdownItalics(text);
-    let segmentIndex = 0;
-    let charIndex = 0;
-    let activeSegment = null;
+    let index = 0;
     return new Promise((resolve) => {
         function nextCharacter() {
-            if (segmentIndex >= segments.length) {
+            if (index >= text.length) {
                 resolve();
                 return;
             }
-            if (!activeSegment) {
-                activeSegment = document.createElement('span');
-                if (segments[segmentIndex].italic) {
-                    activeSegment.style.fontStyle = 'italic';
-                }
-                element.appendChild(activeSegment);
-            }
-            const current = segments[segmentIndex];
-            if (charIndex >= current.text.length) {
-                segmentIndex += 1;
-                charIndex = 0;
-                activeSegment = null;
-                setTimeout(nextCharacter, speed);
-                return;
-            }
-            activeSegment.textContent += current.text[charIndex];
-            charIndex += 1;
+            element.textContent += text[index];
+            index++;
             setTimeout(nextCharacter, speed);
         }
         nextCharacter();
@@ -346,7 +305,6 @@ async function refreshAccountPanel() {
                 <div><span>HP</span><strong>${accountSummary.hp}</strong></div>
                 <div><span>XP</span><strong>${accountSummary.xp}/${accountSummary.maxXp}</strong></div>
             </div>
-            <div class="accountSummaryTitle">SAVED PROGRESS</div>
             <div class="accountSummaryTitle">INVENTORY</div><div class="accountItemList">${list(accountSummary.inventoryItems)}</div>`
     } catch (error) {
         console.error('Unable to refresh account summary:', error);

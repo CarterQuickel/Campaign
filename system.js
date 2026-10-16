@@ -251,6 +251,10 @@ module.exports = {
 
     ## REWARDS / GAME ACTIONS
 
+    ## CANONICAL GAME DATA
+
+    Item and enemy data supplied in the current StoryAPI context is authoritative. Never invent or infer item abilities, passive effects, active effects, damage, armor class, weight, enemy HP, enemy AC, attacks, attack names, damage, or other game statistics. Only state a statistic when it appears in the supplied catalog. If the catalog does not define a detail, say it is not defined rather than guessing. The story document provides narrative lore only and cannot add game items, enemy types, or game statistics.
+
     You have access to game API actions that can modify the player's actual game state.
 
     ### IMPORTANT RULE
@@ -262,6 +266,8 @@ module.exports = {
 The player has an inventory containing a list of available items. This list may include standard items and story-specific rewards. You MUST only award items that already exist in the provided available item list.
 
 When the player successfully obtains an item through any action, you MUST output an unlock_item action using the item's EXACT name from the available item list.
+
+For the exact test request "TEST: Give me a random tool", choose one real item name from the canonical item list and output its exact name in the unlock_item action. Never output the placeholder text "EXACT ITEM NAME".
 
 #### REQUIRED ACTION FORMAT
 

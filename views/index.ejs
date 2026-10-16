@@ -28,7 +28,7 @@
             <div class="statCont">
                 <div class="stat">
                     <div class="statType">LVL</div>
-                    <div class="statNum" id="level">
+                        <div class="statNum" id="level" data-realtime-level>
                         <%= level %>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                 <div class="horiz"></div>
                 <div class="stat">
                     <div class="statType">HP</div>
-                    <div class="statNum" id="playerHPDisplay">
+                        <div class="statNum" id="playerHPDisplay" data-realtime-hp>
                         <%= playerHP %>/<%= charData.HP %>
                     </div>
                 </div>
@@ -262,7 +262,6 @@
                                         <div><span class="accountCharacterInfoText">HP</span><strong><%= accountSummary.hp %></strong></div>
                                         <div><span class="accountCharacterInfoText">XP</span><strong><%= accountSummary.xp %>/<%= accountSummary.maxXp %></strong></div>
                                     </div>
-                                    <div class="accountSummaryTitle">SAVED PROGRESS</div>
                                     <div class="accountSummaryTitle">INVENTORY</div>
                                     <div class="accountItemList">
                                         <% if (accountSummary.inventoryItems.length) { %>
@@ -389,9 +388,9 @@
                 <div class="topCont">
                     <div class="encumCont" id="xpcont" data-current-weight="0">
                         <div class="contBan">
-                            <div class="label" id="levelTxt">Level <%= level %>
+                            <div class="label" id="levelTxt" data-realtime-level data-realtime-level-label="true">Level <%= level %>
                             </div>
-                            <div class="weight" id="xpTxt">
+                            <div class="weight" id="xpTxt" data-realtime-xp>
                                 <%= XP %>/<%= MAXXP %> XP
                             </div>
                         </div>
@@ -709,38 +708,7 @@
         }
     </script>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        socket.on('connect', () => {
-            console.log('Connected to Charma:', socket.id);
-        });
-        function updateInventory(tools) {
-            if (!Array.isArray(tools)) return;
-            document.querySelectorAll('.toolsContainer .tool').forEach(card => {
-                const name = card.dataset.name;
-                const item = tools.find(
-                    tool => tool.name === name
-                );
-                if (!item) return;
-                card.dataset.unlocked = String(item.unlocked);
-                card.classList.toggle('locked', !item.unlocked);
-                const equipButton = card.querySelector('.tool-equip-btn');
-                if (equipButton) equipButton.textContent = item.equipped ? 'Unequip' : 'Equip';
-            });
-            console.log('Inventory display updated');
-        }
-        socket.on('inventory:update', (data) => {
-            console.log('Inventory update received:', data);
-            if (data && Array.isArray(data.tools)) {
-                updateInventory(data.tools);
-            }
-        });
-        socket.on('account:update', (data) => {
-            if (!data) return;
-            if (Array.isArray(data.tools)) updateInventory(data.tools);
-            if (typeof refreshAccountPanel === 'function') refreshAccountPanel();
-        });
-    </script>
+    <script src="/realtime.js"></script>
 </body>
 
 </html>
