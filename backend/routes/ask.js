@@ -77,6 +77,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
                     },
                     enemyHP: snapshot.enemyHP,
                     playerHP: snapshot.playerHP,
+                    playerMaxHP: snapshot.playerMaxHP,
                     question: snapshot.question
                 };
             }

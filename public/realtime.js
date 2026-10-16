@@ -80,10 +80,19 @@
             enemyHpBar.value = Number(combat.enemyHP);
             if (enemyHpText) enemyHpText.textContent = `${combat.enemyHP}/${enemyHpBar.max} HP`;
         }
+        const playerHpBar = document.getElementById('playerHPBar');
         const playerHp = document.getElementById('playerHPDisplay');
-        if (playerHp && Number.isFinite(Number(combat.playerHP))) {
-            const maxHp = playerHp.textContent.trim().split('/')[1] || '';
-            playerHp.textContent = `${combat.playerHP}/${maxHp}`;
+        if (Number.isFinite(Number(combat.playerHP))) {
+            if (playerHpBar) {
+                if (Number.isFinite(Number(combat.playerMaxHP))) playerHpBar.max = Number(combat.playerMaxHP);
+                playerHpBar.value = Number(combat.playerHP);
+            }
+            if (playerHp) {
+                const maxHp = Number.isFinite(Number(combat.playerMaxHP))
+                    ? Number(combat.playerMaxHP)
+                    : playerHpBar?.max || playerHp.textContent.trim().split('/')[1] || '';
+                playerHp.textContent = `${combat.playerHP}/${maxHp} HP`;
+            }
         }
     }
 

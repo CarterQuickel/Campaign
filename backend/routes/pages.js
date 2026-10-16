@@ -36,6 +36,7 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
                     },
                     enemyHP: snapshot.enemyHP,
                     playerHP: snapshot.playerHP,
+                    playerMaxHP: snapshot.playerMaxHP,
                     question: snapshot.question
                 }
                 : null;

@@ -66,7 +66,7 @@ function createCourseRouter(state, combat = null) {
         }
         state.claimedMilestones.add(requiredProgress);
         const previousLevel = state.getProgression().level;
-        state.addExperience(reward);
+        state.addExperience(experience);
         const progression = state.getProgression();
         if (progression.level > previousLevel) combat?.healPlayerToMax();
         return res.json({ success: true, xp: progression.XP, maxXp: progression.MAXXP, level: progression.level });
