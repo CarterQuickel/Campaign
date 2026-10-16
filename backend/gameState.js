@@ -124,7 +124,7 @@ async function fetchQuestionForCurrentCourse() {
 function recordCorrectMasteryAnswer() {
     const current = getCurrentMasteryUnit();
     if (!current) return null;
-    current.section.completion = Math.min(100, current.section.completion + 10);
+    current.section.completion = Math.min(100, current.section.completion + 4);
     const completed = current.section.completion === 100;
     let next = null;
     if (completed) {
