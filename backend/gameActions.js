@@ -38,6 +38,41 @@ function inferCombatActionFromText(responseText, enemies) {
 
 // Game Actions Execuatble by the AI
 function createGameActionService({ gameState, rewards, enemies = [], emitInventoryUpdate = () => {}, startCombat = () => ({ success: false }) }) {
+    function getItemCandidates() {
+        return [
+            ...(Array.isArray(gameState.tools) ? gameState.tools : []),
+            ...(Array.isArray(rewards) ? rewards.flatMap(story => story.rewards || []) : [])
+        ];
+    }
+
+    function unlockItem(itemName) {
+        const reward = getItemCandidates()
+            .find(item => item.name?.trim().toLowerCase() === String(itemName || '').trim().toLowerCase());
+        if (!reward) return { success: false, message: `I cannot award ${itemName} because it is not in the available item list.` };
+        if (reward.CharacterClass
+            && reward.CharacterClass !== 'Any'
+            && reward.CharacterClass !== gameState.charClass) {
+            return { success: false, message: `The ${reward.name} can only be unlocked by a ${reward.CharacterClass}.` };
+        }
+        let item = gameState.tools.find(tool => tool.name?.trim().toLowerCase() === reward.name.trim().toLowerCase());
+        if (!item) {
+            item = { ...reward };
+            gameState.tools.push(item);
+        }
+        item.unlocked = true;
+        emitInventoryUpdate(gameState.tools);
+        return { success: true, item: item.name };
+    }
+
+    function getRandomAvailableItem() {
+        const candidates = getItemCandidates().filter(item =>
+            item.name
+            && (!item.CharacterClass || item.CharacterClass === 'Any' || item.CharacterClass === gameState.charClass)
+            && !gameState.tools.some(tool => tool.name === item.name && tool.unlocked)
+        );
+        return candidates[Math.floor(Math.random() * candidates.length)] || null;
+    }
+
     function apply(responseText, context = {}) {
         if (typeof responseText !== 'string') return responseText;
         const action = parseGameActionFromText(responseText)
@@ -57,25 +92,9 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
             }
         }
         if (action.name === 'unlock_item') {
-            const reward = (Array.isArray(rewards) ? rewards : [])
-                .flatMap(story => story.rewards || [])
-                .find(item => item.name?.trim().toLowerCase() === action.item?.trim().toLowerCase());
-            if (!reward) {
-                console.log('ITEM NOT FOUND:', action.item);
-            } else if (reward.CharacterClass !== 'Any'
-                && reward.CharacterClass !== gameState.charClass) {
-                console.log('ITEM CLASS RESTRICTION:', action.item, reward.CharacterClass, gameState.charClass);
-                action.classRestriction = reward.CharacterClass;
-            } else {
-                let item = gameState.tools.find(tool => tool.name?.trim().toLowerCase() === reward.name.trim().toLowerCase());
-                if (!item) {
-                    item = { ...reward };
-                    gameState.tools.push(item);
-                }
-                item.unlocked = true;
-                console.log('UNLOCKED ITEM:', item.name);
-                emitInventoryUpdate(gameState.tools);
-            }
+            const result = unlockItem(action.item);
+            if (!result.success) action.failureMessage = result.message;
+            else console.log('UNLOCKED ITEM:', result.item);
         }
         // Cleanup how the AI types out the given reward
         const cleanedText = responseText
@@ -85,15 +104,13 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
             .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
             .replace(/\s+/g, ' ')
             .trim();
-        if (action.classRestriction) {
-            return `The ${action.item} can only be unlocked by a ${action.classRestriction}.`;
-        }
+        if (action.failureMessage) return action.failureMessage;
         if (cleanedText) return cleanedText;
         if (action.name === 'unlock_item') return `You have unlocked the ${action.item}.`;
         if (action.name === 'start_combat') return `Combat begins against ${action.enemy}.`;
         return responseText.trim();
     }
-    return { apply };
+    return { apply, getRandomAvailableItem, unlockItem };
 }
 
 module.exports = { createGameActionService, inferCombatActionFromText, parseGameActionFromText };

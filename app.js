@@ -21,6 +21,7 @@ const { createAskRouter } = require('./backend/routes/ask');
 const { createCombatRouter } = require('./backend/routes/combat');
 const { createCourseRouter } = require('./backend/routes/course');
 const { createPagesRouter } = require('./backend/routes/pages');
+const { loadStoryDocument } = require('./backend/storyDocument');
 const { enemies } = require('./enemies/enemyStats');
 const { storySpecRewards } = require('./StoryAPI/storySpecRewards');
 
@@ -81,6 +82,8 @@ initializeDatabase()
         } catch (error) {
             console.error('Unable to load Quizbank mastery courses:', error.message);
         }
+        const storyDocument = await loadStoryDocument();
+        console.log(storyDocument ? 'Loaded story.docx as AI context.' : 'No story.docx found; using StoryAPI data only.');
         const conversations = createConversationRepository(database);
         const accounts = createAccountRepository(database);
         io.use((socket, next) => auth.session(socket.request, {}, next));
@@ -109,7 +112,9 @@ initializeDatabase()
                                 hp: state.gameState.HP,
                                 level: state.getProgression().level,
                                 xp: state.getProgression().XP,
-                                maxXp: state.getProgression().MAXXP
+                                maxXp: state.getProgression().MAXXP,
+                                mastery: state.masteryCourseSets,
+                                combat: combat.getSnapshot()
                             });
                         }
                     }).catch(error => console.error('Unable to save account state:', error.message));
@@ -167,8 +172,8 @@ initializeDatabase()
             isAuthenticated: auth.isAuthenticated,
             getUserName: auth.getUserName
         }));
-        app.use('/ask', auth.requireAuth, createAskRouter({ state, conversations, ai, actions, viewData, combat }));
-        app.use('/api/combat', auth.requireAuth, createCombatRouter({ combat, ai, conversations, actions }));
+        app.use('/ask', auth.requireAuth, createAskRouter({ state, conversations, ai, actions, viewData, combat, storyDocument }));
+        app.use('/api/combat', auth.requireAuth, createCombatRouter({ combat, ai, conversations, actions, storyDocument }));
         server.listen(port, () => {
             console.log(`Server running on ${serverAddress}:${port}`);
         });
