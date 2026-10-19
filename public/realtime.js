@@ -35,8 +35,45 @@
         if (accountSummary && typeof refreshAccountPanel === 'function') refreshAccountPanel();
     }
 
+    function renderAttackItems(tools) {
+        const attackItems = document.getElementById('attackItems');
+        if (!attackItems) return;
+        const weapons = tools.filter(item => item.unlocked && item.class !== 'Armor' && item.damage && item.damage !== '0');
+        attackItems.replaceChildren(...weapons.map(item => {
+            const category = String(item.class || 'Misc').toLowerCase();
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `tool selectable ${category}`;
+            button.dataset.name = item.name;
+            button.dataset.class = item.class || 'Misc';
+            button.dataset.unlocked = 'true';
+            button.dataset.damage = item.damage;
+
+            const left = document.createElement('div');
+            left.className = 'left-tool';
+            const icon = document.createElement('div');
+            icon.className = `tool-icon ${category}`;
+            icon.textContent = item.class === 'Weapon' ? '⚔️'
+                : item.class === 'Potion' ? '🧪'
+                    : item.class === 'Spell' ? '🔮' : '💎';
+            const content = document.createElement('div');
+            content.className = 'tool-cont';
+            const name = document.createElement('div');
+            name.className = 'tool-name';
+            name.textContent = item.name;
+            const damage = document.createElement('div');
+            damage.className = 'tool-damage';
+            damage.textContent = `${item.damage} dg`;
+            content.append(name, damage);
+            left.append(icon, content);
+            button.append(left);
+            return button;
+        }));
+    }
+
     function updateInventory(tools) {
         if (!Array.isArray(tools)) return;
+        renderAttackItems(tools);
         const inventory = document.querySelector('.toolsContainer');
         if (!inventory) return;
         tools.forEach(item => {

@@ -116,7 +116,7 @@
         justify-content: center;
         align-items: center;
     }
-    .saveBtn {
+    .saveBtn:not(.start) {
         width: 95%;
         position: absolute;
         bottom: 0;
