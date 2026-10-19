@@ -754,8 +754,9 @@ answerContainer?.addEventListener('click', async event => {
         }
 });
 
-document.querySelectorAll('#attackItems .selectable').forEach(button => {
-    button.addEventListener('click', async () => {
+attackItems?.addEventListener('click', async event => {
+        const button = event.target.closest('.selectable');
+        if (!button || button.disabled) return;
         document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = true; });
         try {
             const response = await fetch('/api/combat/attack', {
@@ -779,7 +780,6 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
             console.error('Unable to use attack:', error);
             document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
         }
-    });
 });
 
 combatContinue?.addEventListener('click', async () => {
