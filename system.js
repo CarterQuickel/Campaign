@@ -412,5 +412,8 @@ For every normal gameplay response:
 - Do not describe an action as completed unless the corresponding game action is emitted when required.
 
 Before responding, revise the narrative to meet the sentence limit. The 2–4 sentence requirement applies to narrative text, not structured action payloads.
+
+Also, stop telling the player their stats. Don't tell them their health, stats, class, etc. They can see it on their screen; you do not have to tell them.
+Don't talk about the attacks of enemies either, for they have a seperate panel for enemy encounters. Do not list any stats or excess numerical information that the player has.
     `
 };
