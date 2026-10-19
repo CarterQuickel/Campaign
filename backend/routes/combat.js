@@ -18,6 +18,19 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
         const result = combat.attack(req.body.itemName, req.body.combatId);
         return res.status(result.status).json(result.body);
     });
+    router.post('/advance-boss-rush', async (req, res) => {
+        const result = combat.advanceBossRush(req.body.combatId);
+        if (!result.success) return res.status(409).json(result);
+        if (result.combat.active) {
+            try {
+                await combat.prepareQuestion();
+            } catch (error) {
+                console.error('Unable to prepare the next boss-rush encounter:', error);
+                return res.status(503).json({ success: false, message: 'The next boss could not be prepared. Please retry.' });
+            }
+        }
+        return res.json({ ...result, combat: combat.getSnapshot() });
+    });
     router.post('/continue', async (req, res) => {
         const result = await combat.continueCombat(req.body.combatId);
         return res.status(result.status).json(result.body);
@@ -62,6 +75,23 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
             return { status: 409, body: { success: false, message: 'This combat cannot be resolved.' } };
         }
         try {
+            if (snapshot.phase === 'lost' && snapshot.bossRush.active) {
+                const responseText = `Defeated by ${snapshot.enemy.name}. Your boss rush is over; your campaign progress has been reset.`;
+                const closed = combat.close(combatId, responseText);
+                if (!closed) return { status: 409, body: { success: false, message: 'Combat has already changed.' } };
+                await onBossRushLoss(accountId);
+                return {
+                    status: 200,
+                    body: {
+                        success: true,
+                        response: responseText,
+                        outcome: 'lost',
+                        bossRush: true,
+                        bossRushLost: true,
+                        combat: combat.getSnapshot()
+                    }
+                };
+            }
             const history = await conversations.getRecentMessages(accountId, conversationId);
             const storyRewardItems = storySpecRewards.flatMap(story => story.rewards || []);
             const itemCatalog = [...Tools, ...storyRewardItems]

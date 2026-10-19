@@ -121,6 +121,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             playerMaxHP: gameState.HP,
             canAttack: correct,
             phase: correct ? 'attack' : 'result',
+                bossRush: bossRush.active,
             mastery: correct ? recordCorrectAnswer() : null
         };
         if (correct) {
@@ -188,6 +189,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
                 xpAwarded,
                 progression,
                 phase,
+                bossRush: bossRush.active,
                 message: enemyHP <= 0
                     ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated!${bossRushLevelUp ? ' You gain one level!' : xpAwarded ? ` You gain ${xpAwarded} XP.` : ''}`
                     : `${item.name} deals ${damage} damage.`
@@ -283,6 +285,16 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         return { success: true, bossRush: wasBossRush, bossRushComplete, bossRushLost };
     }
 
+    function advanceBossRush(requestedCombatId) {
+        if (!bossRush.active || phase !== 'won' || Number(requestedCombatId) !== combatId) {
+            return { success: false, message: 'There is no boss-rush victory to advance.' };
+        }
+        resolvingCombatId = combatId;
+        const result = close(combatId, '');
+        if (!result) return { success: false, message: 'The boss-rush encounter could not advance.' };
+        return { ...result, combat: getSnapshot() };
+    }
+
     function getCompletedResolution(requestedCombatId, requestedConversationId) {
         const completed = completedResolutions.get(Number(requestedCombatId));
         if (!completed || completed.conversationId !== (Number(requestedConversationId) || null)) return null;
@@ -321,7 +333,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         };
     }
 
-    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start, startBossRush };
+    return { answer, attack, advanceBossRush, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start, startBossRush };
 }
 
 module.exports = { createCombatService };
