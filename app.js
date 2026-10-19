@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const http = require('http');
+const nodemailer = require('nodemailer');
 const { Server } = require('socket.io');
 
 // Scripts
@@ -38,10 +39,63 @@ const ai = createAiService({
 const configuredBaseUrl = process.env.THIS_URL || serverAddress;
 const publicBaseUrl = new URL(configuredBaseUrl);
 if (!publicBaseUrl.port) publicBaseUrl.port = String(port);
+
+async function sendPasswordResetEmail({ email, username, link }) {
+    const providers = [
+        {
+            name: 'Gmail',
+            host: process.env.SMTP_PRIMARY_HOST,
+            port: Number(process.env.SMTP_PRIMARY_PORT) || 587,
+            secure: process.env.SMTP_PRIMARY_SECURE === 'true',
+            user: process.env.SMTP_PRIMARY_USER,
+            password: process.env.SMTP_PRIMARY_PASSWORD,
+            from: process.env.SMTP_PRIMARY_FROM
+        },
+        {
+            name: 'Microsoft',
+            host: process.env.SMTP_BACKUP_HOST,
+            port: Number(process.env.SMTP_BACKUP_PORT) || 587,
+            secure: process.env.SMTP_BACKUP_SECURE === 'true',
+            user: process.env.SMTP_BACKUP_USER,
+            password: process.env.SMTP_BACKUP_PASSWORD,
+            from: process.env.SMTP_BACKUP_FROM
+        }
+    ].filter(provider => provider.host && provider.user && provider.password && provider.from);
+
+    if (!providers.length) {
+        throw new Error('No SMTP provider is configured. Add Gmail or Microsoft SMTP credentials to .env.');
+    }
+
+    let lastError;
+    for (const provider of providers) {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: provider.host,
+                port: provider.port,
+                secure: provider.secure,
+                auth: { user: provider.user, pass: provider.password }
+            });
+            await transporter.sendMail({
+                from: provider.from,
+                to: email,
+                subject: 'Charma password reset',
+                text: `Hello ${username},\n\nReset your Charma password using this link:\n${link}\n\nThis link expires in one hour.`
+            });
+            console.log(`Password reset email sent through ${provider.name}.`);
+            return;
+        } catch (error) {
+            lastError = error;
+            console.error(`${provider.name} SMTP failed:`, error.message);
+        }
+    }
+
+    throw new Error(`All configured SMTP providers failed: ${lastError?.message || 'unknown error'}`);
+}
+
 const auth = createAuth({
-    authUrl: process.env.AUTH_URL || 'https://formbar.yorktechapps.com',
-    callbackBaseUrl: publicBaseUrl.origin,
-    sessionSecret: process.env.SESSION_SECRET || 'change-this-session-secret'
+    publicBaseUrl: publicBaseUrl.origin,
+    sessionSecret: process.env.SESSION_SECRET || 'change-this-session-secret',
+    sendPasswordResetEmail
 });
 const combat = createCombatService({
     gameState: state.gameState,
@@ -60,8 +114,15 @@ app.use('/enemies', express.static(path.join(__dirname, 'enemies')));
 app.use(auth.session);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.get('/auth/formbar', auth.login);
-app.get('/login/callback', auth.callback);
+app.get('/login', (req, res) => auth.renderAuth(res, { mode: 'login' }));
+app.post('/login', auth.login);
+app.get('/register', (req, res) => auth.renderAuth(res, { mode: 'register' }));
+app.post('/register', auth.register);
+app.post('/logout', auth.logout);
+app.get('/forgot-password', (req, res) => auth.renderAuth(res, { mode: 'forgot' }));
+app.post('/forgot-password', auth.requestPasswordReset);
+app.get('/reset-password', (req, res) => auth.renderAuth(res, { mode: 'reset', token: req.query.token || '' }));
+app.post('/reset-password', auth.resetPassword);
 
 app.get('/api/ai-status', async (req, res) => {
     const ready = await ai.checkStatus();
@@ -87,11 +148,13 @@ initializeDatabase()
         console.log(storyDocument ? 'Loaded story.docx as AI context.' : 'No story.docx found; using StoryAPI data only.');
         const conversations = createConversationRepository(database);
         const accounts = createAccountRepository(database);
+        auth.setAccountRepository(accounts);
         io.use((socket, next) => auth.session(socket.request, {}, next));
         io.on('connection', async socket => {
             if (!auth.isAuthenticated(socket.request)) return;
             try {
-                const account = await accounts.ensureAccount(auth.getUserId(socket.request));
+                const account = await accounts.findById(auth.getUserId(socket.request));
+                if (!account) return;
                 socket.join(`account:${account.id}`);
             } catch (error) {
                 console.error('Unable to join account socket room:', error.message);
@@ -100,7 +163,11 @@ initializeDatabase()
         app.use(async (req, res, next) => {
             if (!auth.isAuthenticated(req)) return next();
             try {
-                const account = await accounts.ensureAccount(auth.getUserId(req));
+                const account = await accounts.findById(auth.getUserId(req));
+                if (!account) {
+                    req.session.destroy(() => {});
+                    return res.status(401).json({ message: 'Account no longer exists.' });
+                }
                 req.accountId = account.id;
                 state.loadSnapshot(await accounts.loadState(account.id));
                 res.on('finish', () => {

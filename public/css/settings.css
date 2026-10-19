@@ -151,7 +151,7 @@ button.setting:hover:not(.active) {
     justify-content: center;
     text-align: center;
 }
-.formbarLoginBtn {
+.loginBtn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -164,8 +164,112 @@ button.setting:hover:not(.active) {
     font-weight: 700;
     text-decoration: none;
 }
-.formbarLoginBtn:hover {
+.loginBtn:hover {
     background: var(--user-background);
+}
+.authPage {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: clamp(20px, 5vw, 64px) 20px;
+    overflow-y: auto;
+    background:
+        radial-gradient(circle at 15% 20%, var(--ai-background), transparent 42%),
+        radial-gradient(circle at 85% 80%, var(--misc-color), transparent 38%),
+        var(--site-back);
+}
+.authPanel {
+    width: min(100%, 460px);
+    padding: clamp(28px, 6vw, 48px);
+    border: 1px solid var(--ai-border);
+    border-top: 3px solid var(--accent-color);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--background-color) 92%, var(--accent-color));
+    box-shadow: 0 20px 60px #00000055;
+}
+.authBrand {
+    display: inline-block;
+    color: var(--accent-color);
+    font-weight: 800;
+    letter-spacing: 3px;
+    text-decoration: none;
+}
+.authPanel h1 {
+    margin: 16px 0 28px;
+    color: var(--text-color);
+    font-size: clamp(26px, 5vw, 34px);
+    line-height: 1.1;
+}
+.authForm {
+    display: grid;
+    gap: 18px;
+}
+.authForm label {
+    display: grid;
+    gap: 8px;
+    color: var(--primary-color);
+    font-size: 14px;
+    font-weight: 700;
+}
+.authForm input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 13px;
+    border: 1px solid var(--ai-border);
+    border-radius: 5px;
+    outline: none;
+    background: var(--user-background);
+    color: var(--text-color);
+    font: inherit;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.authForm input:focus {
+    border-color: var(--focus-color);
+    box-shadow: 0 0 0 3px var(--focus-shadow);
+}
+.authForm button {
+    min-height: 46px;
+    margin-top: 4px;
+    border: 1px solid var(--accent-color);
+    border-radius: 5px;
+    background: var(--accent-color);
+    color: var(--text-color);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 160ms ease, transform 160ms ease;
+}
+.authForm button:hover {
+    background: var(--focus-color);
+    transform: translateY(-1px);
+}
+.authPanel p {
+    margin: 20px 0 0;
+    color: var(--primary-color);
+    line-height: 1.5;
+}
+.authPanel a {
+    color: var(--accent-color);
+}
+.authMessage {
+    margin-bottom: 20px;
+    padding: 11px 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background: var(--ai-background);
+    color: var(--accent-color);
+    line-height: 1.45;
+}
+.authError {
+    color: #d66;
+}
+@media (max-width: 480px) {
+    .authPage {
+        align-items: start;
+        padding-top: 32px;
+    }
+    .authPanel {
+        padding: 28px 22px;
+    }
 }
 .accountStatus {
     margin: 20px 10px;

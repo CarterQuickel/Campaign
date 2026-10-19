@@ -23,7 +23,7 @@ function createViewData({ state, combat, conversations, ai }) {
         };
     }
 
-    async function buildIndexData({ req, isAuthenticated = false, formbarName = null, response = null, prompt = null, conversationId = null, messages = [], responsePending = false }) {
+    async function buildIndexData({ req, isAuthenticated = false, username = null, response = null, prompt = null, conversationId = null, messages = [], responsePending = false }) {
         await combat.prepareQuestion();
         const snapshot = combat.getSnapshot();
         const progression = state.getProgression();
@@ -40,7 +40,7 @@ function createViewData({ state, combat, conversations, ai }) {
             messages,
             responsePending,
             isAuthenticated,
-            formbarName,
+            username,
             online: await ai.checkStatus(),
             stats: state.stats,
             appearance: state.appearance,

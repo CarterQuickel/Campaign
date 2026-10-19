@@ -14,10 +14,35 @@ function createAccountRepository(database) {
         });
     }
 
-    async function ensureAccount(username) {
-        await run('INSERT OR IGNORE INTO users (username) VALUES (?)', [username]);
-        const account = await get('SELECT id, username FROM users WHERE username = ?', [username]);
-        return account;
+    async function createAccount({ username, email, passwordHash }) {
+        await run('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)', [username, email, passwordHash]);
+        return get('SELECT id, username, email, password_hash FROM users WHERE username = ?', [username]);
+    }
+
+    function findByLogin(login) {
+        return get(`SELECT id, username, email, password_hash
+            FROM users WHERE username = ? OR email = ?`, [login, login]);
+    }
+
+    function findById(id) {
+        return get('SELECT id, username, email FROM users WHERE id = ?', [id]);
+    }
+
+    function saveResetToken(userId, tokenHash, expiresAt) {
+        return run(`UPDATE users
+            SET reset_token_hash = ?, reset_token_expires_at = ?
+            WHERE id = ?`, [tokenHash, expiresAt, userId]);
+    }
+
+    function findByResetToken(tokenHash) {
+        return get(`SELECT id, username, email FROM users
+            WHERE reset_token_hash = ? AND reset_token_expires_at > CURRENT_TIMESTAMP`, [tokenHash]);
+    }
+
+    function updatePassword(userId, passwordHash) {
+        return run(`UPDATE users
+            SET password_hash = ?, reset_token_hash = NULL, reset_token_expires_at = NULL
+            WHERE id = ?`, [passwordHash, userId]);
     }
 
     async function loadState(accountId) {
@@ -32,7 +57,7 @@ function createAccountRepository(database) {
         [accountId, JSON.stringify(snapshot)]);
     }
 
-    return { ensureAccount, loadState, saveState };
+    return { createAccount, findByLogin, findById, saveResetToken, findByResetToken, updatePassword, loadState, saveState };
 }
 
 module.exports = { createAccountRepository };

@@ -4,7 +4,7 @@ const express = require('express');
 function createPagesRouter({ state, viewData, conversations, combat, actions, accounts, isAuthenticated, getUserName }) {
     const router = express.Router();
     router.post('/api/conversations', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         if (!state.gameState.characterSetupComplete) {
             return res.status(409).json({ message: 'Create your character before starting a conversation.' });
         }
@@ -17,7 +17,7 @@ function createPagesRouter({ state, viewData, conversations, combat, actions, ac
         }
     });
     router.get('/api/conversations/:id', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         try {
             const conversationId = Number(req.params.id);
             if (!Number.isInteger(conversationId) || conversationId < 1) {
@@ -55,9 +55,9 @@ function createPagesRouter({ state, viewData, conversations, combat, actions, ac
         }
     });
     router.get('/api/account-summary', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         try {
-            return res.json({ formbarName: getUserName(req), accountSummary: await viewData.buildAccountSummary(req.accountId) });
+            return res.json({ username: getUserName(req), accountSummary: await viewData.buildAccountSummary(req.accountId) });
         } catch (error) {
             return next(error);
         }
@@ -81,7 +81,7 @@ function createPagesRouter({ state, viewData, conversations, combat, actions, ac
             res.render('index', await viewData.buildIndexData({
                 req,
                 isAuthenticated: isAuthenticated(req),
-                formbarName: getUserName(req),
+                username: getUserName(req),
                 messages,
                 conversationId,
                 responsePending: conversationId ? conversations.isResponsePending(conversationId) : false
@@ -90,8 +90,8 @@ function createPagesRouter({ state, viewData, conversations, combat, actions, ac
             next(error);
         }
     });
-    router.post('/updateSheet', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).send('Log in with Formbar to update your character.');
+    router.post('/updateSheet', async (req, res) => {
+        if (!isAuthenticated(req)) return res.status(401).send('Log in to update your character.');
         const name = String(req.body.name || '').trim();
         const race = String(req.body.race || '').trim();
         if (!name || name.length > 40) return res.status(400).send('Enter a character name of 1 to 40 characters.');

@@ -1,6 +1,10 @@
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    reset_token_hash TEXT,
+    reset_token_expires_at DATETIME
 );
 
 CREATE TABLE IF NOT EXISTS messages (

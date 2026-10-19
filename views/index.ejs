@@ -273,7 +273,7 @@
                         <div class="settingCate disabled" data-setting="account">
                             <div class="header">Account</div>
                             <% if (isAuthenticated) { %>
-                                <div class="accountStatus">Formbar name: <strong><%= formbarName || 'Unknown' %></strong></div>
+                                <div class="accountStatus">Username: <strong><%= username || 'Unknown' %></strong></div>
                                 <div class="accountSummary">
                                     <div class="accountSummaryTitle">CHARACTER</div>
                                     <div class="accountSummaryGrid">
@@ -297,8 +297,8 @@
                                 </div>
                             <% } else { %>
                                 <div class="loginPanel">
-                                    <div>Log in with Formbar to use your account.</div>
-                                    <a class="formbarLoginBtn" href="/auth/formbar">LOG IN WITH FORMBAR</a>
+                                    <div>Log in to use your account.</div>
+                                    <a class="loginBtn" href="/login">LOG IN</a>
                                 </div>
                             <% } %>
                         </div>
@@ -395,8 +395,8 @@
                             </div>
                             <% } else { %>
                             <div class="loginPanel chatLoginPanel">
-                                <div>Log in with Formbar to chat with Charma.</div>
-                                <a class="formbarLoginBtn" href="/auth/formbar">LOG IN WITH FORMBAR</a>
+                                <div>Log in to chat with Charma.</div>
+                                <a class="loginBtn" href="/login">LOG IN</a>
                             </div>
                             <% } %>
                 </div>

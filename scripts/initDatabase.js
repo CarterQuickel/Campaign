@@ -39,6 +39,11 @@ async function initializeDatabase() {
                     }
 
                     db.serialize(() => {
+                        db.run('ALTER TABLE users ADD COLUMN email TEXT', () => {});
+                        db.run('ALTER TABLE users ADD COLUMN password_hash TEXT', () => {});
+                        db.run('ALTER TABLE users ADD COLUMN reset_token_hash TEXT', () => {});
+                        db.run('ALTER TABLE users ADD COLUMN reset_token_expires_at DATETIME', () => {});
+                        db.run('CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users(email) WHERE email IS NOT NULL', () => {});
                         db.run('ALTER TABLE game_state ADD COLUMN state_json TEXT', () => {});
                         db.run('ALTER TABLE conversations ADD COLUMN user_id INTEGER', () => {});
                         db.run('CREATE UNIQUE INDEX IF NOT EXISTS game_state_user_id ON game_state(user_id)', () => {});
