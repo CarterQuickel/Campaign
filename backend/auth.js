@@ -35,7 +35,13 @@ function createAuth({ sessionSecret, publicBaseUrl, sendPasswordResetEmail }) {
     }
 
     function renderAuth(res, options = {}) {
-        return res.render('auth', options);
+        return res.render('auth', {
+            mode: 'login',
+            error: null,
+            message: null,
+            token: '',
+            ...options
+        });
     }
 
     function normalize(value) {

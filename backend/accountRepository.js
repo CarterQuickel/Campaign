@@ -24,6 +24,10 @@ function createAccountRepository(database) {
             FROM users WHERE username = ? OR email = ?`, [login, login]);
     }
 
+    function findById(id) {
+        return get('SELECT id, username, email FROM users WHERE id = ?', [id]);
+    }
+
     function saveResetToken(userId, tokenHash, expiresAt) {
         return run(`UPDATE users
             SET reset_token_hash = ?, reset_token_expires_at = ?
@@ -53,7 +57,7 @@ function createAccountRepository(database) {
         [accountId, JSON.stringify(snapshot)]);
     }
 
-    return { createAccount, findByLogin, saveResetToken, findByResetToken, updatePassword, loadState, saveState };
+    return { createAccount, findByLogin, findById, saveResetToken, findByResetToken, updatePassword, loadState, saveState };
 }
 
 module.exports = { createAccountRepository };

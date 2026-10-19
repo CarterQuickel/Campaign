@@ -39,23 +39,63 @@ const ai = createAiService({
 const configuredBaseUrl = process.env.THIS_URL || serverAddress;
 const publicBaseUrl = new URL(configuredBaseUrl);
 if (!publicBaseUrl.port) publicBaseUrl.port = String(port);
+
+async function sendPasswordResetEmail({ email, username, link }) {
+    const providers = [
+        {
+            name: 'Gmail',
+            host: process.env.SMTP_PRIMARY_HOST,
+            port: Number(process.env.SMTP_PRIMARY_PORT) || 587,
+            secure: process.env.SMTP_PRIMARY_SECURE === 'true',
+            user: process.env.SMTP_PRIMARY_USER,
+            password: process.env.SMTP_PRIMARY_PASSWORD,
+            from: process.env.SMTP_PRIMARY_FROM
+        },
+        {
+            name: 'Microsoft',
+            host: process.env.SMTP_BACKUP_HOST,
+            port: Number(process.env.SMTP_BACKUP_PORT) || 587,
+            secure: process.env.SMTP_BACKUP_SECURE === 'true',
+            user: process.env.SMTP_BACKUP_USER,
+            password: process.env.SMTP_BACKUP_PASSWORD,
+            from: process.env.SMTP_BACKUP_FROM
+        }
+    ].filter(provider => provider.host && provider.user && provider.password && provider.from);
+
+    if (!providers.length) {
+        throw new Error('No SMTP provider is configured. Add Gmail or Microsoft SMTP credentials to .env.');
+    }
+
+    let lastError;
+    for (const provider of providers) {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: provider.host,
+                port: provider.port,
+                secure: provider.secure,
+                auth: { user: provider.user, pass: provider.password }
+            });
+            await transporter.sendMail({
+                from: provider.from,
+                to: email,
+                subject: 'Charma password reset',
+                text: `Hello ${username},\n\nReset your Charma password using this link:\n${link}\n\nThis link expires in one hour.`
+            });
+            console.log(`Password reset email sent through ${provider.name}.`);
+            return;
+        } catch (error) {
+            lastError = error;
+            console.error(`${provider.name} SMTP failed:`, error.message);
+        }
+    }
+
+    throw new Error(`All configured SMTP providers failed: ${lastError?.message || 'unknown error'}`);
+}
+
 const auth = createAuth({
     publicBaseUrl: publicBaseUrl.origin,
     sessionSecret: process.env.SESSION_SECRET || 'change-this-session-secret',
-    sendPasswordResetEmail: async ({ email, username, link }) => {
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT) || 587,
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } : undefined
-        });
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
-            to: email,
-            subject: 'Charma password reset',
-            text: `Hello ${username},\n\nReset your Charma password using this link:\n${link}\n\nThis link expires in one hour.`
-        });
-    }
+    sendPasswordResetEmail
 });
 const combat = createCombatService({
     gameState: state.gameState,
@@ -113,7 +153,8 @@ initializeDatabase()
         io.on('connection', async socket => {
             if (!auth.isAuthenticated(socket.request)) return;
             try {
-                const account = await accounts.ensureAccount(auth.getUserId(socket.request));
+                const account = await accounts.findById(auth.getUserId(socket.request));
+                if (!account) return;
                 socket.join(`account:${account.id}`);
             } catch (error) {
                 console.error('Unable to join account socket room:', error.message);
@@ -122,7 +163,11 @@ initializeDatabase()
         app.use(async (req, res, next) => {
             if (!auth.isAuthenticated(req)) return next();
             try {
-                const account = await accounts.ensureAccount(auth.getUserId(req));
+                const account = await accounts.findById(auth.getUserId(req));
+                if (!account) {
+                    req.session.destroy(() => {});
+                    return res.status(401).json({ message: 'Account no longer exists.' });
+                }
                 req.accountId = account.id;
                 state.loadSnapshot(await accounts.loadState(account.id));
                 res.on('finish', () => {
