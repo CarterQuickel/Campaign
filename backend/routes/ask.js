@@ -36,6 +36,13 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
                     desc,
                     weight
                 }));
+            const unlockedItemNames = new Set(state.gameState.tools
+                .filter(item => item.unlocked)
+                .map(item => item.name?.trim().toLowerCase()));
+            const testRewardCandidates = itemCatalog
+                .filter(item => (item.CharacterClass === 'Any' || item.CharacterClass === state.gameState.charClass)
+                    && !unlockedItemNames.has(item.name.trim().toLowerCase()))
+                .map(item => item.name);
             const storyContext = {
                 stories,
                 landmarks,
@@ -46,20 +53,12 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
                     ...storyRewardItems.map(item => item.name)
                 ])],
                 itemCatalog,
+                testRewardCandidates,
+                isOpeningScene: !history.some(message => message.role === 'user'),
                 enemyCatalog: enemies.map(({ name, HP, AC, attacks }) => ({ name, HP, AC, attacks })),
                 enemies: enemies.map(enemy => enemy.name),
                 storyDocument
             };
-            if (/^TEST:\s*Give me a random tool$/i.test(userPrompt)) {
-                const randomItem = actions.getRandomAvailableItem();
-                const testResponse = randomItem
-                    ? `You have unlocked the ${randomItem.name}.`
-                    : 'There are no more eligible tools to unlock.';
-                if (randomItem) actions.unlockItem(randomItem.name);
-                await conversations.saveMessage(req.accountId, conversationId, 'assistant', testResponse);
-                conversations.setResponsePending(conversationId, false);
-                return res.json({ conversationId, response: testResponse, combat: null });
-            }
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             let startedCombat = null;
             let finalResponse = actions.apply(responseText, {
