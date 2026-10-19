@@ -13,7 +13,31 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
 </head>
 
-<body>
+<body class="<%= combatActive ? 'combat-active' : '' %>">
+    <% if (isAuthenticated && !characterSetupComplete) { %>
+        <div class="characterSetupOverlay" role="dialog" aria-modal="true" aria-labelledby="characterSetupTitle">
+            <form class="characterSetupCard" action="/updateSheet" method="POST" autocomplete="off">
+                <div class="header" id="characterSetupTitle">CREATE YOUR CHARACTER</div>
+                <p>Choose your character details to begin your first adventure. These will be saved to your account.</p>
+                <label for="setupCharacterName">Character Name</label>
+                <input id="setupCharacterName" name="name" type="text" maxlength="40" required autofocus>
+                <label for="setupCharacterClass">Class</label>
+                <select id="setupCharacterClass" name="class" required>
+                    <option value="" selected disabled>Choose a class</option>
+                    <% characterClasses.forEach(characterClass => { %>
+                        <option value="<%= characterClass %>"><%= characterClass %></option>
+                    <% }); %>
+                </select>
+                <label for="setupCharacterRace">Race</label>
+                <input id="setupCharacterRace" name="race" type="text" maxlength="60" required>
+                <input type="hidden" name="origin" value="">
+                <div class="setupActions">
+                    <button class="saveBtn" type="submit" name="mode" value="campaign">START ADVENTURE</button>
+                    <button class="bossRushBtn" type="submit" name="mode" value="bossRush">BOSS RUSH</button>
+                </div>
+            </form>
+        </div>
+    <% } %>
     <div id="banner">
         <div id="leftBan">
             <div id="title">
@@ -142,9 +166,10 @@
                                 <div class="tool-name">
                                     <%= tool.name %>
                                 </div>
-                                <div class="tool-damage" style="display: <%= tool.damage === '0' ? 'none' : 'flex' %>">
-                                    <%= tool.damage %> dg
+                                    <div class="tool-description">
+                                    <%= tool.desc %>
                                 </div>
+                                    <div class="tool-damage" <%= tool.damage && tool.damage !== '0' ? '' : 'hidden' %>><%= tool.damage && tool.damage !== '0' ? `${tool.damage} dg` : '' %></div>
                             </div>
                         </div>
                     </div>

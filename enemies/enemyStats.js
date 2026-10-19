@@ -65,6 +65,7 @@ module.exports = {
         },
         {
             name: "Fallen King",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Fallen_King.jpg",
             HP: 27,
             xpReward: 1000,
@@ -86,6 +87,7 @@ module.exports = {
         },
         {
             name: "Death Blossom",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Death_Blossom.jpg",
             HP: 41,
             xpReward: 1400,
@@ -115,6 +117,7 @@ module.exports = {
         },
         {
             name: "Gaping Serpent",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Gaping_Serpent.jpg",
             HP: 63,
             xpReward: 1900,
@@ -140,6 +143,7 @@ module.exports = {
         },
         {
             name: "Red-Maned Wolf",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Red-Maned_Wolf.jpg",
             HP: 39,
             xpReward: 1600,
@@ -165,6 +169,7 @@ module.exports = {
         },
         {
             name: "Supaida",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Supaida.jpg",
             HP: 28,
             xpReward: 900,
@@ -190,6 +195,7 @@ module.exports = {
         },
         {
             name: "Withstander",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Withstander.jpg",
             HP: 36,
             xpReward: 500,
@@ -211,6 +217,7 @@ module.exports = {
         },
         {
             name: "The Oracle",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/The_Oracle.jpg",
             HP: 101,
             xpReward: 15000,
@@ -232,6 +239,7 @@ module.exports = {
         },
         {
             name: "Alternate X",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Alternate_X.jpg",
             HP: 376,
             xpReward: 20000,
@@ -269,6 +277,7 @@ module.exports = {
         },
         {
             name: "The Forthcoming",
+            isBoss: true,
             image: "/enemies/enemy_images/story1/Forthcoming.jpg",
             HP: 908,
             xpReward: 80000,

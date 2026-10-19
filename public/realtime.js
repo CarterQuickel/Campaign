@@ -53,6 +53,7 @@
                         <div class="tool-icon ${String(item.class || 'Misc').toLowerCase()}">${item.class === 'Weapon' ? '⚔️' : item.class === 'Armor' ? '🛡️' : item.class === 'Potion' ? '🧪' : item.class === 'Spell' ? '🔮' : '💎'}</div>
                         <div class="tool-cont">
                             <div class="tool-name"></div>
+                            <div class="tool-description"></div>
                             <div class="tool-damage"></div>
                         </div>
                     </div>`;
@@ -61,6 +62,8 @@
             }
             card.dataset.unlocked = String(item.unlocked);
             card.classList.toggle('locked', !item.unlocked);
+            const description = card.querySelector('.tool-description');
+            if (description) description.textContent = item.desc || '';
             const damage = card.querySelector('.tool-damage');
             if (damage) {
                 damage.textContent = item.damage && item.damage !== '0' ? `${item.damage} dg` : '';
@@ -80,10 +83,19 @@
             enemyHpBar.value = Number(combat.enemyHP);
             if (enemyHpText) enemyHpText.textContent = `${combat.enemyHP}/${enemyHpBar.max} HP`;
         }
+        const playerHpBar = document.getElementById('playerHPBar');
         const playerHp = document.getElementById('playerHPDisplay');
-        if (playerHp && Number.isFinite(Number(combat.playerHP))) {
-            const maxHp = playerHp.textContent.trim().split('/')[1] || '';
-            playerHp.textContent = `${combat.playerHP}/${maxHp}`;
+        if (Number.isFinite(Number(combat.playerHP))) {
+            if (playerHpBar) {
+                if (Number.isFinite(Number(combat.playerMaxHP))) playerHpBar.max = Number(combat.playerMaxHP);
+                playerHpBar.value = Number(combat.playerHP);
+            }
+            if (playerHp) {
+                const maxHp = Number.isFinite(Number(combat.playerMaxHP))
+                    ? Number(combat.playerMaxHP)
+                    : playerHpBar?.max || playerHp.textContent.trim().split('/')[1] || '';
+                playerHp.textContent = `${combat.playerHP}/${maxHp} HP`;
+            }
         }
     }
 

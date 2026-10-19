@@ -73,6 +73,22 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
         return candidates[Math.floor(Math.random() * candidates.length)] || null;
     }
 
+    function unlockAllItems() {
+        const unlocked = [];
+        for (const reward of getItemCandidates()) {
+            if (!reward?.name || unlocked.includes(reward.name)) continue;
+            let item = gameState.tools.find(tool => tool.name?.trim().toLowerCase() === reward.name.trim().toLowerCase());
+            if (!item) {
+                item = { ...reward };
+                gameState.tools.push(item);
+            }
+            item.unlocked = true;
+            unlocked.push(reward.name);
+        }
+        emitInventoryUpdate(gameState.tools);
+        return { success: true, count: unlocked.length };
+    }
+
     function apply(responseText, context = {}) {
         if (typeof responseText !== 'string') return responseText;
         const action = parseGameActionFromText(responseText)
@@ -110,7 +126,7 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
         if (action.name === 'start_combat') return `Combat begins against ${action.enemy}.`;
         return responseText.trim();
     }
-    return { apply, getRandomAvailableItem, unlockItem };
+    return { apply, getRandomAvailableItem, unlockAllItems, unlockItem };
 }
 
 module.exports = { createGameActionService, inferCombatActionFromText, parseGameActionFromText };

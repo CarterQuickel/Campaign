@@ -57,6 +57,7 @@ function createViewData({ state, combat, conversations, ai }) {
                 origin: state.gameState.charOrigin,
                 HP: state.gameState.HP
             },
+            characterSetupComplete: state.gameState.characterSetupComplete,
             enemies: snapshot.enemy,
             enemyHP: snapshot.enemyHP,
             playerHP: snapshot.playerHP,
