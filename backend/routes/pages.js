@@ -4,7 +4,7 @@ const express = require('express');
 function createPagesRouter({ state, viewData, conversations, combat, isAuthenticated, getUserName }) {
     const router = express.Router();
     router.post('/api/conversations', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         try {
             const title = String(req.body?.title || 'New conversation').trim().slice(0, 80) || 'New conversation';
             const conversationId = await conversations.createConversation(req.accountId, title);
@@ -14,7 +14,7 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
         }
     });
     router.get('/api/conversations/:id', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         try {
             const conversationId = Number(req.params.id);
             if (!Number.isInteger(conversationId) || conversationId < 1) {
@@ -51,9 +51,9 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
         }
     });
     router.get('/api/account-summary', async (req, res, next) => {
-        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in to use Charma.' });
         try {
-            return res.json({ formbarName: getUserName(req), accountSummary: await viewData.buildAccountSummary(req.accountId) });
+            return res.json({ username: getUserName(req), accountSummary: await viewData.buildAccountSummary(req.accountId) });
         } catch (error) {
             return next(error);
         }
@@ -77,7 +77,7 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
             res.render('index', await viewData.buildIndexData({
                 req,
                 isAuthenticated: isAuthenticated(req),
-                formbarName: getUserName(req),
+                username: getUserName(req),
                 messages,
                 conversationId,
                 responsePending: conversationId ? conversations.isResponsePending(conversationId) : false
@@ -87,7 +87,7 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
         }
     });
     router.post('/updateSheet', (req, res) => {
-        if (!isAuthenticated(req)) return res.status(401).send('Log in with Formbar to update your character.');
+        if (!isAuthenticated(req)) return res.status(401).send('Log in to update your character.');
         const updated = state.updateCharacter({
             name: req.body.name,
             origin: req.body.origin,

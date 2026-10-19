@@ -290,11 +290,11 @@ async function refreshAccountPanel() {
     try {
         const response = await fetch('/api/account-summary');
         if (!response.ok) return;
-        const { formbarName, accountSummary } = await response.json();
+        const { username, accountSummary } = await response.json();
         const list = items => items.length
             ? items.map(item => `<div class="accountItem">${escapeHtml(item)}</div>`).join('')
             : '<div class="accountEmpty">None saved.</div>';
-        accountPanel.querySelector('.accountStatus').innerHTML = `Formbar name: <strong>${escapeHtml(formbarName || 'Unknown')}</strong>`;
+        accountPanel.querySelector('.accountStatus').innerHTML = `Username: <strong>${escapeHtml(username || 'Unknown')}</strong>`;
         accountPanel.querySelector('.accountSummary').innerHTML = `
             <div class="accountSummaryTitle">CHARACTER</div>
             <div class="accountSummaryGrid">

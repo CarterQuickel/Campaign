@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= mode === 'register' ? 'Create account' : mode === 'forgot' ? 'Reset password' : mode === 'reset' ? 'Choose a new password' : 'Log in' %> | Charma</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <main class="authPage">
+        <section class="authPanel">
+            <a class="authBrand" href="/">CHARMA</a>
+            <h1><%= mode === 'register' ? 'Create your account' : mode === 'forgot' ? 'Reset your password' : mode === 'reset' ? 'Choose a new password' : 'Welcome back' %></h1>
+            <% if (error) { %><div class="authMessage authError"><%= error %></div><% } %>
+            <% if (message) { %><div class="authMessage"><%= message %></div><% } %>
+            <% if (mode === 'register') { %>
+                <form action="/register" method="POST" class="authForm">
+                    <label>Username<input name="username" required minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" autocomplete="username"></label>
+                    <label>Email<input type="email" name="email" required autocomplete="email"></label>
+                    <label>Password<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+                    <button type="submit">Create account</button>
+                </form>
+                <p>Already have an account? <a href="/login">Log in</a></p>
+            <% } else if (mode === 'forgot') { %>
+                <form action="/forgot-password" method="POST" class="authForm">
+                    <label>Email<input type="email" name="email" required autocomplete="email"></label>
+                    <button type="submit">Email reset link</button>
+                </form>
+                <p><a href="/login">Back to login</a></p>
+            <% } else if (mode === 'reset') { %>
+                <form action="/reset-password" method="POST" class="authForm">
+                    <input type="hidden" name="token" value="<%= token %>">
+                    <label>New password<input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+                    <button type="submit">Update password</button>
+                </form>
+            <% } else { %>
+                <form action="/login" method="POST" class="authForm">
+                    <label>Username or email<input name="login" required autocomplete="username"></label>
+                    <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
+                    <button type="submit">Log in</button>
+                </form>
+                <p><a href="/forgot-password">Forgot your password?</a></p>
+                <p>Need an account? <a href="/register">Create one</a></p>
+            <% } %>
+        </section>
+    </main>
+</body>
+</html>

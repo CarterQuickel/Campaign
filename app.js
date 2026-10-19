@@ -4,6 +4,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const http = require('http');
+const nodemailer = require('nodemailer');
 const { Server } = require('socket.io');
 
 // Scripts
@@ -39,9 +40,22 @@ const configuredBaseUrl = process.env.THIS_URL || serverAddress;
 const publicBaseUrl = new URL(configuredBaseUrl);
 if (!publicBaseUrl.port) publicBaseUrl.port = String(port);
 const auth = createAuth({
-    authUrl: process.env.AUTH_URL || 'https://formbar.yorktechapps.com',
-    callbackBaseUrl: publicBaseUrl.origin,
-    sessionSecret: process.env.SESSION_SECRET || 'change-this-session-secret'
+    publicBaseUrl: publicBaseUrl.origin,
+    sessionSecret: process.env.SESSION_SECRET || 'change-this-session-secret',
+    sendPasswordResetEmail: async ({ email, username, link }) => {
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } : undefined
+        });
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to: email,
+            subject: 'Charma password reset',
+            text: `Hello ${username},\n\nReset your Charma password using this link:\n${link}\n\nThis link expires in one hour.`
+        });
+    }
 });
 const combat = createCombatService({
     gameState: state.gameState,
@@ -59,8 +73,15 @@ app.use('/enemies', express.static(path.join(__dirname, 'enemies')));
 app.use(auth.session);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.get('/auth/formbar', auth.login);
-app.get('/login/callback', auth.callback);
+app.get('/login', (req, res) => auth.renderAuth(res, { mode: 'login' }));
+app.post('/login', auth.login);
+app.get('/register', (req, res) => auth.renderAuth(res, { mode: 'register' }));
+app.post('/register', auth.register);
+app.post('/logout', auth.logout);
+app.get('/forgot-password', (req, res) => auth.renderAuth(res, { mode: 'forgot' }));
+app.post('/forgot-password', auth.requestPasswordReset);
+app.get('/reset-password', (req, res) => auth.renderAuth(res, { mode: 'reset', token: req.query.token || '' }));
+app.post('/reset-password', auth.resetPassword);
 
 app.get('/api/ai-status', async (req, res) => {
     const ready = await ai.checkStatus();
@@ -86,6 +107,7 @@ initializeDatabase()
         console.log(storyDocument ? 'Loaded story.docx as AI context.' : 'No story.docx found; using StoryAPI data only.');
         const conversations = createConversationRepository(database);
         const accounts = createAccountRepository(database);
+        auth.setAccountRepository(accounts);
         io.use((socket, next) => auth.session(socket.request, {}, next));
         io.on('connection', async socket => {
             if (!auth.isAuthenticated(socket.request)) return;
