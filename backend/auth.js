@@ -106,8 +106,16 @@ function createAuth({ sessionSecret, publicBaseUrl, sendPasswordResetEmail }) {
         if (account && account.email === email) {
             const token = crypto.randomBytes(32).toString('hex');
             await accounts.saveResetToken(account.id, crypto.createHash('sha256').update(token).digest('hex'), new Date(Date.now() + 60 * 60 * 1000).toISOString());
-            const link = new URL(`/reset-password?token=${token}`, publicBaseUrl).toString();
-            await sendPasswordResetEmail({ email, username: account.username, link });
+            const configuredResetBaseUrl = process.env.RESET_BASE_URL || publicBaseUrl;
+            const requestBaseUrl = `${req.protocol}://${req.get('host')}`;
+            const resetBaseUrl = process.env.RESET_BASE_URL ? configuredResetBaseUrl : requestBaseUrl;
+            const link = new URL(`/reset-password?token=${token}`, resetBaseUrl).toString();
+            try {
+                await sendPasswordResetEmail({ email, username: account.username, link });
+            } catch (error) {
+                console.error('Password reset email failed:', error.message);
+                return renderAuth(res, { mode: 'forgot', error: 'The reset email could not be sent. Check the SMTP configuration and try again.' });
+            }
         }
         return renderAuth(res, { mode: 'forgot', message: 'If that email is registered, a password reset link has been sent.' });
     }
