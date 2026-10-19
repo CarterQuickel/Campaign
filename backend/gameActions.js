@@ -1,26 +1,31 @@
 function parseGameActionFromText(responseText) {
-    if (typeof responseText !== 'string') return null;
+    return (parseGameActionsFromText(responseText) || [])[0] || null;
+}
+
+function parseGameActionsFromText(responseText) {
+    if (typeof responseText !== 'string') return [];
     const text = responseText.trim();
-    const tagMatch = text.match(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/i);
-    if (tagMatch) {
+    const actions = [];
+    const tagMatches = text.matchAll(/<ACTION>\s*([\s\S]*?)\s*<\/ACTION>/gi);
+    for (const tagMatch of tagMatches) {
         try {
             const parsed = JSON.parse(tagMatch[1]);
             if (parsed?.name === 'unlock_item') {
-                return { name: 'unlock_item', item: String(parsed.item || '').trim(), storyReward: parsed.storyReward === true };
-            }
-            if (parsed?.name === 'start_combat') {
-                return { name: 'start_combat', enemy: String(parsed.enemy || parsed.enemies || '').trim() };
+                actions.push({ name: 'unlock_item', item: String(parsed.item || '').trim(), storyReward: parsed.storyReward === true });
+            } else if (parsed?.name === 'start_combat' && !actions.some(action => action.name === 'start_combat')) {
+                actions.push({ name: 'start_combat', enemy: String(parsed.enemy || parsed.enemies || '').trim() });
             }
         } catch (error) {
             console.error('Could not parse game action tag:', error.message);
         }
     }
+    if (actions.length) return actions;
     const directJsonMatch = text.match(/\{\s*"name"\s*:\s*"give_gold"\s*,\s*"amount"\s*:\s*(\d+)\s*\}/i);
-    if (directJsonMatch) return { name: 'give_gold', amount: Number(directJsonMatch[1]) };
+    if (directJsonMatch) return [{ name: 'give_gold', amount: Number(directJsonMatch[1]) }];
     const giveGoldFnMatch = text.match(/give_gold\s*\(\s*(\d+)\s*\)/i);
-    if (giveGoldFnMatch) return { name: 'give_gold', amount: Number(giveGoldFnMatch[1]) };
+    if (giveGoldFnMatch) return [{ name: 'give_gold', amount: Number(giveGoldFnMatch[1]) }];
     const inlineAmountMatch = text.match(/(?:reward|gave|grant|awarded?)\s+(\d+)\s*(?:gp|gold)/i);
-    return inlineAmountMatch ? { name: 'give_gold', amount: Number(inlineAmountMatch[1]) } : null;
+    return inlineAmountMatch ? [{ name: 'give_gold', amount: Number(inlineAmountMatch[1]) }] : [];
 }
 
 function inferCombatActionFromText(responseText, enemies) {
@@ -91,26 +96,33 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
 
     function apply(responseText, context = {}) {
         if (typeof responseText !== 'string') return responseText;
-        const action = parseGameActionFromText(responseText)
-            || (() => {
-                const enemy = inferCombatActionFromText(responseText, enemies);
-                return enemy ? { name: 'start_combat', enemy: typeof enemy === 'string' ? enemy : enemy.name } : null;
-            })();
-        if (!action) return responseText;
-        console.log('GAME ACTION:', action);
-
-        if (action.name === 'start_combat' && context.allowCombatStart !== false) {
-            const result = startCombat(action.enemy, context.conversationId);
-            if (!result?.success) {
-                console.log('COMBAT NOT STARTED:', result?.message || action.enemy);
-            } else {
-                context.onCombatStarted?.(result);
-            }
+        const parsedActions = parseGameActionsFromText(responseText);
+        if (!parsedActions.length) {
+            const enemy = inferCombatActionFromText(responseText, enemies);
+            if (enemy) parsedActions.push({ name: 'start_combat', enemy: typeof enemy === 'string' ? enemy : enemy.name });
         }
-        if (action.name === 'unlock_item') {
-            const result = unlockItem(action.item);
-            if (!result.success) action.failureMessage = result.message;
-            else console.log('UNLOCKED ITEM:', result.item);
+        if (!parsedActions.length) return responseText;
+        const failures = [];
+        const unlockedItems = [];
+
+        for (const action of parsedActions) {
+            console.log('GAME ACTION:', action);
+            if (action.name === 'start_combat' && context.allowCombatStart !== false) {
+                const result = startCombat(action.enemy, context.conversationId);
+                if (!result?.success) {
+                    console.log('COMBAT NOT STARTED:', result?.message || action.enemy);
+                } else {
+                    context.onCombatStarted?.(result);
+                }
+            }
+            if (action.name === 'unlock_item') {
+                const result = unlockItem(action.item);
+                if (!result.success) failures.push(result.message);
+                else {
+                    unlockedItems.push(result.item);
+                    console.log('UNLOCKED ITEM:', result.item);
+                }
+            }
         }
         // Cleanup how the AI types out the given reward
         const cleanedText = responseText
@@ -120,13 +132,14 @@ function createGameActionService({ gameState, rewards, enemies = [], emitInvento
             .replace(/(?:reward|gave|grant|awarded?)\s+\d+\s*(?:gp|gold)/gi, '')
             .replace(/\s+/g, ' ')
             .trim();
-        if (action.failureMessage) return action.failureMessage;
+        if (failures.length) return failures.join(' ');
         if (cleanedText) return cleanedText;
-        if (action.name === 'unlock_item') return `You have unlocked the ${action.item}.`;
-        if (action.name === 'start_combat') return `Combat begins against ${action.enemy}.`;
+        if (unlockedItems.length) return `You have unlocked ${unlockedItems.join(', ')}.`;
+        const combatAction = parsedActions.find(action => action.name === 'start_combat');
+        if (combatAction) return `Combat begins against ${combatAction.enemy}.`;
         return responseText.trim();
     }
     return { apply, getRandomAvailableItem, unlockAllItems, unlockItem };
 }
 
-module.exports = { createGameActionService, inferCombatActionFromText, parseGameActionFromText };
+module.exports = { createGameActionService, inferCombatActionFromText, parseGameActionFromText, parseGameActionsFromText };

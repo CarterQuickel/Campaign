@@ -604,7 +604,9 @@ function showCombatPanel({ correct, message = '', showAttacks = false, phase = '
     combatContinue.hidden = showAttacks;
     combatOverlay.dataset.phase = phase;
     combatContinue.disabled = false;
-    combatContinue.textContent = phase === 'won' || phase === 'lost' ? 'Continue Story' : 'Continue';
+    combatContinue.textContent = combatOverlay.dataset.bossRush === 'true'
+        ? phase === 'won' ? 'Next Enemy' : phase === 'lost' ? 'Reset Run' : 'Continue'
+        : phase === 'won' || phase === 'lost' ? 'Continue Story' : 'Continue';
 }
 
 function returnToChatAfterCombat() {
@@ -669,6 +671,12 @@ function updateCombatSnapshot(snapshot) {
     if (!snapshot || !combatOverlay) return;
     combatOverlay.dataset.phase = snapshot.phase || 'question';
     combatOverlay.dataset.combatId = snapshot.combatId || '';
+    combatOverlay.dataset.bossRush = String(Boolean(snapshot.bossRush?.active));
+    if (combatContinue) {
+        combatContinue.textContent = snapshot.bossRush?.active
+            ? snapshot.phase === 'won' ? 'Next Enemy' : snapshot.phase === 'lost' ? 'Reset Run' : 'Continue'
+            : 'Continue Story';
+    }
     const combatIdInput = document.getElementById('active-combat-id');
     if (combatIdInput) combatIdInput.value = snapshot.combatId || '';
     const enemyName = document.querySelector('.enemyTxt');
@@ -746,8 +754,9 @@ answerContainer?.addEventListener('click', async event => {
         }
 });
 
-document.querySelectorAll('#attackItems .selectable').forEach(button => {
-    button.addEventListener('click', async () => {
+attackItems?.addEventListener('click', async event => {
+        const button = event.target.closest('.selectable');
+        if (!button || button.disabled) return;
         document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = true; });
         try {
             const response = await fetch('/api/combat/attack', {
@@ -760,8 +769,8 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
             });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to attack.');
-            updateCombatVitals(result);
             updateProgressionDisplay(result.progression);
+            updateCombatVitals(result);
             showCombatPanel({
                 correct: true,
                 message: result.message,
@@ -771,7 +780,6 @@ document.querySelectorAll('#attackItems .selectable').forEach(button => {
             console.error('Unable to use attack:', error);
             document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
         }
-    });
 });
 
 combatContinue?.addEventListener('click', async () => {
@@ -796,6 +804,55 @@ combatContinue?.addEventListener('click', async () => {
             combatContinue.disabled = true;
             const resolvedCombatId = document.getElementById('active-combat-id')?.value;
             const resolvedConversationId = document.getElementById('conversation-id')?.value;
+            if (combatOverlay.dataset.bossRush === 'true') {
+                if (phase === 'lost') {
+                    const response = await fetch('/api/combat/resolve', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ combatId: resolvedCombatId, conversationId: resolvedConversationId })
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) throw new Error(result.message || 'Unable to reset the defeated boss rush.');
+                    window.location.assign('/');
+                    return;
+                }
+                const response = await fetch('/api/combat/advance-boss-rush', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ combatId: resolvedCombatId })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Unable to advance the boss rush.');
+                if (result.combat?.active) {
+                    updateCombatSnapshot(result.combat);
+                    combatOverlay.classList.remove('open');
+                    combatOverlay.setAttribute('aria-hidden', 'true');
+                    document.body.classList.add('combat-active');
+                    if (window.matchMedia('(max-width: 767px)').matches) {
+                        const questionPanel = document.getElementById('questionPanel');
+                        const chatPanel = document.getElementById('chat');
+                        const centerPanel = document.querySelector('.centerCont');
+                        if (centerPanel) centerPanel.style.display = 'flex';
+                        if (questionPanel) questionPanel.style.display = 'flex';
+                        if (chatPanel) chatPanel.style.display = 'none';
+                    }
+                    getAnswerOptions().forEach(option => {
+                        option.disabled = false;
+                        option.classList.remove('active', 'correct', 'incorrect');
+                        option.querySelector('.selectedAns').textContent = '';
+                    });
+                    document.querySelectorAll('#attackItems .selectable').forEach(option => { option.disabled = false; });
+                    return;
+                }
+                returnToChatAfterCombat();
+                const chatContainer = document.getElementById('text-scroll');
+                const completion = document.createElement('div');
+                completion.className = 'message assistant';
+                completion.innerHTML = '<div class="bubble">Boss Rush complete! You defeated every enemy.</div>';
+                chatContainer?.appendChild(completion);
+                if (chatContainer) chatContainer.scrollTop = chatContainer.scrollHeight;
+                return;
+            }
             returnToChatAfterCombat();
             const chatContainer = document.getElementById('text-scroll');
             const enemyName = document.querySelector('.enemyTxt')?.textContent.trim() || 'the enemy';

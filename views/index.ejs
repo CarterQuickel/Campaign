@@ -32,7 +32,7 @@
                 <input id="setupCharacterRace" name="race" type="text" maxlength="60" required>
                 <input type="hidden" name="origin" value="">
                 <div class="setupActions">
-                    <button class="saveBtn" type="submit" name="mode" value="campaign">START ADVENTURE</button>
+                    <button class="saveBtn start" type="submit" name="mode" value="campaign">START ADVENTURE</button>
                     <button class="bossRushBtn" type="submit" name="mode" value="bossRush">BOSS RUSH</button>
                 </div>
             </form>
@@ -96,7 +96,7 @@
                 </div>
         </div>
     </div>
-    <div class="darkOverlay" id="combatOverlay" data-phase="<%= combatPhase %>" data-combat-id="<%= combatId %>">
+    <div class="darkOverlay" id="combatOverlay" data-phase="<%= combatPhase %>" data-combat-id="<%= combatId %>" data-boss-rush="<%= combatBossRushActive %>">
         <div class="atkActionPanel">
             <div class="winStatus header" id="combatStatus"></div>
             <div class="combatMessage header" id="combatMessage">Choose a weapon to attack with</div>

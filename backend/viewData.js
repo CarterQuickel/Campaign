@@ -62,6 +62,7 @@ function createViewData({ state, combat, conversations, ai }) {
             enemyHP: snapshot.enemyHP,
             playerHP: snapshot.playerHP,
             combatActive: snapshot.active,
+            combatBossRushActive: snapshot.bossRush?.active || false,
             combatId: snapshot.combatId,
             combatPhase: snapshot.phase,
             combatQuestion: snapshot.question
