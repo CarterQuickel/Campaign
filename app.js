@@ -49,6 +49,7 @@ const combat = createCombatService({
     questionProvider: state.fetchQuestionForCurrentCourse,
     recordCorrectAnswer: state.recordCorrectMasteryAnswer,
     awardExperience: state.addExperience,
+    awardBossRushLevel: state.advanceBossRushLevel,
     getProgression: state.getProgression
 });
 
@@ -169,11 +170,25 @@ initializeDatabase()
             viewData,
             conversations,
             combat,
+            actions,
+            accounts,
             isAuthenticated: auth.isAuthenticated,
             getUserName: auth.getUserName
         }));
         app.use('/ask', auth.requireAuth, createAskRouter({ state, conversations, ai, actions, viewData, combat, storyDocument }));
-        app.use('/api/combat', auth.requireAuth, createCombatRouter({ combat, ai, conversations, actions, storyDocument }));
+        app.use('/api/combat', auth.requireAuth, createCombatRouter({
+            combat,
+            ai,
+            conversations,
+            actions,
+            storyDocument,
+            onBossRushLoss: async accountId => {
+                await conversations.resetCampaign(accountId);
+                state.loadSnapshot(null);
+                combat.reset();
+                await accounts.saveState(accountId, state.getSnapshot());
+            }
+        }));
         server.listen(port, () => {
             console.log(`Server running on ${serverAddress}:${port}`);
         });

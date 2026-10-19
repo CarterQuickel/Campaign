@@ -171,6 +171,7 @@ const gameState = {
     charClass: campaignClass,
     charRace: 'Elvish',
     charOrigin: '',
+    characterSetupComplete: false,
     HP: getMaxHPForLevel()
 };
     const initialGameState = JSON.parse(JSON.stringify(gameState));
@@ -188,6 +189,13 @@ function addExperience(experience) {
         gameState.HP = getMaxHPForLevel(level, gameState.charClass);
     }
 }
+function advanceBossRushLevel() {
+    level += 1;
+    XP = 0;
+    MAXXP = Math.floor(MAXXP * 1.2);
+    gameState.HP = getMaxHPForLevel(level, gameState.charClass);
+    return getProgression();
+}
 function getProgression() {
     return { level, XP, MAXXP };
 }
@@ -195,11 +203,14 @@ function getProgression() {
 // Update Character Sheet
 function updateCharacter({ name, origin, race, characterClass }) {
     const classStats = classHP.find(item => item.name === characterClass);
-    if (!classStats) return false;
-    gameState.charName = name;
-    gameState.charOrigin = origin;
-    gameState.charRace = race;
+    const characterName = String(name || '').trim();
+    const characterRace = String(race || '').trim();
+    if (!classStats || !characterName || !characterRace) return false;
+    gameState.charName = characterName;
+    gameState.charOrigin = String(origin || '').trim();
+    gameState.charRace = characterRace;
     gameState.charClass = characterClass;
+    gameState.characterSetupComplete = true;
     gameState.HP = getMaxHPForLevel(level, characterClass);
     return true;
 }
@@ -246,6 +257,10 @@ function loadSnapshot(snapshot) {
         return;
     }
     Object.assign(gameState, snapshot.gameState || {});
+    if (typeof snapshot.gameState?.characterSetupComplete !== 'boolean') {
+        // Existing saved accounts predate onboarding; preserve their characters as already configured.
+        gameState.characterSetupComplete = true;
+    }
     if (Array.isArray(snapshot.gameState?.tools)) gameState.tools = snapshot.gameState.tools;
     level = Number(snapshot.level) || 1;
     XP = Number(snapshot.XP) || 0;
@@ -275,6 +290,7 @@ function loadSnapshot(snapshot) {
 
 module.exports = {
     addExperience,
+    advanceBossRushLevel,
     claimedMilestones,
     characterClasses: classHP.map(characterClass => characterClass.name),
     gameState,

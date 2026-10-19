@@ -5,6 +5,72 @@
     flex-direction: row;
     position: relative;
 }
+.characterSetupOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.82);
+}
+.characterSetupCard {
+    display: flex;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 12px;
+    width: min(100%, 480px);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    border: 1px solid var(--accent-color);
+    border-radius: 12px;
+    background: var(--background-color);
+    box-shadow: 0 16px 60px #000;
+}
+.characterSetupCard .header {
+    color: var(--accent-color);
+    font-size: 22px;
+}
+.characterSetupCard p {
+    margin: 0 0 8px;
+    line-height: 1.5;
+}
+.characterSetupCard label {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+.characterSetupCard input,
+.characterSetupCard select {
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+}
+.characterSetupCard .saveBtn {
+    width: auto;
+    flex: 1;
+    min-height: 46px;
+    margin: 10px 0 0;
+}
+.setupActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+}
+.characterSetupCard .bossRushBtn {
+    flex: 1;
+    min-height: 46px;
+    margin-top: 10px;
+    border: 1px solid #ff9b45;
+    background: #6c351b;
+    color: #fff0dc;
+}
+.characterSetupCard .bossRushBtn:hover {
+    background: #934b23;
+    border-color: #ffc078;
+}
 .settings .close {
     position: absolute;
     top: 0;

@@ -53,6 +53,7 @@
                         <div class="tool-icon ${String(item.class || 'Misc').toLowerCase()}">${item.class === 'Weapon' ? '⚔️' : item.class === 'Armor' ? '🛡️' : item.class === 'Potion' ? '🧪' : item.class === 'Spell' ? '🔮' : '💎'}</div>
                         <div class="tool-cont">
                             <div class="tool-name"></div>
+                            <div class="tool-description"></div>
                             <div class="tool-damage"></div>
                         </div>
                     </div>`;
@@ -61,6 +62,8 @@
             }
             card.dataset.unlocked = String(item.unlocked);
             card.classList.toggle('locked', !item.unlocked);
+            const description = card.querySelector('.tool-description');
+            if (description) description.textContent = item.desc || '';
             const damage = card.querySelector('.tool-damage');
             if (damage) {
                 damage.textContent = item.damage && item.damage !== '0' ? `${item.damage} dg` : '';

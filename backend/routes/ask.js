@@ -9,6 +9,9 @@ const { enemies } = require('../../enemies/enemyStats');
 function createAskRouter({ state, conversations, ai, actions, viewData, combat, storyDocument }) {
     const router = express.Router();
     router.post('/', async (req, res, next) => {
+        if (!state.gameState.characterSetupComplete) {
+            return res.status(409).json({ message: 'Create your character before starting a conversation.' });
+        }
         const userPrompt = String(req.body.prompt || '').trim();
         let conversationId = Number(req.body.conversationId) || null;
         let userMessageSaved = false;

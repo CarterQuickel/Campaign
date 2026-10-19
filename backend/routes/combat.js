@@ -7,7 +7,7 @@ const { Tools } = require('../../StoryAPI/tools');
 const { enemies } = require('../../enemies/enemyStats');
 
 // Combat
-function createCombatRouter({ combat, ai, conversations, actions, storyDocument }) {
+function createCombatRouter({ combat, ai, conversations, actions, storyDocument, onBossRushLoss = async () => {} }) {
     const router = express.Router();
     const pendingResolutions = new Map();
     router.post('/answer', (req, res) => {
@@ -43,9 +43,13 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument 
                 status: 200,
                 body: {
                     success: true,
-                    response: cachedResponse,
+                    response: cachedResponse.responseText,
                     alreadyResolved: true,
-                    playerHP: combat.getSnapshot().playerHP
+                    playerHP: combat.getSnapshot().playerHP,
+                    combat: combat.getSnapshot(),
+                    bossRush: cachedResponse.bossRush,
+                    bossRushComplete: cachedResponse.bossRushComplete,
+                    bossRushLost: cachedResponse.bossRushLost
                 },
                 storyDocument
             };
@@ -103,8 +107,22 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument 
                 allowCombatStart: false
             }) || responseText).trim();
             await conversations.saveMessage(accountId, conversationId, 'assistant', finalResponse);
-            if (!combat.close(combatId, finalResponse)) {
+            const closed = combat.close(combatId, finalResponse);
+            if (!closed) {
                 return { status: 409, body: { success: false, message: 'Combat has already changed.' } };
+            }
+            let nextCombat = combat.getSnapshot();
+            if (nextCombat.active && nextCombat.bossRush.active) {
+                try {
+                    await combat.prepareQuestion();
+                    nextCombat = combat.getSnapshot();
+                } catch (error) {
+                    console.error('Unable to load the next boss-rush question:', error);
+                }
+            }
+            if (closed.bossRushLost) {
+                await onBossRushLoss(accountId);
+                nextCombat = combat.getSnapshot();
             }
             return {
                 status: 200,
@@ -112,7 +130,11 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument 
                     success: true,
                     response: finalResponse,
                     outcome: snapshot.phase,
-                    playerHP: combat.getSnapshot().playerHP
+                    playerHP: combat.getSnapshot().playerHP,
+                    combat: nextCombat,
+                    bossRush: closed.bossRush,
+                    bossRushComplete: closed.bossRushComplete,
+                    bossRushLost: closed.bossRushLost
                 }
             };
         } catch (error) {

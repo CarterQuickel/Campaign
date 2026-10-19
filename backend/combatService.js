@@ -14,7 +14,7 @@ function rollDamage(expression) {
 }
 
 // Initialize Combat
-function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null, awardExperience = () => {}, getProgression = () => null }) {
+function createCombatService({ gameState, enemies, questionProvider = async () => null, recordCorrectAnswer = () => null, awardExperience = () => {}, awardBossRushLevel = () => null, getProgression = () => null }) {
     let enemy = null;
     let enemyHP = 0;
     let playerHP = Math.max(0, Math.floor(gameState.HP));
@@ -23,6 +23,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
     let conversationId = null;
     let combatId = 0;
     let resolvingCombatId = null;
+    const bossRush = { active: false, index: 0, enemies: [] };
     const completedResolutions = new Map();
 
     function start(enemyName, startedInConversation = null) {
@@ -42,6 +43,22 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         conversationId = Number(startedInConversation) || null;
         combatId += 1;
         return { success: true, combatId, enemy: enemy.name };
+    }
+
+    function startBossRush(startedInConversation = null) {
+        if (phase !== 'inactive' || !enemies.length) {
+            return { success: false, message: 'A boss rush cannot be started right now.' };
+        }
+        bossRush.active = true;
+        bossRush.index = 0;
+        bossRush.enemies = enemies.map(candidate => candidate.name);
+        const result = start(bossRush.enemies[0], startedInConversation);
+        if (!result.success) {
+            bossRush.active = false;
+            bossRush.enemies = [];
+            return result;
+        }
+        return { ...result, bossRush: { index: 0, total: bossRush.enemies.length } };
     }
 
     async function prepareQuestion() {
@@ -73,6 +90,9 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         combatQuestion = null;
         conversationId = null;
         resolvingCombatId = null;
+        bossRush.active = false;
+        bossRush.index = 0;
+        bossRush.enemies = [];
         combatId += 1;
         completedResolutions.clear();
     }
@@ -145,11 +165,17 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         }
         enemyHP = Math.max(0, enemyHP - damage);
         phase = enemyHP <= 0 ? 'won' : 'result';
-        const xpAwarded = phase === 'won' ? Math.max(0, Math.floor(Number(enemy.xpReward) || 0)) : 0;
-        if (xpAwarded > 0) {
+        const bossRushLevelUp = phase === 'won' && bossRush.active && enemy.isBoss === true;
+        const xpAwarded = phase === 'won' && !bossRush.active ? Math.max(0, Math.floor(Number(enemy.xpReward) || 0)) : 0;
+        let progression = null;
+        if (bossRushLevelUp) {
+            progression = awardBossRushLevel();
+            if (gameState.HP > playerHP) playerHP = Math.floor(gameState.HP);
+        } else if (xpAwarded > 0) {
             const previousMaxHP = gameState.HP;
             awardExperience(xpAwarded);
             if (gameState.HP > previousMaxHP) playerHP = Math.floor(gameState.HP);
+            progression = getProgression();
         }
         return {
             status: 200,
@@ -160,10 +186,10 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
                 playerHP,
                 playerMaxHP: gameState.HP,
                 xpAwarded,
-                progression: xpAwarded > 0 ? getProgression() : null,
+                progression,
                 phase,
                 message: enemyHP <= 0
-                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated! You gain ${xpAwarded} XP.`
+                    ? `${item.name} deals ${damage} damage. ${enemy.name} is defeated!${bossRushLevelUp ? ' You gain one level!' : xpAwarded ? ` You gain ${xpAwarded} XP.` : ''}`
                     : `${item.name} deals ${damage} damage.`
             }
         };
@@ -214,20 +240,53 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
 
     function close(requestedCombatId, responseText) {
         if (Number(requestedCombatId) !== combatId || resolvingCombatId !== combatId || (phase !== 'won' && phase !== 'lost')) return false;
-        completedResolutions.set(combatId, { conversationId, responseText });
+        const resolvedPhase = phase;
+        const wasBossRush = bossRush.active;
+        const resolvedConversationId = conversationId;
         enemy = null;
         enemyHP = 0;
-        playerHP = Math.max(0, Math.floor(gameState.HP));
         phase = 'inactive';
         conversationId = null;
         resolvingCombatId = null;
-        return true;
+        let bossRushComplete = false;
+        let bossRushLost = false;
+        if (wasBossRush && resolvedPhase === 'won') {
+            bossRush.index += 1;
+            if (bossRush.index >= bossRush.enemies.length) {
+                bossRush.active = false;
+                bossRushComplete = true;
+            } else {
+                const nextEnemyName = bossRush.enemies[bossRush.index];
+                const carriedPlayerHP = playerHP;
+                const nextCombat = start(nextEnemyName, resolvedConversationId);
+                if (!nextCombat.success) {
+                    bossRush.active = false;
+                    bossRush.enemies = [];
+                    bossRushComplete = true;
+                } else {
+                    playerHP = carriedPlayerHP;
+                }
+            }
+        } else if (wasBossRush && resolvedPhase === 'lost') {
+            bossRush.active = false;
+            bossRushLost = true;
+        } else {
+            playerHP = Math.max(0, Math.floor(gameState.HP));
+        }
+        completedResolutions.set(Number(requestedCombatId), {
+            conversationId: resolvedConversationId,
+            responseText,
+            bossRush: wasBossRush,
+            bossRushComplete,
+            bossRushLost
+        });
+        return { success: true, bossRush: wasBossRush, bossRushComplete, bossRushLost };
     }
 
     function getCompletedResolution(requestedCombatId, requestedConversationId) {
         const completed = completedResolutions.get(Number(requestedCombatId));
         if (!completed || completed.conversationId !== (Number(requestedConversationId) || null)) return null;
-        return completed.responseText;
+        return completed;
     }
 
     function getSnapshot() {
@@ -240,7 +299,12 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             active: Boolean(enemy),
             combatId,
             conversationId,
-            question: getPublicQuestion(combatQuestion)
+            question: getPublicQuestion(combatQuestion),
+            bossRush: {
+                active: bossRush.active,
+                index: bossRush.index,
+                total: bossRush.enemies.length
+            }
         };
     }
 
@@ -257,7 +321,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         };
     }
 
-    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start };
+    return { answer, attack, beginResolution, canResolve, cancelResolution, close, continueCombat, getCompletedResolution, getSnapshot, healPlayerToMax, prepareQuestion, reset, start, startBossRush };
 }
 
 module.exports = { createCombatService };

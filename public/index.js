@@ -631,6 +631,24 @@ function returnToChatAfterCombat() {
     }
 }
 
+function enterNextBossRushCombat(snapshot) {
+    updateCombatSnapshot(snapshot);
+    document.body.classList.add('combat-active');
+    const questionPanel = document.getElementById('questionPanel');
+    const chatPanel = document.getElementById('chat');
+    const centerPanel = document.querySelector('.centerCont');
+    if (window.matchMedia('(max-width: 767px)').matches) {
+        if (centerPanel) centerPanel.style.display = 'flex';
+        if (questionPanel) questionPanel.style.display = 'flex';
+        if (chatPanel) chatPanel.style.display = 'none';
+    } else {
+        if (questionPanel) questionPanel.style.removeProperty('display');
+        if (chatPanel) chatPanel.style.removeProperty('display');
+    }
+    combatOverlay.classList.remove('open');
+    combatOverlay.setAttribute('aria-hidden', 'true');
+}
+
 function restoreCombatUI() {
     if (!document.body.classList.contains('combat-active') || !combatOverlay) return;
     const phase = combatOverlay.dataset.phase;
@@ -807,7 +825,19 @@ combatContinue?.addEventListener('click', async () => {
                 ? `${enemyName} has fallen. What happens next is yours to decide.`
                 : `${enemyName} has overcome you, but this is not necessarily the end. What do you do next?`;
             await typeAIResponseIntoElement(result.response || fallbackText, continuationBubble);
-            document.querySelectorAll('.encounterPrompt').forEach(button => button.remove());
+            if (result.bossRushLost) {
+                continuationBubble.textContent += ' Your boss rush is over; your campaign progress has been reset.';
+                window.location.assign('/');
+                return;
+            }
+            if (result.bossRush && result.combat?.active && result.combat.bossRush?.active) {
+                enterNextBossRushCombat(result.combat);
+            } else {
+                document.querySelectorAll('.encounterPrompt').forEach(button => button.remove());
+                if (result.bossRushComplete) {
+                    continuationBubble.textContent += ' Boss Rush complete!';
+                }
+            }
         }
         if (phase !== 'won' && phase !== 'lost') {
             combatOverlay.classList.remove('open');

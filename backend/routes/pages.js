@@ -1,10 +1,13 @@
 const express = require('express');
 
 // Pages
-function createPagesRouter({ state, viewData, conversations, combat, isAuthenticated, getUserName }) {
+function createPagesRouter({ state, viewData, conversations, combat, actions, accounts, isAuthenticated, getUserName }) {
     const router = express.Router();
     router.post('/api/conversations', async (req, res, next) => {
         if (!isAuthenticated(req)) return res.status(401).json({ message: 'Log in with Formbar to use Charma.' });
+        if (!state.gameState.characterSetupComplete) {
+            return res.status(409).json({ message: 'Create your character before starting a conversation.' });
+        }
         try {
             const title = String(req.body?.title || 'New conversation').trim().slice(0, 80) || 'New conversation';
             const conversationId = await conversations.createConversation(req.accountId, title);
@@ -87,16 +90,34 @@ function createPagesRouter({ state, viewData, conversations, combat, isAuthentic
             next(error);
         }
     });
-    router.post('/updateSheet', (req, res) => {
+    router.post('/updateSheet', async (req, res, next) => {
         if (!isAuthenticated(req)) return res.status(401).send('Log in with Formbar to update your character.');
+        const name = String(req.body.name || '').trim();
+        const race = String(req.body.race || '').trim();
+        if (!name || name.length > 40) return res.status(400).send('Enter a character name of 1 to 40 characters.');
+        if (!race || race.length > 60) return res.status(400).send('Enter a race of 1 to 60 characters.');
         const updated = state.updateCharacter({
-            name: req.body.name,
+            name,
             origin: req.body.origin,
-            race: req.body.race,
+            race,
             characterClass: req.body.class
         });
         if (!updated) return res.status(400).send('Unknown character class.');
-        res.redirect('/');
+        try {
+            if (req.body.mode === 'bossRush') {
+                actions.unlockAllItems();
+                const conversationId = await conversations.createConversation(req.accountId, 'Boss Rush');
+                const started = combat.startBossRush(conversationId);
+                if (!started.success) return res.status(409).send(started.message);
+                await combat.prepareQuestion();
+                await accounts.saveState(req.accountId, state.getSnapshot());
+                return res.redirect(`/?conversationId=${conversationId}`);
+            }
+            await accounts.saveState(req.accountId, state.getSnapshot());
+            return res.redirect('/');
+        } catch (error) {
+            return next(error);
+        }
     });
     router.get('/mastery', async (req, res, next) => {
         if (!isAuthenticated(req)) return res.redirect('/');
