@@ -50,20 +50,22 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
                 enemies: enemies.map(enemy => enemy.name),
                 storyDocument
             };
+            if (/^TEST:\s*Give me a random tool$/i.test(userPrompt)) {
+                const randomItem = actions.getRandomAvailableItem();
+                const testResponse = randomItem
+                    ? `You have unlocked the ${randomItem.name}.`
+                    : 'There are no more eligible tools to unlock.';
+                if (randomItem) actions.unlockItem(randomItem.name);
+                await conversations.saveMessage(req.accountId, conversationId, 'assistant', testResponse);
+                conversations.setResponsePending(conversationId, false);
+                return res.json({ conversationId, response: testResponse, combat: null });
+            }
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             let startedCombat = null;
             let finalResponse = actions.apply(responseText, {
                 conversationId,
                 onCombatStarted: result => { startedCombat = result; }
             }) || responseText;
-            if (/^TEST:\s*Give me a random tool$/i.test(userPrompt)
-                && !/You have unlocked the /i.test(finalResponse)) {
-                const randomItem = actions.getRandomAvailableItem();
-                if (randomItem) {
-                    actions.unlockItem(randomItem.name);
-                    finalResponse = `You have unlocked the ${randomItem.name}.`;
-                }
-            }
             finalResponse = finalResponse.trim();
             await conversations.saveMessage(req.accountId, conversationId, 'assistant', finalResponse);
             let combatPrompt = null;
