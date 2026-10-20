@@ -57,6 +57,9 @@ function createAiService({
         const openingInstruction = storyContext.isOpeningScene
             ? 'OPENING SCENE RULE: This is the first turn. Start at the entrance to the ruined kingdom of Haldritch. Establish the ruined palace in the distance and the nearby Scouts\' Camp, then direct the hero toward the Fallen Palace. Do not begin in a later location, skip ahead, or assume the hero has already met the Oracle or entered another landmark.'
             : '';
+        const storyProgressInstruction = storyContext.totalStoryParts
+            ? `STORY PROGRESS: You are in story part ${storyContext.storyPart} of ${storyContext.totalStoryParts}. Use only the current part below. Do not reveal events from later parts. ${storyContext.storyPartAdvanced ? 'The player has just continued to this part, so begin its opening scene.' : 'When the current part reaches a natural ending, tell the player to say "Continue Story".'}`
+            : '';
         const response = await fetchImpl(`${baseUrl}/api/generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -67,6 +70,7 @@ function createAiService({
                     openingInstruction,
                     testRewardInstruction,
                     `STORY-SPECIFIC REWARD LORE (authoritative; these named rewards are part of the world even when the player cannot currently unlock them):\n${JSON.stringify(storyRewardLore, null, 2)}`,
+                    storyProgressInstruction,
                     `STORY DOCUMENT CONTEXT (use this for the world's narrative, lore, and plot details; do not contradict it):\n${storyDocument}`,
                     `FINAL ITEM RULE: Inventory item names come ONLY from the canonical item list below, which is built from StoryAPI/storySpecRewards.js and StoryAPI/tools.js. The story document is lore only and MUST NOT introduce, award, or rename an item. Never say the player received, picked up, was given, or now has an item unless its exact name appears in this list and you output the unlock_item action with that exact name. The item named flashlight is not valid unless it appears in this list. Canonical item list: ${JSON.stringify(availableItems)}`,
                     `AUTHORITATIVE ITEM DATA: Use only the exact fields in this catalog for item names, classes, damage, AC, weight, and descriptions. Do not invent abilities, passive effects, active effects, damage, or other statistics. If a field is absent or does not support a claim, say that no such detail is defined.\n${JSON.stringify(itemCatalog, null, 2)}`,
