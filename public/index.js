@@ -887,6 +887,11 @@ combatContinue?.addEventListener('click', async () => {
                 window.location.assign('/');
                 return;
             }
+            if (result.campaignLost) {
+                continuationBubble.textContent += ' Your campaign ended; choose a new mode to begin again.';
+                window.location.assign('/');
+                return;
+            }
             if (result.bossRush && result.combat?.active && result.combat.bossRush?.active) {
                 enterNextBossRushCombat(result.combat);
             } else {

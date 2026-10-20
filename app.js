@@ -254,6 +254,12 @@ initializeDatabase()
                 state.loadSnapshot(null);
                 combat.reset();
                 await accounts.saveState(accountId, state.getSnapshot());
+            },
+            onCampaignLoss: async accountId => {
+                await conversations.resetCampaign(accountId);
+                state.loadSnapshot(null);
+                combat.reset();
+                await accounts.saveState(accountId, state.getSnapshot());
             }
         }));
         server.listen(port, () => {
