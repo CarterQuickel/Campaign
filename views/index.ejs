@@ -127,6 +127,18 @@
             </div>
         </div>
     </div>
+    <div class="campaignCompletionOverlay" id="campaignCompletionOverlay" hidden aria-hidden="true">
+        <section class="campaignCompletionCard" role="dialog" aria-modal="true" aria-labelledby="campaignCompletionTitle">
+            <p class="campaignCompletionEyebrow">THE CAMPAIGN IS COMPLETE</p>
+            <h1 id="campaignCompletionTitle">The Forthcoming has fallen</h1>
+            <p class="campaignCompletionIntro">Here is the record of your adventure.</p>
+            <div class="campaignStatsGrid" id="campaignStatsGrid"></div>
+            <p class="campaignCompletionError" id="campaignCompletionError" role="alert" hidden></p>
+            <div class="campaignCompletionActions">
+                <button type="button" id="campaignCompletionContinue">CONTINUE</button>
+            </div>
+        </section>
+    </div>
     <div id="SuperCont">
         <div id="inventoryCont">
             <div class="contBan">
@@ -222,7 +234,7 @@
                                     BLUE
                                 </button>
                             </div>
-                            <div class="header">LAYOUT</div>
+                            <div class="header">Layout</div>
                             <div class="toggleCont panels">
                                 <div class="desc">
                                     <div class="name">Hide Side Panels</div>
@@ -253,7 +265,7 @@
                             <textarea name="origin" class="origin" id="origin"><%= charData.origin %></textarea>
                             <div class="header" style="margin-bottom: 10px;">Character</div>
                             <div class="textareaCont">
-                                <div class="textTitle">Character Name</div>
+                                <div class="textTitle">Name</div>
                                 <textarea name="name" class="cName"><%= charData.name %></textarea>
                             </div>
                             <div class="textareaCont">
@@ -319,7 +331,7 @@
                         </div>
                         <progress id="enemyHPBar" value="<%= enemyHP %>" max="<%= enemies.HP %>"></progress>
                     </div>
-                    <div class="enemyHP" style="margin-top: -50px;">
+                    <div class="enemyHP player">
                         <div class="enemCont">
                             <label class="enemyTxt">You</label>
                             <div class="HPTxt" id="playerHPDisplay"><%= playerHP %>/<%= charData.HP %> HP</div>
@@ -379,8 +391,6 @@
                                         <div class="preCont">
                                             <button type="button" class="preResponse">Where am I?</button>
                                             <button type="button" class="preResponse">What's happened so far?</button>
-                                            <button type="button" class="preResponse">TEST: Make a random enemy fight</button>
-                                            <button type="button" class="preResponse">TEST: Give me a random tool</button>
                                         </div>
                                         <textarea name="prompt" placeholder="Describe your action or ask the DM..."
                                             id="chatbox" required><%= prompt || '' %></textarea>

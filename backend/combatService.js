@@ -240,7 +240,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         return true;
     }
 
-    function close(requestedCombatId, responseText) {
+    function close(requestedCombatId, responseText, completion = {}) {
         if (Number(requestedCombatId) !== combatId || resolvingCombatId !== combatId || (phase !== 'won' && phase !== 'lost')) return false;
         const resolvedPhase = phase;
         const wasBossRush = bossRush.active;
@@ -285,9 +285,19 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             bossRush: wasBossRush,
             bossRushComplete,
             bossRushLost,
-            campaignLost
+            campaignLost,
+            campaignComplete: Boolean(completion.campaignComplete),
+            campaignStats: completion.campaignStats || null
         });
-        return { success: true, bossRush: wasBossRush, bossRushComplete, bossRushLost, campaignLost };
+        return {
+            success: true,
+            bossRush: wasBossRush,
+            bossRushComplete,
+            bossRushLost,
+            campaignLost,
+            campaignComplete: Boolean(completion.campaignComplete),
+            campaignStats: completion.campaignStats || null
+        };
     }
 
     function advanceBossRush(requestedCombatId) {

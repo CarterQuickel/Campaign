@@ -6,8 +6,16 @@ const { storySpecRewards } = require('../../StoryAPI/storySpecRewards');
 const { Tools } = require('../../StoryAPI/tools');
 const { enemies } = require('../../enemies/enemyStats');
 
+const FINAL_CAMPAIGN_ENEMY = 'the forthcoming';
+
+function isFinalCampaignVictory(snapshot) {
+    return snapshot?.phase === 'won'
+        && !snapshot.bossRush?.active
+        && snapshot.enemy?.name?.trim().toLowerCase() === FINAL_CAMPAIGN_ENEMY;
+}
+
 // Combat
-function createCombatRouter({ combat, ai, conversations, actions, storyDocument, onBossRushLoss = async () => {}, onCampaignLoss = async () => {} }) {
+function createCombatRouter({ combat, ai, conversations, actions, storyDocument, getCampaignStats = () => null, onBossRushLoss = async () => {}, onCampaignLoss = async () => {} }) {
     const router = express.Router();
     const pendingResolutions = new Map();
     router.post('/answer', (req, res) => {
@@ -16,6 +24,14 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
     });
     router.post('/attack', (req, res) => {
         const result = combat.attack(req.body.itemName, req.body.combatId);
+        const snapshot = combat.getSnapshot();
+        if (result.body.success && isFinalCampaignVictory(snapshot)) {
+            return res.status(result.status).json({
+                ...result.body,
+                campaignComplete: true,
+                campaignStats: getCampaignStats(snapshot.playerHP)
+            });
+        }
         return res.status(result.status).json(result.body);
     });
     router.post('/advance-boss-rush', async (req, res) => {
@@ -63,7 +79,9 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
                     bossRush: cachedResponse.bossRush,
                     bossRushComplete: cachedResponse.bossRushComplete,
                     bossRushLost: cachedResponse.bossRushLost,
-                    campaignLost: cachedResponse.campaignLost
+                    campaignLost: cachedResponse.campaignLost,
+                    campaignComplete: cachedResponse.campaignComplete,
+                    campaignStats: cachedResponse.campaignStats
                 },
                 storyDocument
             };
@@ -106,6 +124,24 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
                         outcome: 'lost',
                         campaignLost: true,
                         combat: combat.getSnapshot()
+                    }
+                };
+            }
+            if (isFinalCampaignVictory(snapshot)) {
+                const campaignStats = getCampaignStats(snapshot.playerHP);
+                const responseText = 'The Forthcoming has fallen. Your campaign is complete!';
+                await conversations.saveMessage(accountId, conversationId, 'assistant', responseText);
+                const closed = combat.close(combatId, responseText, { campaignComplete: true, campaignStats });
+                if (!closed) return { status: 409, body: { success: false, message: 'Combat has already changed.' } };
+                return {
+                    status: 200,
+                    body: {
+                        success: true,
+                        response: responseText,
+                        outcome: 'won',
+                        playerHP: snapshot.playerHP,
+                        campaignComplete: true,
+                        campaignStats
                     }
                 };
             }

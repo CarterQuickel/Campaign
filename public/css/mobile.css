@@ -4,13 +4,13 @@
         display: flex;
         flex-direction: column;
         height: 100vh;
+        height: 100dvh;
     }
     .response-area {
         border: none;
     }
     #SuperCont {
-        flex: 1;
-        flex-shrink: 0;
+        flex: 1 1 auto;
         min-height: 0;
     } 
     .response-box {
@@ -228,5 +228,8 @@
     }
     .answerCont {
         padding: 0px 60px 60px 60px !important;
+    }
+    .enemyHP.player {
+        margin-top: -40px !important;
     }
 }

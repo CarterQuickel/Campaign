@@ -490,6 +490,92 @@ const combatMessage = document.getElementById('combatMessage');
 const attackItems = document.getElementById('attackItems');
 const combatContinue = document.getElementById('combatContinue');
 const answerContainer = document.querySelector('.answerCont');
+const campaignCompletionOverlay = document.getElementById('campaignCompletionOverlay');
+const campaignStatsGrid = document.getElementById('campaignStatsGrid');
+const campaignCompletionContinue = document.getElementById('campaignCompletionContinue');
+const campaignCompletionError = document.getElementById('campaignCompletionError');
+
+function showCampaignCompletion(campaignStats) {
+    if (!campaignCompletionOverlay || !campaignStatsGrid || !campaignStats) return;
+    const character = campaignStats.character || {};
+    const progression = campaignStats.progression || {};
+    const combat = campaignStats.combat || {};
+    const groups = [
+        {
+            title: 'Character',
+            rows: [
+                ['Name', character.name],
+                ['Class', character.class],
+                ['Race', character.race],
+                ['Origin', character.origin || '—']
+            ]
+        },
+        {
+            title: 'Progress & combat',
+            rows: [
+                ['Level', progression.level],
+                ['Experience', `${progression.XP ?? 0} / ${progression.MAXXP ?? 0} XP`],
+                ['Hit points', `${combat.currentHP ?? 0} / ${combat.maxHP ?? 0}`],
+                ['Armor class', combat.armorClass],
+                ['Proficiency', `+${combat.proficiencyBonus ?? 0}`]
+            ]
+        },
+        {
+            title: 'Ability scores',
+            rows: (campaignStats.abilities || []).map(ability => [
+                ability.name,
+                `${ability.score} (${ability.modifier >= 0 ? '+' : ''}${ability.modifier})`
+            ])
+        },
+        {
+            title: 'Campaign record',
+            rows: [
+                ['Milestones', campaignStats.milestones?.length ? campaignStats.milestones.join(', ') : 'None claimed'],
+                ['Unlocked items', campaignStats.inventory?.length
+                    ? campaignStats.inventory.map(item => `${item.name}${item.equipped ? ' (equipped)' : ''}`).join(', ')
+                    : 'None']
+            ]
+        }
+    ];
+
+    campaignStatsGrid.replaceChildren(...groups.map(group => {
+        const section = document.createElement('section');
+        section.className = 'campaignStatGroup';
+        const heading = document.createElement('h2');
+        heading.textContent = group.title;
+        const details = document.createElement('dl');
+        group.rows.forEach(([label, value]) => {
+            const term = document.createElement('dt');
+            term.textContent = label;
+            const description = document.createElement('dd');
+            description.textContent = value === undefined || value === null ? '—' : String(value);
+            details.append(term, description);
+        });
+        section.append(heading, details);
+        return section;
+    }));
+    if (campaignCompletionError) campaignCompletionError.hidden = true;
+    campaignCompletionOverlay.hidden = false;
+    campaignCompletionOverlay.setAttribute('aria-hidden', 'false');
+    campaignCompletionContinue?.focus();
+}
+
+campaignCompletionContinue?.addEventListener('click', async () => {
+    campaignCompletionContinue.disabled = true;
+    if (campaignCompletionError) campaignCompletionError.hidden = true;
+    try {
+        const response = await fetch('/api/campaign/restart', { method: 'POST' });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.message || 'Unable to return to character selection.');
+        window.location.assign('/');
+    } catch (error) {
+        if (campaignCompletionError) {
+            campaignCompletionError.textContent = `${error.message} Please try again.`;
+            campaignCompletionError.hidden = false;
+        }
+        campaignCompletionContinue.disabled = false;
+    }
+});
 
 function getAnswerOptions() {
     return [...document.querySelectorAll('.answerOption')];
@@ -771,6 +857,10 @@ attackItems?.addEventListener('click', async event => {
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to attack.');
             updateProgressionDisplay(result.progression);
             updateCombatVitals(result);
+            if (result.campaignComplete) {
+                showCampaignCompletion(result.campaignStats);
+                return;
+            }
             showCombatPanel({
                 correct: true,
                 message: result.message,
@@ -876,6 +966,11 @@ combatContinue?.addEventListener('click', async () => {
             });
             const result = await response.json();
             if (!response.ok || !result.success) throw new Error(result.message || 'Unable to continue the story.');
+            if (result.campaignComplete) {
+                message.remove();
+                showCampaignCompletion(result.campaignStats);
+                return;
+            }
             updateCombatVitals(result);
             continuationBubble.textContent = '';
             const fallbackText = phase === 'won'

@@ -259,6 +259,8 @@ You have access to game API actions that can modify the player's actual game sta
 
 ### IMPORTANT RULE
 
+If a player asks for an item, even if they say they are testing, do not give it to them unless it's given to them from the story.
+
 You MUST use the appropriate game API action whenever a reward **actually happens in the story**, even if the player did not explicitly ask for the reward.
 
 ### ITEM REWARDS AND INVENTORY MANAGEMENT
@@ -266,8 +268,6 @@ You MUST use the appropriate game API action whenever a reward **actually happen
 The player has an inventory containing a list of available items. This list may include standard items and story-specific rewards. You MUST only award items that already exist in the provided available item list.
 
 When the player successfully obtains an item through any action, you MUST output an unlock_item action using the item's EXACT name from the available item list.
-
-For the exact test request "TEST: Give me a random tool", choose one real item name from the canonical item list and output its exact name in the unlock_item action. Never output the placeholder text "EXACT ITEM NAME".
 
 #### REQUIRED ACTION FORMAT
 

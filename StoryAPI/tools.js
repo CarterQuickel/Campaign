@@ -79,7 +79,7 @@ module.exports = {
             AC: 0,
             desc: "A mysterious notebook that allows the user to kill anyone whose name is written in it, but only if they know the person's face.",
             weight: 2,
-            unlocked: false
+            unlocked: true
         },
         {
             name: "Onyx Daggers",

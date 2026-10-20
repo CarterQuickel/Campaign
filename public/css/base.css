@@ -337,3 +337,93 @@ button:hover {
     min-height: 56px;
     cursor: pointer;
 }
+.campaignCompletionOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.78);
+}
+.campaignCompletionOverlay[hidden],
+.campaignCompletionError[hidden] {
+    display: none !important;
+}
+.campaignCompletionCard {
+    width: min(920px, 100%);
+    max-height: calc(100vh - 40px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    padding: clamp(20px, 4vw, 36px);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--background-color);
+    box-shadow: 0 18px 70px rgba(0, 0, 0, 0.55);
+}
+.campaignCompletionEyebrow {
+    margin-bottom: 8px;
+    color: var(--accent-color);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+.campaignCompletionCard h1 {
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-family: 'Cinzel', var(--thin-font);
+    font-size: clamp(24px, 5vw, 38px);
+}
+.campaignCompletionIntro {
+    margin-bottom: 22px;
+    color: var(--primary-color);
+}
+.campaignStatsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 12px;
+}
+.campaignStatGroup {
+    min-width: 0;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background-color);
+}
+.campaignStatGroup h2 {
+    margin-bottom: 10px;
+    color: var(--accent-color);
+    font-size: 14px;
+}
+.campaignStatGroup dl {
+    display: grid;
+    grid-template-columns: minmax(75px, auto) minmax(0, 1fr);
+    gap: 7px 12px;
+    margin: 0;
+}
+.campaignStatGroup dt {
+    color: var(--primary-color);
+    font-size: 13px;
+}
+.campaignStatGroup dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-color);
+    font-size: 13px;
+    font-weight: 700;
+}
+.campaignCompletionError {
+    margin-top: 14px;
+    color: #ff7777;
+}
+.campaignCompletionActions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+.campaignCompletionActions button {
+    min-width: 180px;
+    min-height: 48px;
+}

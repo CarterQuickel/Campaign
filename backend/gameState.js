@@ -200,6 +200,35 @@ function getProgression() {
     return { level, XP, MAXXP };
 }
 
+function getCampaignStats(currentHP = gameState.HP) {
+    const abilityNames = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'];
+    const currentHitPoints = Number(currentHP);
+    return {
+        character: {
+            name: gameState.charName,
+            class: gameState.charClass,
+            race: gameState.charRace,
+            origin: gameState.charOrigin
+        },
+        progression: { level, XP, MAXXP },
+        combat: {
+            currentHP: Number.isFinite(currentHitPoints) ? Math.max(0, Math.floor(currentHitPoints)) : gameState.HP,
+            maxHP: gameState.HP,
+            armorClass: Math.floor((stats[1] - 10) / 2) + 10,
+            proficiencyBonus: Math.floor(level / 4) + 2
+        },
+        abilities: abilityNames.map((name, index) => ({
+            name,
+            score: stats[index],
+            modifier: Math.floor((stats[index] - 10) / 2)
+        })),
+        milestones: [...claimedMilestones],
+        inventory: gameState.tools
+            .filter(tool => tool.unlocked)
+            .map(({ name, class: itemClass, damage, AC, equipped }) => ({ name, class: itemClass, damage, AC, equipped }))
+    };
+}
+
 // Update Character Sheet
 function updateCharacter({ name, origin, race, characterClass }) {
     const classStats = classHP.find(item => item.name === characterClass);
@@ -297,6 +326,7 @@ module.exports = {
     fetchQuestionForCurrentCourse,
     getSnapshot,
     getProgression,
+    getCampaignStats,
     getCurrentMasteryUnit,
     initializeMasteryCourseSets,
     loadSnapshot,

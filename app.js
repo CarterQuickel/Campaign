@@ -249,6 +249,7 @@ initializeDatabase()
             conversations,
             actions,
             storyDocument,
+            getCampaignStats: state.getCampaignStats,
             onBossRushLoss: async accountId => {
                 await conversations.resetCampaign(accountId);
                 state.loadSnapshot(null);

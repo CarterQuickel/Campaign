@@ -280,7 +280,7 @@ module.exports = {
             isBoss: true,
             image: "/enemies/enemy_images/story1/Forthcoming.jpg",
             HP: 908,
-            xpReward: 80000,
+            xpReward: 0,
             AC: 17,
             attacks: {
                 atk1: {
