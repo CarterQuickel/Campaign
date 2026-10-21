@@ -55,15 +55,6 @@ module.exports = {
             unlocked: false
         },
         {
-            name: "Death Note (with pen)",
-            class: "Misc",
-            damage: "9d20+2000",
-            AC: 0,
-            desc: "A mysterious notebook that allows the user to kill anyone whose name is written in it, but only if they know the person's face.",
-            weight: 2,
-            unlocked: true
-        },
-        {
             name: "Onyx Daggers",
             class: "Weapon",
             damage: "1d4",
