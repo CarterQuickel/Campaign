@@ -240,7 +240,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         return true;
     }
 
-    function close(requestedCombatId, responseText) {
+    function close(requestedCombatId, responseText, completion = {}) {
         if (Number(requestedCombatId) !== combatId || resolvingCombatId !== combatId || (phase !== 'won' && phase !== 'lost')) return false;
         const resolvedPhase = phase;
         const wasBossRush = bossRush.active;
@@ -252,6 +252,7 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         resolvingCombatId = null;
         let bossRushComplete = false;
         let bossRushLost = false;
+        let campaignLost = false;
         if (wasBossRush && resolvedPhase === 'won') {
             bossRush.index += 1;
             if (bossRush.index >= bossRush.enemies.length) {
@@ -272,6 +273,9 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
         } else if (wasBossRush && resolvedPhase === 'lost') {
             bossRush.active = false;
             bossRushLost = true;
+        } else if (resolvedPhase === 'lost') {
+            campaignLost = true;
+            playerHP = Math.max(0, Math.floor(gameState.HP));
         } else {
             playerHP = Math.max(0, Math.floor(gameState.HP));
         }
@@ -280,9 +284,20 @@ function createCombatService({ gameState, enemies, questionProvider = async () =
             responseText,
             bossRush: wasBossRush,
             bossRushComplete,
-            bossRushLost
+            bossRushLost,
+            campaignLost,
+            campaignComplete: Boolean(completion.campaignComplete),
+            campaignStats: completion.campaignStats || null
         });
-        return { success: true, bossRush: wasBossRush, bossRushComplete, bossRushLost };
+        return {
+            success: true,
+            bossRush: wasBossRush,
+            bossRushComplete,
+            bossRushLost,
+            campaignLost,
+            campaignComplete: Boolean(completion.campaignComplete),
+            campaignStats: completion.campaignStats || null
+        };
     }
 
     function advanceBossRush(requestedCombatId) {

@@ -33,8 +33,8 @@ const io = new Server(server);
 const port = Number(process.env.PORT) || 3000;
 const serverAddress = process.env.IP_ADDRESS || 'http://localhost';
 const ai = createAiService({
-    baseUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
-    model: process.env.OLLAMA_MODEL || process.env.AI_MODEL || 'llama3.2:latest'
+    apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY,
+    model: process.env.OPENAI_MODEL || 'gpt-4.1-nano'
 });
 const configuredBaseUrl = process.env.THIS_URL || serverAddress;
 const publicBaseUrl = new URL(configuredBaseUrl);
@@ -126,7 +126,7 @@ app.post('/reset-password', auth.resetPassword);
 
 app.get('/api/ai-status', async (req, res) => {
     const ready = await ai.checkStatus();
-    if (!ready) return res.status(503).json({ ready: false, message: 'AI server not ready' });
+    if (!ready) return res.status(503).json({ ready: false, message: 'OpenAI not ready' });
     return res.json({ ready: true, message: 'AI online' });
 });
 // Socket
@@ -251,7 +251,14 @@ initializeDatabase()
             conversations,
             actions,
             storyDocument,
+            getCampaignStats: state.getCampaignStats,
             onBossRushLoss: async accountId => {
+                await conversations.resetCampaign(accountId);
+                state.loadSnapshot(null);
+                combat.reset();
+                await accounts.saveState(accountId, state.getSnapshot());
+            },
+            onCampaignLoss: async accountId => {
                 await conversations.resetCampaign(accountId);
                 state.loadSnapshot(null);
                 combat.reset();

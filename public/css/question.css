@@ -47,7 +47,7 @@ body.combat-active #chat {
     display: flex;
     height: 30px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: left;
     color: var(--primary-color);
     font-size: 16px;
     transition: all 0.1s ease;
@@ -103,4 +103,8 @@ body.combat-active #chat {
 }
 .playerPB::-webkit-progress-value {
     background-color: rgb(78, 146, 15) !important;
+}
+
+.enemyHP.player {
+    margin-top: -50px;
 }
