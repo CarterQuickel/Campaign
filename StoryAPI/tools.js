@@ -28,15 +28,6 @@ module.exports = {
             unlocked: false
         },
         {
-            name: "Potion of Luck",
-            class: "Potion",
-            damage: "0",
-            AC: 0,
-            desc: "A potion that increases the drinker's luck, granting advantage on all rolls for 1 hour.",
-            weight: 1,
-            unlocked: false
-        },
-        {
             name: "Alteration Wand",
             class: "Misc",
             damage: "1d4",
@@ -59,17 +50,8 @@ module.exports = {
             class: "Spell",
             damage: "2d4",
             AC: 0,
-            desc: "A spell that attempts to boil an enemy from the inside, dealing 1d6 damage per turn for the duration of combat.",
+            desc: "A spell that attempts to boil an enemy from the inside.",
             weight: 0,
-            unlocked: false
-        },
-        {
-            name: "Death Note (no pen)",
-            class: "Misc",
-            damage: "0",
-            AC: 0,
-            desc: "A mysterious notebook that allows the user to kill anyone whose name is written in it, but only if they know the person's face, and they have a pen to write with.",
-            weight: 1,
             unlocked: false
         },
         {
@@ -89,15 +71,6 @@ module.exports = {
             desc: "A pair of daggers made from onyx, they are light and easy to conceal.",
             weight: 8,
             unlocked: true
-        },
-        {
-            name: "Inevitable Death in the Form of a Cursemark",
-            class: "Misc",
-            damage: "0",
-            AC: 0,
-            desc: "A cursemark that slowly drains the life force of the bearer, eventually leading to their death.",
-            weight: 0,
-            unlocked: false
         }
     ]
 }

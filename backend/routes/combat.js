@@ -10,7 +10,6 @@ const FINAL_CAMPAIGN_ENEMY = 'the forthcoming';
 
 function isFinalCampaignVictory(snapshot) {
     return snapshot?.phase === 'won'
-        && !snapshot.bossRush?.active
         && snapshot.enemy?.name?.trim().toLowerCase() === FINAL_CAMPAIGN_ENEMY;
 }
 

@@ -88,7 +88,7 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
             conversations.setResponsePending(conversationId, false);
             return res.json({ conversationId, response: finalResponse, combat: combatPrompt });
         } catch (error) {
-            console.error('Ollama Error:', error);
+            console.error('OpenAI Error:', error);
             try {
                 const failureMessage = `AI request failed: ${error.message}`;
                 if (conversationId && userMessageSaved) {
