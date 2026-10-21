@@ -1,18 +1,26 @@
 const fs = require('fs/promises');
 const path = require('path');
-const mammoth = require('mammoth');
 
-const DEFAULT_PATH = path.join(__dirname, '..', 'story.docx');
-const MAX_CHARS = Number(process.env.STORY_CONTEXT_MAX_CHARS) || 30000;
+const DEFAULT_PATH = path.join(__dirname, '..', 'storyParts');
 
-async function loadStoryDocument(filePath = DEFAULT_PATH) {
+async function loadStoryDocument(directoryPath = DEFAULT_PATH) {
     try {
-        await fs.access(filePath);
-        const result = await mammoth.extractRawText({ path: filePath });
-        return result.value.trim().slice(0, MAX_CHARS);
+        const fileNames = (await fs.readdir(directoryPath))
+            .filter(fileName => /^storyPart\d+\.md$/i.test(fileName))
+            .sort((left, right) => {
+                const leftNumber = Number(left.match(/\d+/)?.[0]);
+                const rightNumber = Number(right.match(/\d+/)?.[0]);
+                return leftNumber - rightNumber;
+            });
+
+        return Promise.all(fileNames.map(async fileName => ({
+            number: Number(fileName.match(/\d+/)?.[0]),
+            fileName,
+            text: (await fs.readFile(path.join(directoryPath, fileName), 'utf8')).trim()
+        })));
     } catch (error) {
-        if (error.code === 'ENOENT') return '';
-        throw new Error(`Unable to read story document: ${error.message}`);
+        if (error.code === 'ENOENT') return [];
+        throw new Error(`Unable to read story parts: ${error.message}`);
     }
 }
 

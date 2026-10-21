@@ -93,6 +93,8 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
                 };
             }
             const history = await conversations.getRecentMessages(accountId, conversationId);
+            const storyPart = await conversations.getStoryPart(accountId, conversationId);
+            const currentStoryPart = storyDocument.find(part => part.number === storyPart);
             const storyRewardItems = storySpecRewards.flatMap(story => story.rewards || []);
             const itemCatalog = [...Tools, ...storyRewardItems]
                 .filter((item, index, items) => items.findIndex(candidate => candidate.name === item.name) === index)
@@ -113,7 +115,9 @@ function createCombatRouter({ combat, ai, conversations, actions, storyDocument,
                 itemCatalog,
                 enemyCatalog: enemies.map(({ name, HP, AC, attacks }) => ({ name, HP, AC, attacks })),
                 enemies: enemies.map(enemy => enemy.name),
-                storyDocument,
+                storyDocument: currentStoryPart?.text || '',
+                storyPart,
+                totalStoryParts: storyDocument.length,
                 currentEncounter: {
                     enemy: snapshot.enemy.name,
                     outcome: snapshot.phase,

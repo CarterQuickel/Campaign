@@ -38,6 +38,31 @@ function createConversationRepository(database) {
         });
     }
 
+    function getStoryPart(userId, conversationId) {
+        return new Promise((resolve, reject) => {
+            database.get(
+                'SELECT story_part FROM conversations WHERE user_id = ? AND id = ?',
+                [userId, conversationId],
+                (error, row) => error ? reject(error) : resolve(Number(row?.story_part) || 1)
+            );
+        });
+    }
+
+    function advanceStoryPart(userId, conversationId, totalParts) {
+        return new Promise((resolve, reject) => {
+            database.run(
+                `UPDATE conversations
+                 SET story_part = MIN(story_part + 1, ?)
+                 WHERE user_id = ? AND id = ?`,
+                [Math.max(1, totalParts), userId, conversationId],
+                error => {
+                    if (error) return reject(error);
+                    getStoryPart(userId, conversationId).then(resolve, reject);
+                }
+            );
+        });
+    }
+
     // Get Convo
     function getConversations(userId) {
         return new Promise((resolve, reject) => {
@@ -85,10 +110,12 @@ function createConversationRepository(database) {
     }
     return {
         createConversation,
+        advanceStoryPart,
         getConversations,
         getMessages,
         getPendingPrompt,
         getRecentMessages,
+        getStoryPart,
         isResponsePending,
         resetCampaign,
         saveMessage,

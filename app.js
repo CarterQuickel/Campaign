@@ -145,7 +145,9 @@ initializeDatabase()
             console.error('Unable to load Quizbank mastery courses:', error.message);
         }
         const storyDocument = await loadStoryDocument();
-        console.log(storyDocument ? 'Loaded story.docx as AI context.' : 'No story.docx found; using StoryAPI data only.');
+        console.log(storyDocument.length
+            ? `Loaded ${storyDocument.length} Markdown story parts.`
+            : 'No story parts found; using StoryAPI data only.');
         const conversations = createConversationRepository(database);
         const accounts = createAccountRepository(database);
         auth.setAccountRepository(accounts);

@@ -46,6 +46,7 @@ async function initializeDatabase() {
                         db.run('CREATE UNIQUE INDEX IF NOT EXISTS users_email ON users(email) WHERE email IS NOT NULL', () => {});
                         db.run('ALTER TABLE game_state ADD COLUMN state_json TEXT', () => {});
                         db.run('ALTER TABLE conversations ADD COLUMN user_id INTEGER', () => {});
+                        db.run('ALTER TABLE conversations ADD COLUMN story_part INTEGER NOT NULL DEFAULT 1', () => {});
                         db.run('CREATE UNIQUE INDEX IF NOT EXISTS game_state_user_id ON game_state(user_id)', () => {});
                         db.run('CREATE INDEX IF NOT EXISTS conversations_user_id ON conversations(user_id)', () => {});
                     });

@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS conversations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER,
         title TEXT NOT NULL,
+        story_part INTEGER NOT NULL DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 

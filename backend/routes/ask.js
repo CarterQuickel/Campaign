@@ -23,6 +23,12 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
             conversations.setResponsePending(conversationId, true, userPrompt);
             const history = await conversations.getRecentMessages(req.accountId, conversationId);
             await conversations.saveMessage(req.accountId, conversationId, 'user', userPrompt);
+            const totalStoryParts = storyDocument.length;
+            const shouldAdvanceStory = /^(?:continue|continue story|next part|continue to the next part|next chapter)$/i.test(userPrompt);
+            const storyPart = shouldAdvanceStory
+                ? await conversations.advanceStoryPart(req.accountId, conversationId, totalStoryParts)
+                : await conversations.getStoryPart(req.accountId, conversationId);
+            const currentStoryPart = storyDocument.find(part => part.number === storyPart);
             userMessageSaved = true;
             const storyRewardItems = storySpecRewards.flatMap(story => story.rewards || []);
             const itemCatalog = [...state.gameState.tools, ...storyRewardItems]
@@ -57,7 +63,10 @@ function createAskRouter({ state, conversations, ai, actions, viewData, combat, 
                 isOpeningScene: !history.some(message => message.role === 'user'),
                 enemyCatalog: enemies.map(({ name, HP, AC, attacks }) => ({ name, HP, AC, attacks })),
                 enemies: enemies.map(enemy => enemy.name),
-                storyDocument
+                storyDocument: currentStoryPart?.text || '',
+                storyPart,
+                totalStoryParts,
+                storyPartAdvanced: shouldAdvanceStory
             };
             const responseText = await ai.generateReply({ userPrompt, history, system, storyContext });
             let startedCombat = null;
