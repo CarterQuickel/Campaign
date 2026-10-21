@@ -3,7 +3,7 @@ module.exports = {
         {
             name: "Death Possessor",
             image: "/enemies/enemy_images/Death_Possessor.jpg",
-            HP: 19,
+            HP: 11,
             xpReward: 200,
             AC: 16,
             attacks: {
@@ -24,7 +24,7 @@ module.exports = {
         {
             name: "Bull Rider",
             image: "/enemies/enemy_images/Bull_Rider.jpg",
-            HP: 22,
+            HP: 17,
             xpReward: 250,
             AC: 14,
             attacks: {
@@ -45,7 +45,7 @@ module.exports = {
         {
             name: "Fire Goblin",
             image: "/enemies/enemy_images/Fire_Goblin.jpg",
-            HP: 8,
+            HP: 12,
             xpReward: 100,
             AC: 12,
             attacks: {
@@ -67,7 +67,7 @@ module.exports = {
             name: "Fallen King",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Fallen_King.jpg",
-            HP: 27,
+            HP: 24,
             xpReward: 1000,
             AC: 13,
             attacks: {
@@ -89,7 +89,7 @@ module.exports = {
             name: "Death Blossom",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Death_Blossom.jpg",
-            HP: 41,
+            HP: 28,
             xpReward: 1400,
             AC: 15,
             attacks: {
@@ -119,7 +119,7 @@ module.exports = {
             name: "Gaping Serpent",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Gaping_Serpent.jpg",
-            HP: 63,
+            HP: 39,
             xpReward: 1900,
             AC: 13,
             attacks: {
@@ -145,7 +145,7 @@ module.exports = {
             name: "Red-Maned Wolf",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Red-Maned_Wolf.jpg",
-            HP: 39,
+            HP: 43,
             xpReward: 1600,
             AC: 15,
             attacks: {
@@ -171,7 +171,7 @@ module.exports = {
             name: "Supaida",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Supaida.jpg",
-            HP: 28,
+            HP: 47,
             xpReward: 900,
             AC: 15,
             attacks: {
@@ -197,7 +197,7 @@ module.exports = {
             name: "Withstander",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Withstander.jpg",
-            HP: 36,
+            HP: 50,
             xpReward: 500,
             AC: 15,
             attacks: {
@@ -219,7 +219,7 @@ module.exports = {
             name: "The Oracle",
             isBoss: true,
             image: "/enemies/enemy_images/story1/The_Oracle.jpg",
-            HP: 101,
+            HP: 72,
             xpReward: 15000,
             AC: 15,
             attacks: {
@@ -241,7 +241,7 @@ module.exports = {
             name: "Alternate X",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Alternate_X.jpg",
-            HP: 376,
+            HP: 74,
             xpReward: 20000,
             AC: 15,
             attacks: {
@@ -279,7 +279,7 @@ module.exports = {
             name: "The Forthcoming",
             isBoss: true,
             image: "/enemies/enemy_images/story1/Forthcoming.jpg",
-            HP: 908,
+            HP: 80,
             xpReward: 0,
             AC: 17,
             attacks: {
