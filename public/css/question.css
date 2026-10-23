@@ -22,8 +22,8 @@ body.combat-active #chat {
     height: 100%;
     z-index: -1;
     right: -200px;
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, #00000038 55%);
-    mask-image: linear-gradient(to right, transparent 0%, #00000038 55%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #0000000e 55%);
+    mask-image: linear-gradient(to right, transparent 0%, #0000000e 55%);
 }
 .question {
     font-size: 30px;
