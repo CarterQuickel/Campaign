@@ -140,7 +140,7 @@ initializeDatabase()
     .then(async database => {
         try {
             const courses = await state.initializeMasteryCourseSets();
-            console.log('Loaded Quizbank mastery courses:', courses.map(({ id, name }) => ({ id, name })));
+            console.log('Loaded mastery courses:', courses.map(({ id, name }) => ({ id, name })));
         } catch (error) {
             console.error('Unable to load Quizbank mastery courses:', error.message);
         }

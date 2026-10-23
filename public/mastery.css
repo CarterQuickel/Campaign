@@ -110,7 +110,6 @@
     align-items: center;
     padding: 12px;
     border-radius: 8px;
-    cursor: pointer;
     display: flex;
     color: var(--primary-color);
     font-size: 12px;

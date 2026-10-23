@@ -22,6 +22,18 @@ body {
     background: var(--accent-color);
     border-radius: 8px;
 }
+.title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.mainTxt {
+    font-size: 40px;
+    font-family: 'Cinzel', var(--thin-font);
+    color: var(--accent-color);
+    margin-left: 5px;
+    font-weight: 700;
+}
 .footer {
     display: none;
 }

@@ -1,5 +1,6 @@
 const { classHP } = require('../healthCalc');
 const { Tools } = require('../StoryAPI/tools');
+const javascriptQuestionBank = require('../javascript/questions');
 
 // Player Stats
 const baseStats = [10, 10, 10, 10, 10, 10];
@@ -22,6 +23,20 @@ const masteryColors = [
 const masteryCourseSets = [];
 const defaultMasteryCourseSets = [];
 
+function createLocalJavascriptCourseSet() {
+    return {
+        id: javascriptQuestionBank.courseId,
+        name: javascriptQuestionBank.courseName,
+        sections: [{
+            id: javascriptQuestionBank.unitId,
+            name: javascriptQuestionBank.unitName,
+            completion: 0,
+            color: masteryColors[0],
+            current: false
+        }]
+    };
+}
+
 // Fetch Quizbank JSON Data
 async function fetchQuizbankJson(path) {
     const response = await fetch(`${QUIZBANK_API}${path}`, {
@@ -40,35 +55,65 @@ async function fetchQuizbankJson(path) {
 
 // Initialize Mastery Course Sets
 async function initializeMasteryCourseSets() {
-    const courses = await fetchQuizbankJson('/course');
-    if (!Array.isArray(courses)) throw new Error('Quizbank course list was not an array.');
-    const selectedCourses = MASTERY_COURSE_IDS.map(id => {
-        const course = courses.find(item => Number(item.id) === id);
-        if (!course) throw new Error(`Quizbank course ${id} was not found.`);
-        return course;
-    });
-    const courseSets = await Promise.all(selectedCourses.map(async course => {
-        const details = await fetchQuizbankJson(`/course/${course.id}`);
-        if (!Array.isArray(details.units)) {
-            throw new Error(`Quizbank course ${course.id} did not include units.`);
-        }
-        const units = [...details.units]
-            .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0));
-        return {
-            id: Number(course.id),
-            name: details.name || course.name,
-            sections: units.map((unit, index) => ({
-                id: unit.id,
-                name: unit.name,
-                completion: 0,
-                color: masteryColors[index % masteryColors.length],
-                current: Number(course.id) === MASTERY_COURSE_IDS[0] && index === 0
-            }))
-        };
-    }));
+    let courseSets;
+    try {
+        const courses = await fetchQuizbankJson('/course');
+        if (!Array.isArray(courses)) throw new Error('Quizbank course list was not an array.');
+        const selectedCourses = MASTERY_COURSE_IDS.map(id => {
+            const course = courses.find(item => Number(item.id) === id);
+            if (!course) throw new Error(`Quizbank course ${id} was not found.`);
+            return course;
+        });
+        courseSets = await Promise.all(selectedCourses.map(async course => {
+            const details = await fetchQuizbankJson(`/course/${course.id}`);
+            if (!Array.isArray(details.units)) {
+                throw new Error(`Quizbank course ${course.id} did not include units.`);
+            }
+            const units = [...details.units]
+                .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0));
+            return {
+                id: Number(course.id),
+                name: details.name || course.name,
+                sections: units.map((unit, index) => ({
+                    id: unit.id,
+                    name: unit.name,
+                    completion: 0,
+                    color: masteryColors[index % masteryColors.length],
+                    current: Number(course.id) === MASTERY_COURSE_IDS[0] && index === 0
+                }))
+            };
+        }));
+        courseSets.push(createLocalJavascriptCourseSet());
+    } catch (error) {
+        console.error('Unable to load Quizbank mastery courses; using local JavaScript questions:', error.message);
+        courseSets = [createLocalJavascriptCourseSet()];
+        courseSets[0].sections[0].current = true;
+    }
     masteryCourseSets.splice(0, masteryCourseSets.length, ...courseSets);
     defaultMasteryCourseSets.splice(0, defaultMasteryCourseSets.length, ...JSON.parse(JSON.stringify(courseSets)));
     return masteryCourseSets;
+}
+
+function getLocalJavascriptUnit() {
+    const course = masteryCourseSets.find(item => Number(item.id) === javascriptQuestionBank.courseId);
+    const section = course?.sections.find(item => Number(item.id) === javascriptQuestionBank.unitId);
+    return course && section ? { course, section } : null;
+}
+
+function formatLocalJavascriptQuestion(current) {
+    const question = javascriptQuestionBank.questions[
+        Math.floor(Math.random() * javascriptQuestionBank.questions.length)
+    ];
+    return {
+        id: question.id,
+        prompt: question.prompt,
+        answers: question.answers.map((answer, index) => ({ id: String(index), text: answer })),
+        correctAnswerId: String(question.correctIndex),
+        courseId: current.course.id,
+        courseName: current.course.name,
+        unitId: current.section.id,
+        unitName: current.section.name
+    };
 }
 
 // Get the current mastery unit (course and section)
@@ -94,30 +139,42 @@ function setCurrentMasteryUnit(courseId, unitId) {
 
 // Fetch a question for the current mastery course
 async function fetchQuestionForCurrentCourse() {
-    const current = getCurrentMasteryUnit();
+    let current = getCurrentMasteryUnit();
     if (!current) throw new Error('There are no remaining mastery units.');
-    const questions = await fetchQuizbankJson(`/course/${current.course.id}?pick=1`);
-    if (!Array.isArray(questions) || !questions.length) {
-        throw new Error(`Quizbank returned no questions for ${current.course.name}.`);
+    if (Number(current.course.id) === javascriptQuestionBank.courseId) {
+        return formatLocalJavascriptQuestion(current);
     }
-    const question = questions[0];
-    if (!question.prompt || !Array.isArray(question.answers) || !question.answers.length) {
-        throw new Error('Quizbank returned a question with an invalid format.');
+    try {
+        const questions = await fetchQuizbankJson(`/course/${current.course.id}?pick=1`);
+        if (!Array.isArray(questions) || !questions.length) {
+            throw new Error(`Quizbank returned no questions for ${current.course.name}.`);
+        }
+        const question = questions[0];
+        if (!question.prompt || !Array.isArray(question.answers) || !question.answers.length) {
+            throw new Error('Quizbank returned a question with an invalid format.');
+        }
+        const correctIndex = Number(question.correctIndex);
+        if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= question.answers.length) {
+            throw new Error('Quizbank returned a question with an invalid correct answer.');
+        }
+        return {
+            id: String(question.id),
+            prompt: question.prompt,
+            answers: question.answers.map((answer, index) => ({ id: String(index), text: String(answer) })),
+            correctAnswerId: String(correctIndex),
+            courseId: current.course.id,
+            courseName: current.course.name,
+            unitId: current.section.id,
+            unitName: current.section.name
+        };
+    } catch (error) {
+        const localJavascript = getLocalJavascriptUnit();
+        if (!localJavascript) throw error;
+        console.error('Unable to fetch a Quizbank question; switching to local JavaScript questions:', error.message);
+        setCurrentMasteryUnit(localJavascript.course.id, localJavascript.section.id);
+        current = localJavascript;
+        return formatLocalJavascriptQuestion(current);
     }
-    const correctIndex = Number(question.correctIndex);
-    if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= question.answers.length) {
-        throw new Error('Quizbank returned a question with an invalid correct answer.');
-    }
-    return {
-        id: String(question.id),
-        prompt: question.prompt,
-        answers: question.answers.map((answer, index) => ({ id: String(index), text: String(answer) })),
-        correctAnswerId: String(correctIndex),
-        courseId: current.course.id,
-        courseName: current.course.name,
-        unitId: current.section.id,
-        unitName: current.section.name
-    };
 }
 
 // Record a correct answer for the current mastery unit
@@ -314,6 +371,7 @@ function loadSnapshot(snapshot) {
     (snapshot.claimedMilestones || []).forEach(milestone => claimedMilestones.add(Number(milestone)));
     if (Array.isArray(snapshot.masteryCourseSets) && snapshot.masteryCourseSets.length) {
         masteryCourseSets.splice(0, masteryCourseSets.length, ...snapshot.masteryCourseSets);
+        if (!getLocalJavascriptUnit()) masteryCourseSets.push(createLocalJavascriptCourseSet());
     }
 }
 

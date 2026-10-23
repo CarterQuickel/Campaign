@@ -16,10 +16,7 @@
     .response-box {
         height: 100%;
     }
-    .logo {
-        display: none;
-    }
-    .settingsBtn {
+    .logo, #leftBan, .title, .settingsBtn, .status, .status.desktop, .horiz.mobileHidden, #inventoryCont, #combatCont, navIMG img {
         display: none;
     }
     #banner {
@@ -29,7 +26,8 @@
         align-items: center;
     }
     #rightBan {
-        width: 100vw;
+        width: 100%;
+        justify-content: center;
     }
     .footer {
         width: 100%;
@@ -48,9 +46,6 @@
         height: 30px;
         background-color: var(--primary-color);
         display: block;
-    }
-    .navIMG img {
-        display: none;
     }
     .navIMG.navIcon--inventory {
         -webkit-mask: url("/icons/inventory.png") center / contain no-repeat;
@@ -76,18 +71,6 @@
         color: var(--primary-color);
         font-weight: 500;
         font-size: 15px;
-    }
-    .status {
-        display: none;
-    }
-    .horiz.mobileHidden {
-        display: none;
-    }
-    .status.desktop {
-        display: none;
-    }
-    #inventoryCont, #combatCont {
-        display: none;
     }
 
     /* SETTINGS ================================================================== */

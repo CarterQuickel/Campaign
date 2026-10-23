@@ -66,7 +66,7 @@
     overflow-y: auto;
 }
 .sectionsKey.mainPage.milestone {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     place-items: center;
 }
 .sectionsKey.mainPage.milestone .section {
